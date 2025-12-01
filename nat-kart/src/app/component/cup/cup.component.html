@@ -1,0 +1,31 @@
+<div class="image-wrapper">
+  <div class="image-background"></div>
+  <p-button class="export-button" (click)="onExport()" label="Exporter" />
+  <p-table class="rank-table" [value]="ranks" [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Rank</th>
+        <th></th>
+        <th>Joueur</th>
+        <th>Points</th>
+        <th>Victoires</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-player>
+      <tr>
+        <td *ngIf="isCups(player.rank); else elseBlock">
+          <img [src]="getRankCup(player.rank)"  width="25" class="shadow-4"/>
+        </td>
+
+        <ng-template #elseBlock>
+          <td>{{player.rank}}</td>
+        </ng-template>
+        <td><img [src]="'http://localhost:8080/images/' + player.picture" [alt]="player.name" width="55"
+                 class="shadow-4"/></td>
+        <td>{{player.name}}</td>
+        <td>{{player.points}}</td>
+        <td>{{player.victory}}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

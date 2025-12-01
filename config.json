@@ -1,0 +1,170 @@
+{
+  "tournament": {
+    "name": "Mario Kart Tournament Optimizer",
+    "version": "2.0",
+    "description": "Script d'optimisation de planning de tournoi Mario Kart",
+    "players": {
+      "nbJoueurs": 36,
+      "description": "Nombre total de joueurs au tournoi"
+    },
+    "sessions": {
+      "nbSessions": 5,
+      "description": "Nombre total de sessions (égal au nombre de consoles)"
+    },
+    "consoles": [
+      {
+        "nom": "SNES",
+        "joueursParPartie": 4,
+        "nbGroupes": 2,
+        "couleur": "Magenta",
+        "description": "Console SNES avec 2 joueurs par partie et 4 groupes"
+      },
+      {
+        "nom": "Wii",
+        "joueursParPartie": 4,
+        "nbGroupes": 2,
+        "couleur": "Cyan",
+        "description": "Console Wii avec 4 joueurs par partie et 2 groupes"
+      },
+      {
+        "nom": "N64",
+        "joueursParPartie": 4,
+        "nbGroupes": 2,
+        "couleur": "Green",
+        "description": "Console N64 avec 4 joueurs par partie et 2 groupes"
+      },
+      {
+        "nom": "Switch1",
+        "joueursParPartie": 4,
+        "nbGroupes": 2,
+        "couleur": "Yellow",
+        "description": "Console Switch 1 avec 4 joueurs par partie et 2 groupes"
+      },
+      {
+        "nom": "Switch2",
+        "joueursParPartie": 4,
+        "nbGroupes": 2,
+        "couleur": "Red",
+        "description": "Console Switch 2 avec 4 joueurs par partie et 2 groupes"
+      }
+    ]
+  },
+  "parameters": {
+    "nbRelances": 10,
+    "description": "Nombre de relances d'optimisation",
+    "nbIterationsParRelance": 10000,
+    "description_iterations": "Nombre d'itérations par relance"
+  },
+  "optimization": {
+    "swap_strategies": {
+      "swap1": {
+        "name": "Swap Intra-Session",
+        "description": "Échange de joueurs au sein d'une même session",
+        "probability": 50,
+        "type": "intra-session"
+      },
+      "swap2": {
+        "name": "Swap Inter-Sessions",
+        "description": "Échange de joueurs entre deux sessions",
+        "probability": 50,
+        "type": "inter-sessions",
+        "targeted_collisions": {
+          "enabled": true,
+          "probability": 10,
+          "description": "10% des Swap2 ciblent les paires avec le plus de collisions"
+        }
+      }
+    },
+    "scoring": {
+      "collision_penalty": 100,
+      "description": "Pénalité pour chaque rencontre d'une paire (exposant 3)",
+      "display_interval": 5000,
+      "description_display": "Intervalle d'affichage des statistiques en cours d'optimisation",
+      "early_stopping": {
+        "enabled": true,
+        "optimal_threshold": 1,
+        "description": "Arrêt anticipé si le nombre maximal de rencontres par paire atteint le seuil optimal"
+      }
+    }
+  },
+  "output": {
+    "excel": {
+      "main_file": "planning_optimise.xlsx",
+      "description": "Fichier Excel principal contenant les plannings (Tableau Excel Medium2 avec en-tête gelé)",
+      "worksheets": [
+        {
+          "name": "Planning_Numeros",
+          "description": "Planning avec numéros des joueurs"
+        },
+        {
+          "name": "Planning_Pokemon",
+          "description": "Planning avec noms des Pokémon"
+        }
+      ],
+      "score_sheets": {
+        "directory": "FeuillesScore",
+        "description": "Feuilles de score individuelles pour chaque groupe. Un fichier Excel par groupe contenant 5 tableaux (un par session, formaté Medium2)",
+        "naming_pattern": "{Console}_Groupe{N}_Score.xlsx",
+        "columns": [
+          "Session",
+          "Console",
+          "Groupe",
+          "Joueur",
+          "Pokemon",
+          "Classement"
+        ]
+      }
+    }
+  },
+  "pokemon_mapping": {
+    "description": "Correspondance entre numéros joueurs et noms Pokémon",
+    "1": "Bulbizarre",
+    "2": "Salamèche",
+    "3": "Carapuce",
+    "4": "Roucool",
+    "5": "Pikachu",
+    "6": "Sabelette",
+    "7": "Mélofée",
+    "8": "Goupix",
+    "9": "Rondoudou",
+    "10": "Mystherbe",
+    "11": "Miaouss",
+    "12": "Psykokwak",
+    "13": "Férosinge",
+    "14": "Caninos",
+    "15": "Ptitard",
+    "16": "Abra",
+    "17": "Machoc",
+    "18": "Racaillou",
+    "19": "Ponyta",
+	"20": "Galopa",
+    "21": "Otaria",
+    "22": "Fantominus",
+    "23": "Soporifik",
+    "24": "Osselait",
+    "25": "Excelangue",
+    "26": "Rhinocorne",
+    "27": "Leveinard",
+    "28": "Hypotrempe",
+    "29": "Poissirène",
+    "30": "Lokhlass",
+    "31": "Evoli",
+    "32": "Aquali",
+    "33": "Voltali",
+    "34": "Pyroli",
+    "35": "Ronflex",
+    "36": "Minidraco",
+    "37": "Mew",
+    "38": "Mentali",
+    "39": "Noctali",
+    "40": "Givrali",
+    "41": "Phyllali",
+    "42": "Nymphali",
+    "43": "Dracaufeu",
+    "44": "Tortank",
+    "45": "Arcanin",
+	"46": "Canarticho",
+	"47": "Rhinoféros",
+	"48": "Mewtwo"
+  }
+}

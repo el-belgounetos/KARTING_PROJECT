@@ -1,8 +1,10 @@
 <div class="card bar-menu">
-  <p-tabMenu
-    [model]="items"
-    [activeItem]="activeItem"
-    (activeItemChange)="onActiveItemChange($event)">
-  </p-tabMenu>
+  <p-tabs [value]="activeItem" (valueChange)="onActiveItemChange($event)">
+    <p-tablist>
+      @for (item of items; track item.label; let idx = $index) {
+      <p-tab [value]="idx">{{ item.label }}</p-tab>
+      }
+    </p-tablist>
+  </p-tabs>
 </div>
 <router-outlet></router-outlet>

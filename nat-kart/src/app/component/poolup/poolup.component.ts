@@ -10,31 +10,31 @@ import { MessageService } from 'primeng/api';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 
-import { InputSwitchModule } from 'primeng/inputswitch';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TableModule } from 'primeng/table';
 import { BadgeModule } from 'primeng/badge';
 
 
 @Component({
-    selector: 'app-poolup',
-    imports: [
+  selector: 'app-poolup',
+  imports: [
     ListboxModule,
     ButtonModule,
-    DropdownModule,
+    SelectModule,
     ToastModule,
     InputNumberModule,
-    InputSwitchModule,
+    ToggleSwitchModule,
     BadgeModule,
     TableModule,
     FormsModule
-],
-    templateUrl: './poolup.component.html',
-    styleUrl: './poolup.component.scss',
-    providers: [MessageService]
+  ],
+  templateUrl: './poolup.component.html',
+  styleUrl: './poolup.component.scss',
+  providers: [MessageService]
 })
-export class PoolupComponent  implements OnInit {
+export class PoolupComponent implements OnInit {
 
   public ranks: KarterDTO[] = [];
   public selectedRank: KarterDTO = new KarterDTO();
@@ -52,7 +52,7 @@ export class PoolupComponent  implements OnInit {
 
   public historique: HistoriqueDTO[] = [];
 
-  constructor(private http: HttpClient, private messageService: MessageService) {}
+  constructor(private http: HttpClient, private messageService: MessageService) { }
 
   ngOnInit() {
     this.getAllRanks();
@@ -63,7 +63,7 @@ export class PoolupComponent  implements OnInit {
     this.http.get('http://localhost:8080/ranks')
       .subscribe(
         (response) => {
-          if(response == null)
+          if (response == null)
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
           else {
             this.ranks = response as [];
@@ -73,7 +73,7 @@ export class PoolupComponent  implements OnInit {
         (error) => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
         }
-    );
+      );
   }
 
   public selectNewRank(selectedRank: any) {
@@ -83,17 +83,17 @@ export class PoolupComponent  implements OnInit {
 
   public updatePlayer(): void {
     this.loading = true;
-    if(this.selectedRank != null) {
+    if (this.selectedRank != null) {
       this.selectedRank.points += this.valueToAdd;
-      if(this.victory)
-        this.selectedRank.victory ++;
-      this.http.post('http://localhost:8080/ranks' , this.selectedRank)
+      if (this.victory)
+        this.selectedRank.victory++;
+      this.http.post('http://localhost:8080/ranks', this.selectedRank)
         .subscribe(
           (response) => {
-              this.messageService.add({ severity: 'success', summary: 'Mise à jour réussie', detail: 'Les points du participant ont bien été mis à jour' });
-              this.updateHistorique();
-              const name = this.selectedRank.name;
-              this.resetDatas();
+            this.messageService.add({ severity: 'success', summary: 'Mise à jour réussie', detail: 'Les points du participant ont bien été mis à jour' });
+            this.updateHistorique();
+            const name = this.selectedRank.name;
+            this.resetDatas();
           },
           (error) => {
             this.resetDatas();
@@ -111,16 +111,16 @@ export class PoolupComponent  implements OnInit {
     historiqueDTO.points = this.valueToAdd;
     historiqueDTO.victory = this.victory;
 
-    this.http.post('http://localhost:8080/historique' , historiqueDTO)
+    this.http.post('http://localhost:8080/historique', historiqueDTO)
       .subscribe(
         (response) => {
-            this.messageService.add({ severity: 'info', summary: 'Historique', detail: 'L\'historique a bien été mis à jour' });
+          this.messageService.add({ severity: 'info', summary: 'Historique', detail: 'L\'historique a bien été mis à jour' });
         },
         (error) => {
           this.resetDatas();
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
         }
-    );
+      );
     this.getHistoriqueByPlayerName(historiqueDTO.player.name);
   }
 
@@ -137,11 +137,11 @@ export class PoolupComponent  implements OnInit {
 
   public getKarterByName(name: string): void {
     this.ranks.forEach(rank => {
-        if(rank.name == name) {
-          this.selectedRank = rank;
-          this.getHistoriqueByPlayerName(this.selectedRank.name);
-        }
+      if (rank.name == name) {
+        this.selectedRank = rank;
+        this.getHistoriqueByPlayerName(this.selectedRank.name);
       }
+    }
     );
   }
 
@@ -149,7 +149,7 @@ export class PoolupComponent  implements OnInit {
     this.http.get('http://localhost:8080/consoles')
       .subscribe(
         (response) => {
-          if(response == null)
+          if (response == null)
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
           else {
             this.consoles = response as [];
@@ -158,35 +158,35 @@ export class PoolupComponent  implements OnInit {
         (error) => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
         }
-    );
+      );
   }
 
-public getHistoriqueByPlayerName(playerName: string) {
+  public getHistoriqueByPlayerName(playerName: string) {
     this.http.get('http://localhost:8080/historique/' + playerName)
       .subscribe(
         (response) => {
-          if(response == null)
+          if (response == null)
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
           else {
             this.historique = response as [];
-            }
-          },
+          }
+        },
         (error) => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
         }
-    );
+      );
   }
 
   public onConsoleSelected() {
     this.getAllConsoles();
-    if(this.selectedConsole != null && this.selectedConsole.name != "") {
+    if (this.selectedConsole != null && this.selectedConsole.name != "") {
       this.cups = this.selectedConsole.cups;
       this.historique.forEach(line => {
         this.cups = this.cups.filter(cup => cup.name !== line.cups.name);
       });
-   } else {
-    this.cups = [];
-   }
+    } else {
+      this.cups = [];
+    }
   }
 
   private resetDatas() {
@@ -202,13 +202,13 @@ public getHistoriqueByPlayerName(playerName: string) {
     this.http.delete('http://localhost:8080/historique/' + historique.id)
       .subscribe(
         (response) => {
-            this.messageService.add({ severity: 'info', summary: 'Historique', detail: 'La ligne a bien été supprimée' });
-            this.resetDatas();
+          this.messageService.add({ severity: 'info', summary: 'Historique', detail: 'La ligne a bien été supprimée' });
+          this.resetDatas();
         },
         (error) => {
           this.resetDatas();
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-      }
+        }
       );
   }
 }

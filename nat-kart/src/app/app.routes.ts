@@ -6,10 +6,11 @@ import { ConsolingComponent } from './component/consoling/consoling.component';
 import { ParametersComponent } from './component/parameters/parameters.component';
 
 export const routes: Routes = [
-  {path : 'natcup', component: CupComponent},
-  {path : 'natspin', component: KartComponent},
-  {path : 'poolup', component: PoolupComponent},
-  {path : 'natspinconsole', component: ConsolingComponent},
-  {path : 'parameters-console', component: ParametersComponent},
-  { path: '**', redirectTo: '' }
+  { path: 'natcup', component: CupComponent },
+  { path: 'natspin', component: KartComponent },
+  { path: 'poolup', component: PoolupComponent },
+  { path: 'natspinconsole', component: ConsolingComponent },
+  { path: 'parameters-console', component: ParametersComponent },
+  { path: '', redirectTo: 'natcup', pathMatch: 'full' },
+  { path: '**', redirectTo: 'natcup' }
 ];

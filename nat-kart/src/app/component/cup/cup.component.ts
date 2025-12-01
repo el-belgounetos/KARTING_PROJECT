@@ -4,17 +4,16 @@ import { TableModule } from 'primeng/table';
 import { KarterDTO } from '../../dto/karterDTO';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
+
 import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'app-cup',
     imports: [
-        ImageModule,
-        CommonModule,
-        ButtonModule,
-        TableModule
-    ],
+    ImageModule,
+    ButtonModule,
+    TableModule
+],
     templateUrl: './cup.component.html',
     styleUrl: './cup.component.scss',
     providers: [MessageService]

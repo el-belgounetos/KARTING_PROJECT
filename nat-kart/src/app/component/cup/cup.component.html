@@ -13,15 +13,16 @@
     </ng-template>
     <ng-template pTemplate="body" let-player>
       <tr>
-        <td *ngIf="isCups(player.rank); else elseBlock">
-          <img [src]="getRankCup(player.rank)"  width="25" class="shadow-4"/>
-        </td>
-
-        <ng-template #elseBlock>
+        @if (isCups(player.rank)) {
+          <td>
+            <img [src]="getRankCup(player.rank)"  width="25" class="shadow-4"/>
+          </td>
+        } @else {
           <td>{{player.rank}}</td>
-        </ng-template>
+        }
+
         <td><img [src]="'http://localhost:8080/images/' + player.picture" [alt]="player.name" width="55"
-                 class="shadow-4"/></td>
+        class="shadow-4"/></td>
         <td>{{player.name}}</td>
         <td>{{player.points}}</td>
         <td>{{player.victory}}</td>

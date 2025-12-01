@@ -11,7 +11,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
-import { CommonModule } from '@angular/common';
+
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { TableModule } from 'primeng/table';
 import { BadgeModule } from 'primeng/badge';
@@ -20,17 +20,16 @@ import { BadgeModule } from 'primeng/badge';
 @Component({
     selector: 'app-poolup',
     imports: [
-        ListboxModule,
-        ButtonModule,
-        DropdownModule,
-        ToastModule,
-        InputNumberModule,
-        InputSwitchModule,
-        CommonModule,
-        BadgeModule,
-        TableModule,
-        FormsModule
-    ],
+    ListboxModule,
+    ButtonModule,
+    DropdownModule,
+    ToastModule,
+    InputNumberModule,
+    InputSwitchModule,
+    BadgeModule,
+    TableModule,
+    FormsModule
+],
     templateUrl: './poolup.component.html',
     styleUrl: './poolup.component.scss',
     providers: [MessageService]

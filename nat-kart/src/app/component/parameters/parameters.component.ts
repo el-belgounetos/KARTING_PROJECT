@@ -7,18 +7,17 @@ import { MessageService } from 'primeng/api';
 import { CounterDTO } from '../../dto/counterDTO';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-parameters',
     imports: [
-        ImageModule,
-        FormsModule,
-        ButtonModule,
-        ToastModule,
-        CommonModule,
-        InputNumberModule
-    ],
+    ImageModule,
+    FormsModule,
+    ButtonModule,
+    ToastModule,
+    InputNumberModule
+],
     templateUrl: './parameters.component.html',
     styleUrl: './parameters.component.scss',
     providers: [MessageService]

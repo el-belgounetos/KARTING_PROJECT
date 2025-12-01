@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
-import { CommonModule } from '@angular/common';
+
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { BadgeModule } from 'primeng/badge';
 
@@ -13,14 +13,13 @@ import { BadgeModule } from 'primeng/badge';
 @Component({
     selector: 'app-kart',
     imports: [
-        ImageModule,
-        ToastModule,
-        BadgeModule,
-        CommonModule,
-        TooltipModule,
-        ScrollPanelModule,
-        ButtonModule
-    ],
+    ImageModule,
+    ToastModule,
+    BadgeModule,
+    TooltipModule,
+    ScrollPanelModule,
+    ButtonModule
+],
     templateUrl: './kart.component.html',
     styleUrl: './kart.component.scss',
     providers: [MessageService]

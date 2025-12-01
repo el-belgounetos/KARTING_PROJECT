@@ -10,19 +10,18 @@ import { ToastModule } from 'primeng/toast';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-parameters',
-  standalone: true,
-  imports: [
-    ImageModule,
-    FormsModule,
-    ButtonModule,
-    ToastModule,
-    CommonModule,
-    InputNumberModule
-  ],
-  templateUrl: './parameters.component.html',
-  styleUrl: './parameters.component.scss',
-  providers: [MessageService]
+    selector: 'app-parameters',
+    imports: [
+        ImageModule,
+        FormsModule,
+        ButtonModule,
+        ToastModule,
+        CommonModule,
+        InputNumberModule
+    ],
+    templateUrl: './parameters.component.html',
+    styleUrl: './parameters.component.scss',
+    providers: [MessageService]
 })
 export class ParametersComponent implements OnInit {
 

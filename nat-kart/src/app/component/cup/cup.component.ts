@@ -8,17 +8,16 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-  selector: 'app-cup',
-  standalone: true,
-  imports: [
-    ImageModule,
-    CommonModule,
-    ButtonModule,
-    TableModule
-  ],
-  templateUrl: './cup.component.html',
-  styleUrl: './cup.component.scss',
-  providers: [MessageService]
+    selector: 'app-cup',
+    imports: [
+        ImageModule,
+        CommonModule,
+        ButtonModule,
+        TableModule
+    ],
+    templateUrl: './cup.component.html',
+    styleUrl: './cup.component.scss',
+    providers: [MessageService]
 })
 export class CupComponent implements OnInit {
   public ranks: KarterDTO[] = [];

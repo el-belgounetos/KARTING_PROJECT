@@ -8,15 +8,14 @@ import { ImageModule } from 'primeng/image';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-  selector: 'app-consoling',
-  standalone: true,
-  imports: [
-    ImageModule,
-    ButtonModule,
-    CommonModule
-  ],
-  templateUrl: './consoling.component.html',
-  styleUrl: './consoling.component.scss'
+    selector: 'app-consoling',
+    imports: [
+        ImageModule,
+        ButtonModule,
+        CommonModule
+    ],
+    templateUrl: './consoling.component.html',
+    styleUrl: './consoling.component.scss'
 })
 export class ConsolingComponent implements OnInit {
 

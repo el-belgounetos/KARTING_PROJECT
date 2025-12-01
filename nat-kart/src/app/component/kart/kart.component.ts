@@ -11,20 +11,19 @@ import { BadgeModule } from 'primeng/badge';
 
 
 @Component({
-  selector: 'app-kart',
-  standalone: true,
-  imports: [
-    ImageModule,
-    ToastModule,
-    BadgeModule,
-    CommonModule,
-    TooltipModule,
-    ScrollPanelModule,
-    ButtonModule
-  ],
-  templateUrl: './kart.component.html',
-  styleUrl: './kart.component.scss',
-  providers: [MessageService]
+    selector: 'app-kart',
+    imports: [
+        ImageModule,
+        ToastModule,
+        BadgeModule,
+        CommonModule,
+        TooltipModule,
+        ScrollPanelModule,
+        ButtonModule
+    ],
+    templateUrl: './kart.component.html',
+    styleUrl: './kart.component.scss',
+    providers: [MessageService]
 })
 export class KartComponent implements OnInit  {
   constructor(private http: HttpClient, private messageService: MessageService) {}

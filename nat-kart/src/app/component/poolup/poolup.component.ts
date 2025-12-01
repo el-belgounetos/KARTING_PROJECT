@@ -18,23 +18,22 @@ import { BadgeModule } from 'primeng/badge';
 
 
 @Component({
-  selector: 'app-poolup',
-  standalone: true,
-  imports: [
-    ListboxModule,
-    ButtonModule,
-    DropdownModule,
-    ToastModule,
-    InputNumberModule,
-    InputSwitchModule,
-    CommonModule,
-    BadgeModule,
-    TableModule,
-    FormsModule
-  ],
-  templateUrl: './poolup.component.html',
-  styleUrl: './poolup.component.scss',
-  providers: [MessageService]
+    selector: 'app-poolup',
+    imports: [
+        ListboxModule,
+        ButtonModule,
+        DropdownModule,
+        ToastModule,
+        InputNumberModule,
+        InputSwitchModule,
+        CommonModule,
+        BadgeModule,
+        TableModule,
+        FormsModule
+    ],
+    templateUrl: './poolup.component.html',
+    styleUrl: './poolup.component.scss',
+    providers: [MessageService]
 })
 export class PoolupComponent  implements OnInit {
 

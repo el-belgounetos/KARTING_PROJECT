@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/component/cup/cup.component.scss"],
+  "sourcesContent": [".image-background {\r\n  background-image: url('/assets/wallpaper/wallpaper3.jpg');\r\n  background-size: cover;\r\n    background-position: center;\r\n    height: 100%;\r\n    width: 100%;\r\n    position: fixed;\r\n    top: 0;\r\n    left: 0;\r\n    filter: blur(3px); /* Applique un flou sur le fond */\r\n    z-index: -1; /* Place le fond derrière le contenu */\r\n}\r\n\r\n.image-wrapper {\r\n  height: 93vh;\r\n  width: 100%;\r\n}\r\n\r\n.rank-table th,\r\n.rank-table tr,\r\n.rank-table td {\r\n  background-color: rgba(64,64,64,.5);\r\n  font-weight: bold;\r\n  color: white;\r\n  font-size:20px;\r\n  border: none;\r\n  padding: 0;\r\n}\r\n\r\n.rank-table ::ng-deep .p-datatable-wrapper {\r\n  padding: 0;\r\n  margin-top : 1%;\r\n  border-radius: 3px;\r\n}\r\n\r\n.export-button {\r\n  right:0px;\r\n  position: absolute;\r\n  z-index: 999;\r\n}\r\n"],
+  "mappings": "iBAAA,CAAA,iBACE,iBAAA,sCACA,gBAAA,MACE,oBAAA,OACA,OAAA,KACA,MAAA,KACA,SAAA,MACA,IAAA,EACA,KAAA,EACA,OAAA,KAAA,KACA,QAAA,GAGJ,CAAA,cACE,OAAA,KACA,MAAA,KAGF,CAAA,WAAA,GAAA,CAAA,WAAA,GAAA,CAAA,WAAA,GAGE,iBAAA,UACA,YAAA,IACA,MAAA,KACA,UAAA,KACA,OAAA,aACA,EAGF,CAXA,WAWA,UAAA,CAAA,4BACE,EACA,WAAA,iBACA,IAGF,CAAA,cACE,MAAA,EACA,SAAA,SACA,QAAA",
+  "names": []
+}

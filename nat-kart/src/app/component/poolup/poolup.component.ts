@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ListboxModule } from 'primeng/listbox';
 import { KarterDTO } from '../../dto/karterDTO';
 import { ConsoleDTO } from '../../dto/consoleDTO';
 import { CupsDTO } from '../../dto/cupsDTO';
@@ -11,16 +11,16 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
-
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TableModule } from 'primeng/table';
 import { BadgeModule } from 'primeng/badge';
+import { ScrollPanelModule } from 'primeng/scrollpanel';
 
 
 @Component({
   selector: 'app-poolup',
   imports: [
-    ListboxModule,
+    CommonModule,
     ButtonModule,
     SelectModule,
     ToastModule,
@@ -28,6 +28,7 @@ import { BadgeModule } from 'primeng/badge';
     ToggleSwitchModule,
     BadgeModule,
     TableModule,
+    ScrollPanelModule,
     FormsModule
   ],
   templateUrl: './poolup.component.html',

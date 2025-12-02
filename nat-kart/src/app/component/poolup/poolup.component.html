@@ -1,97 +1,84 @@
-<div class="grid-background">
+<div class="grid-background poolup-layout">
   <div class="image-background"></div>
-  <div class="container">
+
+  <!-- Left Sidebar: Avatar List -->
+  <div class="layout-sidebar-left">
+    <p-scrollPanel [style]="{ width: '100%', height: '100%' }" class="ranks-scroll">
+      <div class="ranks-list">
+        @for (rank of ranks; track rank.name) {
+        <div class="rank-item" [class.selected]="selectedRank?.name === rank.name" (click)="selectNewRank(rank)">
+          <img [src]="'http://localhost:8080/images/' + rank.picture" class="rank-avatar" [alt]="rank.name" />
+          <div class="rank-item-text">
+            <span class="rank-item-name">{{ rank.name }}</span>
+          </div>
+        </div>
+        }
+      </div>
+    </p-scrollPanel>
+  </div>
+
+  <!-- Main Content: Details & Controls -->
+  <div class="layout-main">
     <div class="title-page">
       Modification des rangs
     </div>
-    <div>
-      <p-listbox (click)="selectNewRank(selectedRank)" class="ranks-list" [options]="ranks" [(ngModel)]="selectedRank"
-        optionLabel="name" [listStyle]="{ 'max-height': '32rem' }" [style]="{ width: '12rem' }">
-        <ng-template let-selectedRank pTemplate="item">
-          <div class="flex align-items-center gap-30" (click)="selectNewRank(selectedRank)">
-            <img [src]="'http://localhost:8080/images/' + selectedRank.picture" style="width: 35px"
-              (click)="selectNewRank(selectedRank)" />
-          </div>
-        </ng-template>
-      </p-listbox>
-      <div class="rank-info">
-        <div class="rank-details">
-          <img [src]="'http://localhost:8080/images/' + selectedRank.picture" alt="{{  selectedRank.name }}"
-            class="rank-image" />
+
+    <div class="rank-info">
+      <div class="rank-details">
+        <img [src]="'http://localhost:8080/images/' + selectedRank.picture" [alt]="selectedRank.name"
+          class="rank-image" />
+        <div class="rank-text-details">
           <div class="rank-name">{{ selectedRank.name }}</div>
-          <div class="rank-points">Points: {{ selectedRank.points }}</div>
-          <div class="rank-position">Classement: #{{ selectedRank.rank }}</div>
-          <div class="rank-position">Nombre de victoire: {{ selectedRank.victory }}</div>
+          <div class="rank-stats">
+            <span>Points: {{ selectedRank.points }}</span>
+            <span>Classement: #{{ selectedRank.rank }}</span>
+            <span>Victoires: {{ selectedRank.victory }}</span>
+            <span>Scores: {{ historique.length }}</span>
+          </div>
         </div>
       </div>
     </div>
-    @if (selectedRank != null && selectedRank.name != '') {
-    <div class="historique">
-      <div class="title-historique">
-        Historique
-      </div>
-      <p-table [value]="historique" class="historique-table">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Joueur</th>
-            <th>Points</th>
-            <th>Console</th>
-            <th>Coupe</th>
-            <th></th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-line>
-          <tr>
-            <td>{{ line.player.name }}</td>
-            <td>{{ line.points }}</td>
-            <td>{{ line.console.name }}</td>
-            <td>{{ line.cups.name }}</td>
-            <p-badge [value]="'X'" severity="danger" class="badge-del" (click)="deleteHistorique(line)" />
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-    }
-    <div class="update-infos">
-      <div class="input-container">
-        <div class="points-container">
+
+    <div class="update-section">
+      <div class="input-group">
+        <div class="field-item">
           <label for="pointToAdd">Points à ajouter</label>
           <p-inputNumber inputId="pointToAdd" [(ngModel)]="valueToAdd" />
         </div>
 
-        <p-select (click)="onConsoleSelected()" class="dropdown-console" [options]="consoles"
+        <div class="field-item">
+          <label>Victoire</label>
+          <p-toggleSwitch [(ngModel)]="victory" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <p-select (click)="onConsoleSelected()" class="full-width-select" [options]="consoles"
           [(ngModel)]="selectedConsole" optionLabel="name" [showClear]="true" placeholder="Choisir une console">
           <ng-template pTemplate="selectedConsole">
             @if (selectedConsole) {
             <div class="flex align-items-center gap-2">
-              <img [src]="'http://localhost:8080/images/consoles/' + selectedConsole.picture" style="width: 70px" />
+              <img [src]="'http://localhost:8080/images/consoles/' + selectedConsole.picture" class="console-img" />
               <div>{{ selectedConsole.name }}</div>
             </div>
             }
           </ng-template>
           <ng-template let-selectedConsole pTemplate="item">
             <div class="flex align-items-center gap-2">
-              <img [src]="'http://localhost:8080/images/consoles/' + selectedConsole.picture" style="width: 70px" />
+              <img [src]="'http://localhost:8080/images/consoles/' + selectedConsole.picture" class="console-img" />
               <div>{{ selectedConsole.name }}</div>
             </div>
           </ng-template>
         </p-select>
-        <div class="points-container">
-          <label>Victoire</label>
-          <p-toggleSwitch [(ngModel)]="victory" />
-        </div>
-      </div>
-    </div>
-    <div class="update-infos">
-      @if (selectedConsole != null && selectedConsole.name != '') {
-      <div>
-        <p-select class="dropdown-console" [options]="cups" [(ngModel)]="selectedCups" optionLabel="name"
-          [showClear]="true" placeholder="Choisir une cups">
+
+        @if (selectedConsole != null && selectedConsole.name != '') {
+        <p-select class="full-width-select" [options]="cups" [(ngModel)]="selectedCups" optionLabel="name"
+          [showClear]="true" placeholder="Choisir une coupe">
           <ng-template pTemplate="selectedCups">
             @if (selectedCups) {
             <div class="flex align-items-center gap-2">
               <img [src]="'http://localhost:8080/images/cup/'+ selectedConsole.name + '/' + selectedCups.picture"
-                style="width: 70px" />
+                class="cup-img" />
               <div>{{ selectedCups.name }}</div>
             </div>
             }
@@ -99,16 +86,50 @@
           <ng-template let-selectedCups pTemplate="item">
             <div class="flex align-items-center gap-2">
               <img [src]="'http://localhost:8080/images/cup/'+ selectedConsole.name + '/' + selectedCups.picture"
-                style="width: 70px" />
+                class="cup-img" />
               <div>{{ selectedCups.name }}</div>
             </div>
           </ng-template>
         </p-select>
+        }
       </div>
-      }
-      <p-button class="update-button" label="Mettre à jour le participant" icon="pi pi-check" [loading]="loading"
+
+      <p-button class="update-button" label="Mettre à jour" icon="pi pi-check" [loading]="loading"
         [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
     </div>
+  </div>
+
+  <!-- Right Sidebar: History -->
+  <div class="layout-sidebar-right">
+    @if (selectedRank != null && selectedRank.name != '') {
+    <div class="historique-panel">
+      <div class="title-historique">
+        Historique
+      </div>
+      <p-scrollPanel [style]="{ width: '100%', height: 'calc(100vh - 150px)' }">
+        <p-table [value]="historique" class="historique-table" [rowHover]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Joueur</th>
+              <th>Pts</th>
+              <th>Console</th>
+              <th>Coupe</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-line>
+            <tr>
+              <td>{{ line.player.name }}</td>
+              <td>{{ line.points }}</td>
+              <td>{{ line.console.name }}</td>
+              <td>{{ line.cups.name }}</td>
+              <td><p-badge [value]="'X'" severity="danger" class="badge-del" (click)="deleteHistorique(line)" /></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-scrollPanel>
+    </div>
+    }
   </div>
 
 </div>

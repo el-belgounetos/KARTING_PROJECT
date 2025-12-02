@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/app.component.scss"],
+  "sourcesContent": [".bar-menu {\r\n  height: 5vh;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,SACE,OAAA",
+  "names": []
+}

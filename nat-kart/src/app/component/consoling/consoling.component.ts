@@ -8,14 +8,14 @@ import { ImageModule } from 'primeng/image';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-    selector: 'app-consoling',
-    imports: [
-        ImageModule,
-        ButtonModule,
-        CommonModule
-    ],
-    templateUrl: './consoling.component.html',
-    styleUrl: './consoling.component.scss'
+  selector: 'app-consoling',
+  imports: [
+    ImageModule,
+    ButtonModule,
+    CommonModule
+  ],
+  templateUrl: './consoling.component.html',
+  styleUrl: './consoling.component.scss'
 })
 export class ConsolingComponent implements OnInit {
 
@@ -26,8 +26,9 @@ export class ConsolingComponent implements OnInit {
   public isAlreadySpin: boolean = false;
   private totalNumberOfConsole: number = 0;
   public allCupsImages: string[] = [];
+  public isConsolesVisible = true;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.getAllConsoles();
@@ -60,7 +61,7 @@ export class ConsolingComponent implements OnInit {
         }
       }
     });
-  this.setDefaultPictures();
+    this.setDefaultPictures();
   }
 
   public onSpin(): void {
@@ -78,50 +79,50 @@ export class ConsolingComponent implements OnInit {
         this.determinateConsolePictures();
 
         if (counter > max) {
-          if(max == 5)
+          if (max == 5)
             this.isLoading = false;
-         clearInterval(interval); // Stoppe l'intervalle
+          clearInterval(interval); // Stoppe l'intervalle
         }
 
         counter++;
-        }, timer);
-      };
+      }, timer);
+    };
 
-      // Démarrer l'intervalle la première fois
+    // Démarrer l'intervalle la première fois
+    startInterval();
+    setTimeout(() => {
+      clearInterval(interval);
+      timer = 500;
+      counter = 0;
+      max = 5;
       startInterval();
-      setTimeout(() => {
-        clearInterval(interval);
-        timer = 500;
-        counter = 0;
-        max = 5;
-        startInterval();
-      }, 3000);
+    }, 3000);
   }
 
   private determinateConsolePictures(): void {
 
     let index = 0;
     this.consolesDisplayed.forEach(actualConsole => {
-        let pic = this.getRandomPictureFromCups(actualConsole.cups);
-        this.allCupsImages[index] = 'http://localhost:8080/images/cup/' + actualConsole.name + '/' + pic;
-        index++;
-      }
+      let pic = this.getRandomPictureFromCups(actualConsole.cups);
+      this.allCupsImages[index] = 'http://localhost:8080/images/cup/' + actualConsole.name + '/' + pic;
+      index++;
+    }
     );
   }
 
   private getConsolesNumber() {
     this.http.get('http://localhost:8080/counters')
-    .subscribe(
-      (response) => {
-        this.counters = response as [];
-        this.getConsolesDisplayed();
-      }
-    );
+      .subscribe(
+        (response) => {
+          this.counters = response as [];
+          this.getConsolesDisplayed();
+        }
+      );
   }
 
   private getRandomPictureFromCups(cups: CupsDTO[]): string {
     if (cups.length === 0)
-        return '';
+      return '';
 
     const randomIndex = Math.floor(Math.random() * cups.length);
     return cups[randomIndex].picture;

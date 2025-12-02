@@ -53,6 +53,8 @@ export class PoolupComponent implements OnInit {
 
   public historique: HistoriqueDTO[] = [];
 
+  public isHistoryVisible = true; // For collapsible history panel
+
   constructor(private http: HttpClient, private messageService: MessageService) { }
 
   ngOnInit() {

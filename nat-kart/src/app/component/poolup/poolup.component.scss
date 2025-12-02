@@ -1,342 +1,39 @@
-/* Layout Container */
-.poolup-layout {
-  display: grid;
-  grid-template-columns: minmax(250px, 20%) 1fr minmax(350px, 30%);
-  grid-template-rows: 100%;
-  height: 93vh;
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
+/* Poolup Component - PrimeNG Overrides Only */
 
-/* Backgrounds */
-.grid-background {
-  background-color: rgba(45, 45, 45, 0.7);
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 30px 30px;
-}
-
-.image-background {
-  background-image: url('/assets/wallpaper/wallpaper4.jpeg');
-  background-size: cover;
-  background-position: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  filter: blur(3px);
-  z-index: -1;
-}
-
-/* Left Sidebar: Avatar List */
-.layout-sidebar-left {
-  padding: 1rem;
-  background-color: rgba(30, 30, 30, 0.6);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-.ranks-scroll {
-  width: 100%;
-  height: 100%;
-}
-
-.ranks-scroll ::ng-deep .p-scrollpanel-wrapper {
+/* Custom Scrollbar */
+::ng-deep .ranks-scroll .p-scrollpanel-wrapper {
   border-right: none;
 }
 
-.ranks-scroll ::ng-deep .p-scrollpanel-bar {
+::ng-deep .ranks-scroll .p-scrollpanel-bar {
   background-color: rgba(255, 255, 255, 0.2);
   opacity: 0.5;
   transition: opacity 0.3s;
 }
 
-.ranks-scroll ::ng-deep .p-scrollpanel-bar:hover {
+::ng-deep .ranks-scroll .p-scrollpanel-bar:hover {
   opacity: 0.8;
 }
 
-.ranks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.rank-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  background-color: rgba(64, 64, 64, 0.8);
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
-
-  &:hover {
-    background-color: rgba(80, 80, 80, 0.9);
-    transform: translateX(5px);
-  }
-
-  &.selected {
-    background-color: var(--primary-color);
-    color: var(--primary-color-text);
-  }
-}
-
-.rank-avatar {
-  width: clamp(40px, 5vw, 60px);
-  height: clamp(40px, 5vw, 60px);
-  object-fit: cover;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.rank-item-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.rank-item-name {
-  font-weight: bold;
-  color: white;
-  font-size: clamp(0.875rem, 1.5vw, 1rem);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Main Content Area */
-.layout-main {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  overflow-y: auto;
-}
-
-.title-page {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-/* Rank Info Card */
-.rank-info {
-  background-color: rgba(64, 64, 64, 0.9);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  width: 100%;
-  max-width: 800px;
-}
-
-.rank-details {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.rank-image {
-  width: clamp(80px, 10vw, 120px);
-  height: clamp(80px, 10vw, 120px);
-  border-radius: 50%;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.rank-text-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.rank-name {
-  font-size: clamp(1.25rem, 3vw, 2rem);
-  font-weight: bold;
-  color: white;
-  margin-bottom: 0.5rem;
-}
-
-.rank-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: clamp(0.75rem, 1.5vw, 1rem);
-
-  span {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
-}
-
-/* Update Section (Forms) */
-.update-section {
-  width: 100%;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  background-color: rgba(64, 64, 64, 0.9);
-  padding: 2rem;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.input-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: end;
-}
-
-.field-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  color: white;
-
-  label {
-    font-weight: bold;
-    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
-    color: rgba(255, 255, 255, 0.9);
-  }
-}
-
-.full-width-select {
-  width: 100%;
-}
-
-.full-width-select ::ng-deep .p-select {
-  width: 100%;
-}
-
-/* Larger images in dropdowns */
-.console-img,
-.cup-img {
-  width: clamp(60px, 8vw, 100px);
-  height: clamp(60px, 8vw, 100px);
-  object-fit: contain;
-}
-
-.update-button {
-  width: 100%;
-  margin-top: 1rem;
-}
-
-/* Right Sidebar: History */
-.layout-sidebar-right {
-  padding: 1rem;
-  background-color: rgba(30, 30, 30, 0.6);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-.historique-panel {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.title-historique {
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
-  font-weight: bold;
-  color: white;
-  text-align: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.historique-table ::ng-deep .p-datatable {
+/* Historique Table */
+::ng-deep .historique-table .p-datatable {
   font-size: clamp(0.75rem, 1.5vw, 0.875rem);
-
-  .p-datatable-thead>tr>th {
-    background-color: rgba(64, 64, 64, 0.9);
-    color: white;
-    border: none;
-    padding: 0.5rem;
-
-    &:last-child {
-      width: 3rem;
-      min-width: 3rem;
-    }
-  }
-
-  .p-datatable-tbody>tr {
-    background-color: rgba(64, 64, 64, 0.5);
-    color: white;
-
-    &:nth-child(even) {
-      background-color: rgba(64, 64, 64, 0.3);
-    }
-
-    >td {
-      border: none;
-      padding: 0.5rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      &:last-child {
-        width: 3rem;
-        min-width: 3rem;
-        text-align: center;
-        overflow: visible;
-      }
-    }
-  }
 }
 
-.badge-del {
-  cursor: pointer;
-  display: inline-block;
-
-  &:hover {
-    transform: scale(1.1);
-  }
+::ng-deep .historique-table .p-datatable-thead>tr>th {
+  background-color: rgba(64, 64, 64, 0.9);
+  color: white;
+  border: none;
+  padding: 0.5rem;
 }
 
-.badge-del ::ng-deep .p-badge {
-  cursor: pointer;
+::ng-deep .historique-table .p-datatable-thead>tr>th:last-child {
+  width: 3rem;
+  min-width: 3rem;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 1400px) {
-  .poolup-layout {
-    grid-template-columns: minmax(200px, 18%) 1fr minmax(300px, 28%);
-  }
-}
-
-@media (max-width: 992px) {
-  .poolup-layout {
-    grid-template-columns: 80px 1fr;
-    grid-template-areas:
-      "left main";
-  }
-
-  .layout-sidebar-right {
-    display: none;
-  }
-
-  .rank-item-text {
-    display: none;
-  }
-
-  .input-group {
-    grid-template-columns: 1fr;
-  }
+::ng-deep .historique-table .p-datatable-tbody>tr {
+  background-color: rgba(64, 64, 64, 0.5);
+  color: white;
+  overflow: visible;
 }

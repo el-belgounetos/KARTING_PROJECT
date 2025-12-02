@@ -1,56 +1,76 @@
-<div class="image-wrapper">
-
-  @if (avatars.length > 0) {
-    <p-scrollPanel [style]="{ width: '285', height: '550px' }" class="pool">
-      <p class="pool-title">Pool</p>
-      @for (avatar of avatars; track avatar) {
-        <p-image
-          class="pool-image"
-          [src]="'http://localhost:8080/images/' + avatar"
-          alt="pool"
-          width="70"/>
-      }
-    </p-scrollPanel>
-  }
-
-
+<div class="kart-layout">
   <div class="image-background"></div>
-  <p-toast />
-  <div class="content-wrapper">
-    <div class="people-container">
-      <p-image class="slot-image"
-        [src]="'http://localhost:8080/images/' + avatar"
-        alt="personnage"
-        width="250"/>
-      </div>
-      <p-button class="button-spiner"
-        [disabled]="isLoading"
-        label="Tourner la roue"
-      (click)="onSpin()"></p-button>
-    </div>
 
-    @if (excludeAvatars.length > 0) {
-      <p-scrollPanel [style]="{ width: '285', height: '450px' }" class="exclude-pool">
-        <p class="pool-title">Sont déjà passés</p>
-        @for (avatar of excludeAvatars; track avatar) {
-          <div class="avatar-container">
-            <p-badge [value]="'X'" severity="danger" class="badge-del" (click)="introduceAvatarByName(avatar)"/>
-            <p-image
-              class="exclude-pool-image"
-              [src]="'http://localhost:8080/images/' + avatar"
-              alt="pool"
-              width="70"/>
-            </div>
+  <!-- Left Column: Available Pool -->
+  <div class="layout-sidebar-left">
+    @if (avatars.length > 0) {
+    <p-scrollPanel [style]="{ width: '100%', height: '100%' }" class="pool-scroll">
+      <p class="pool-title">Pool</p>
+      <div class="pool-grid">
+        @for (avatar of avatars; track avatar) {
+        <p-image class="pool-image" [src]="'http://localhost:8080/images/' + avatar" alt="pool" width="70" />
+        }
+      </div>
+    </p-scrollPanel>
+    }
+  </div>
+
+  <!-- Center Column: Main Content -->
+  <div class="layout-main">
+    <div class="content-wrapper">
+      <!-- Player count input styled like button -->
+      <div class="input-container">
+        <label for="playerCount">Nombre de joueurs :</label>
+        <p-inputNumber inputId="playerCount" [(ngModel)]="playerCount" [min]="1" [max]="avatars.length"
+          [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
+          decrementButtonIcon="pi pi-minus" />
+      </div>
+
+      <!-- Drawn players display -->
+      <div class="people-container">
+        @if (isAnimating || drawnPlayers.length === 0) {
+        <!-- Single player animation -->
+        <img class="slot-image" [src]="'http://localhost:8080/images/' + avatar" alt="personnage" />
+        } @else {
+        <!-- Multi-player grid -->
+        <div class="drawn-players-grid">
+          @for (player of drawnPlayers; track player) {
+          <div class="drawn-player-item">
+            <p-image [src]="'http://localhost:8080/images/' + player" alt="personnage"
+              [width]="drawnPlayers.length > 3 ? '120' : '180'" />
+          </div>
           }
-        </p-scrollPanel>
-      }
-
-      <p-image
-        class="star"
-        pTooltip="Reset la pool"
-        tooltipPosition="top"
-        src="assets/button/star.png"
-        alt="personnage"
-        (click)="resetExcludeAvatars()"
-        width="100"/>
+        </div>
+        }
       </div>
+
+      <!-- Spin button -->
+      <p-button class="button-spinner" [disabled]="isLoading || avatars.length === 0" label="Tourner la roue"
+        (click)="onSpin()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Right Column: Excluded Players -->
+  <div class="layout-sidebar-right">
+    @if (excludeAvatars.length > 0) {
+    <p-scrollPanel [style]="{ width: '100%', height: '100%' }" class="exclude-scroll">
+      <p class="pool-title">Sont déjà passés</p>
+      <div class="exclude-grid">
+        @for (avatar of excludeAvatars; track avatar) {
+        <div class="avatar-container">
+          <p-badge [value]="'X'" severity="danger" class="badge-del" (click)="introduceAvatarByName(avatar)" />
+          <p-image class="exclude-pool-image" [src]="'http://localhost:8080/images/' + avatar" alt="pool" width="70" />
+        </div>
+        }
+      </div>
+    </p-scrollPanel>
+    }
+  </div>
+
+  <!-- Reset button (star) -->
+  <img class="star" pTooltip="Reset la pool" tooltipPosition="top" src="assets/button/star.png" alt="reset"
+    (click)="resetExcludeAvatars()" />
+
+  <p-toast />
+</div>

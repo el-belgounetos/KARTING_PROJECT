@@ -1,156 +1,185 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
 import { ButtonModule } from 'primeng/button';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { HttpClient } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
-
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { BadgeModule } from 'primeng/badge';
 
 
 @Component({
-    selector: 'app-kart',
-    imports: [
+  selector: 'app-kart',
+  imports: [
+    CommonModule,
+    FormsModule,
     ImageModule,
     ToastModule,
     BadgeModule,
     TooltipModule,
     ScrollPanelModule,
+    InputNumberModule,
     ButtonModule
-],
-    templateUrl: './kart.component.html',
-    styleUrl: './kart.component.scss',
-    providers: [MessageService]
+  ],
+  templateUrl: './kart.component.html',
+  styleUrl: './kart.component.scss',
+  providers: [MessageService]
 })
-export class KartComponent implements OnInit  {
-  constructor(private http: HttpClient, private messageService: MessageService) {}
+export class KartComponent implements OnInit {
+  constructor(private http: HttpClient, private messageService: MessageService) { }
 
   public avatars: string[] = [];
   public excludeAvatars: string[] = [];
   public avatar: string = 'unknown.png';
   public isLoading: boolean = false;
+  public isAnimating: boolean = false;
+  public playerCount: number = 1;
+  public drawnPlayers: string[] = [];
 
   ngOnInit() {
     this.getAllInfos();
   }
 
   public onSpin(): void {
-    this.isLoading = true;
-    console.log(this.isLoading);
-    this.http.get('http://localhost:8080/personnages')
-      .subscribe(
-        (response) => {
-          if(response == null) {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-            this.isLoading = false;
-          } else if((Array.isArray(response) && response.length === 0)) {
-            this.messageService.add({ severity: 'info', summary: 'Plus de personnages !', detail: 'La roue ne peux plus tourner, la liste des personnages est vide.' });
-            this.isLoading = false;
-          } else {
-            this.messageService.add({ severity: 'success', summary: 'Datas valides', detail: 'Les données ont bien été chargées avec succès.' });
-            this.avatars = response as [];
-            this.displayEachAvailableAvatars();
-          }
-        },
-        (error) => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-        }
-    );
-  }
-
-  private displayEachAvailableAvatars(): void {
-    let index = 0;
-    let timer = 100;
-    let interval: any;
-    let stopInterval = false;
-    this.displayMP3('/assets/soundeffect/item-box.mp3');
-    const startInterval = () => {
-      interval = setInterval(() => {
-        this.avatar = this.avatars[index]; // Assigne un avatar à chaque intervalle
-        index++;
-        // Si on atteint la fin de la liste des avatars, on arrête ou recommence
-        if (index >= this.avatars.length) {
-          index = 0; // Remet à zéro pour recommencer depuis le début
-        }
-
-      }, timer);
-    };
-
-    // Démarrer l'intervalle la première fois
-    startInterval();
-
-    // Simuler un changement de timer après quelques itérations (par exemple, après 2 secondes)
-    setTimeout(() => {
-      clearInterval(interval); // Arrêter l'intervalle actuel
-      stopInterval = true;
-      timer = 300; // Changer la durée du timer
-      setTimeout(() => {
-        clearInterval(interval);
-        this.avatar = this.getRandomAvatar();
-        this.excludeAvatarByName(this.avatar);
-        this.isLoading = false;
-        }, 1200);
-      startInterval(); // Redémarrer l'intervalle avec le nouveau timer
-    }, 2200);
-  }
-
-  public getRandomAvatar(): string {
-    if (this.avatars.length === 0) {
-      return ''; // Si la liste est vide, renvoyer une chaîne vide ou gérer autrement
-    }
-
-    const randomIndex = Math.floor(Math.random() * this.avatars.length);
-    return this.avatars[randomIndex];
-  }
-
-public displayMP3(path: string): void {
-  const audio = new Audio();
-  audio.src = path; // Chemin relatif vers le fichier MP3 dans 'assets'
-  audio.load(); // Charge le fichier audio
-  audio.play(); // Joue l'audio
-
-  audio.onended = () => {
-  };
-  }
-
-  private excludeAvatarByName(avatar: string): void {
-    // Assurez-vous que l'avatar n'est pas vide ou invalide
-    if (!avatar) {
-      this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Le nom de l\'avatar est invalide.' });
+    // Validate player count against current avatars
+    if (this.playerCount < 1) {
+      this.messageService.add({ severity: 'warn', summary: 'Nombre invalide', detail: 'Le nombre de joueurs doit être au moins 1.' });
       return;
     }
 
-    // Envoie de la requête POST pour exclure l'avatar
-    this.http.post('http://localhost:8080/exclude/' + this.formatAvatarWithoutSpecialCaracters(avatar), {})
-      .subscribe(
-        (response: any) => {
-          if (response == null || (Array.isArray(response) && response.length === 0)) {
-            this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Aucun personnage exclu, vérifiez le nom.' });
-          } else {
-            this.messageService.add({ severity: 'success', summary: 'Suppression validée', detail: 'Le personnage a bien été exclu.' });
+    if (this.playerCount > this.avatars.length) {
+      this.messageService.add({ severity: 'warn', summary: 'Pas assez de joueurs', detail: `Il n'y a que ${this.avatars.length} joueur(s) disponible(s).` });
+      return;
+    }
 
-            // Assurez-vous que la réponse est un tableau, et mettez à jour la variable excludeAvatars
-            this.getAllInfos();
+    this.isLoading = true;
+    this.isAnimating = true;
+    this.drawnPlayers = [];
+
+    // Store the list before drawing
+    const availableAvatars = [...this.avatars];
+
+    // Draw immediately but don't show yet
+    const selectedPlayers = this.getRandomAvatars(this.playerCount, availableAvatars);
+
+    // Start animation, pass selected players
+    this.displayAnimation(availableAvatars, selectedPlayers);
+  }
+
+  private displayAnimation(availableList: string[], selectedPlayers: string[]): void {
+    let index = 0;
+    let timer = 100;
+    let interval: any;
+
+    try {
+      const audio = new Audio();
+      audio.src = '/assets/soundeffect/item-box.mp3';
+      audio.load();
+      audio.play().catch(() => { });
+    } catch (e) { }
+
+    const startInterval = () => {
+      interval = setInterval(() => {
+        // Animate through ALL available avatars
+        this.avatar = availableList[index % availableList.length];
+        index++;
+      }, timer);
+    };
+
+    startInterval();
+
+    setTimeout(() => {
+      clearInterval(interval);
+      timer = 300;
+      setTimeout(() => {
+        clearInterval(interval);
+
+        // Animation done - show drawn players
+        this.isAnimating = false;
+        this.drawnPlayers = selectedPlayers;
+
+        // Exclude all drawn players sequentially
+        this.excludePlayersSequentially(selectedPlayers);
+
+      }, 1200);
+      startInterval();
+    }, 2200);
+  }
+
+  private excludePlayersSequentially(players: string[]): void {
+    if (!players || players.length === 0) {
+      this.isLoading = false;
+      return;
+    }
+
+    // Exclude players one by one to avoid overwhelming the server
+    const excludeNext = (index: number) => {
+      if (index >= players.length) {
+        // All done
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Tirage réussi',
+          detail: `${players.length} joueur(s) tiré(s) !`
+        });
+        this.getAllInfos();
+        this.isLoading = false;
+        return;
+      }
+
+      const player = players[index];
+      this.http.post('http://localhost:8080/exclude/' + this.formatAvatarWithoutSpecialCaracters(player), {})
+        .subscribe(
+          () => {
+            // Move to next player
+            excludeNext(index + 1);
+          },
+          (error) => {
+            console.error('Error excluding player:', player, error);
+            // Continue with next player even if one fails
+            excludeNext(index + 1);
           }
-        },
-        (error) => {
-          // Gérer les erreurs de l'API
-          this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'appel de l\'API : ' + error.message });
-        }
-      );
+        );
+    };
+
+    // Start the chain
+    excludeNext(0);
+  }
+
+  private getRandomAvatars(count: number, sourceList: string[]): string[] {
+    if (sourceList.length === 0 || count <= 0) {
+      return [];
+    }
+
+    // Create a copy to avoid modifying original array
+    const availableAvatars = [...sourceList];
+    const selected: string[] = [];
+
+    // Draw 'count' random avatars without replacement
+    const actualCount = Math.min(count, availableAvatars.length);
+    for (let i = 0; i < actualCount; i++) {
+      const randomIndex = Math.floor(Math.random() * availableAvatars.length);
+      selected.push(availableAvatars[randomIndex]);
+      availableAvatars.splice(randomIndex, 1);
+    }
+
+    return selected;
   }
 
   public resetExcludeAvatars(): void {
     this.http.post('http://localhost:8080/exclude/clear', {})
       .subscribe(
-        (response: any) => {
-          this.messageService.add({ severity: 'info', summary: 'Suppression validée', detail: 'Le pool a bien été reset.' });
+        () => {
+          this.messageService.add({ severity: 'info', summary: 'Reset validé', detail: 'Le pool a bien été reset.' });
+          this.drawnPlayers = [];
+          this.isAnimating = false;
           this.getAllInfos();
         },
         (error) => {
-          this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'appel de l\'API : ' + error.message });
+          this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors du reset.' });
         }
       );
   }
@@ -159,46 +188,45 @@ public displayMP3(path: string): void {
     this.http.get('http://localhost:8080/personnages')
       .subscribe(
         (response) => {
-          if(response == null)
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-          else if((Array.isArray(response) && response.length === 0)) {
-            this.messageService.add({ severity: 'info', summary: 'Plus de personnages !', detail: 'La pool de personnages restants est vide.' });
-          }
-          else
+          if (response == null) {
+            this.avatars = [];
+          } else {
             this.avatars = response as [];
+          }
         },
         (error) => {
           this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
         }
-    );
+      );
   }
 
   private getExcludeCaracters(): void {
-      this.http.get('http://localhost:8080/personnages/exclude')
-        .subscribe(
-          (response) => {
-            if(response == null)
-              this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-            else
-              this.excludeAvatars = response as [];
-          },
-          (error) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
+    this.http.get('http://localhost:8080/personnages/exclude')
+      .subscribe(
+        (response) => {
+          if (response == null) {
+            this.excludeAvatars = [];
+          } else {
+            this.excludeAvatars = response as [];
           }
+        },
+        (error) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
+        }
       );
-    } // /personnages/exclude
+  }
 
   public introduceAvatarByName(name: string): void {
     this.http.post('http://localhost:8080/introduce/' + this.formatAvatarWithoutSpecialCaracters(name), {})
-    .subscribe(
-      (response: any) => {
-        this.messageService.add({ severity: 'info', summary: 'Ajout validé', detail: 'Le pokémon a bien été réintroduit.' });
-        this.getAllInfos();
-      },
-      (error) => {
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de l\'appel de l\'API : ' + error.message });
-      }
-    );
+      .subscribe(
+        () => {
+          this.messageService.add({ severity: 'info', summary: 'Ajout validé', detail: 'Le pokémon a bien été réintroduit.' });
+          this.getAllInfos();
+        },
+        (error) => {
+          this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de la réintroduction.' });
+        }
+      );
   }
 
   private getAllInfos(): void {
@@ -206,7 +234,7 @@ public displayMP3(path: string): void {
     this.getExcludeCaracters();
   }
 
-private formatAvatarWithoutSpecialCaracters(name: string): string {
+  private formatAvatarWithoutSpecialCaracters(name: string): string {
     return name.replace("/images/", "").replace(".png", "");
   }
 }

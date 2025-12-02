@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": [],
-  "sourcesContent": [],
-  "mappings": "",
+  "sources": ["src/styles.scss"],
+  "sourcesContent": ["/* You can add global styles to this file, and also import other style files */\r\n\r\nhtml,\r\nbody {\r\n    height: 100%;\r\n    margin: 0;\r\n    font-family: var(--font-family);\r\n}"],
+  "mappings": "AAEA,KAAA,KAEI,OAAA,KAJJ,OAKI,EACA,YAAA,IAAA",
   "names": []
 }

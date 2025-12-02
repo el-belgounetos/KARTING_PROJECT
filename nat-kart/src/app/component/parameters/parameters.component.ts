@@ -1,73 +1,56 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CounterDTO } from '../../dto/counterDTO';
 import { ImageModule } from 'primeng/image';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { MessageService } from 'primeng/api';
-import { CounterDTO } from '../../dto/counterDTO';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
+import { ApiService } from '../../services/api.service';
+import { MessageService } from 'primeng/api';
 
 
 @Component({
-    selector: 'app-parameters',
-    imports: [
-    ImageModule,
-    FormsModule,
-    ButtonModule,
-    ToastModule,
-    InputNumberModule
-],
-    templateUrl: './parameters.component.html',
-    styleUrl: './parameters.component.scss',
-    providers: [MessageService]
+  selector: 'app-parameters',
+  imports: [CommonModule, FormsModule, ImageModule, InputNumberModule, ButtonModule, ToastModule],
+  templateUrl: './parameters.component.html',
+  styleUrl: './parameters.component.scss'
 })
 export class ParametersComponent implements OnInit {
+  counters: CounterDTO[] = [];
+  consolesValues: number[] = [];
 
-  public consolesValues: number[] = [];
-
-  public counters: CounterDTO[] = [];
-
-  constructor(private http: HttpClient, private messageService: MessageService) {}
+  constructor(
+    private apiService: ApiService,
+    private messageService: MessageService
+  ) { }
 
   ngOnInit() {
-    this.getConsolesNumber();
+    this.loadCounters();
   }
 
-  private getConsolesNumber() {
-      this.http.get('http://localhost:8080/counters')
-      .subscribe(
-        (response) => {
-          this.counters = response as [];
-          this.buildConsoleNumber();
-        },
-       (error) => {
-         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-       }
-      );
-  }
-
-  private buildConsoleNumber(): void {
-    for(let i = 0; i< this.counters.length; i++)
-      this.consolesValues[i] = this.counters[i].nConsole;
-  }
-
-  public onSaveCounters(): void {
-    this.buildCountersBody();
-    this.http.post('http://localhost:8080/counters', this.counters)
-    .subscribe(
-      (response) => {
-        this.messageService.add({ severity: 'success', summary: 'Sauvegarde réussie', detail: 'Les données ont été mises à jour avec succès.' });
-        this.getConsolesNumber();
-      },
-      (error) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
+  loadCounters() {
+    this.apiService.get<CounterDTO[]>('counters').subscribe(counters => {
+      if (counters) {
+        this.counters = counters;
+        this.consolesValues = this.counters.map(c => c.nConsole);
       }
-    );
+    });
   }
 
-  private buildCountersBody():void {
-    for(let i = 0; i< this.consolesValues.length; i++)
-      this.counters[i].nConsole = this.consolesValues[i];
+  onSaveCounters() {
+    this.counters.forEach((counter, index) => {
+      counter.nConsole = this.consolesValues[index];
+    });
+
+    this.apiService.post('counters', this.counters).subscribe(response => {
+      if (response) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Les compteurs ont été mis à jour'
+        });
+      }
+    });
   }
 }

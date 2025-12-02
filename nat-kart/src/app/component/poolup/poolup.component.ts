@@ -5,8 +5,6 @@ import { KarterDTO } from '../../dto/karterDTO';
 import { ConsoleDTO } from '../../dto/consoleDTO';
 import { CupsDTO } from '../../dto/cupsDTO';
 import { HistoriqueDTO } from '../../dto/historiqueDTO';
-import { HttpClient } from '@angular/common/http';
-import { MessageService } from 'primeng/api';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
@@ -15,185 +13,147 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TableModule } from 'primeng/table';
 import { BadgeModule } from 'primeng/badge';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
-
+import { ApiService } from '../../services/api.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-poolup',
   imports: [
-    CommonModule,
-    ButtonModule,
-    SelectModule,
-    ToastModule,
-    InputNumberModule,
-    ToggleSwitchModule,
-    BadgeModule,
-    TableModule,
-    ScrollPanelModule,
-    FormsModule
+    CommonModule, ButtonModule, SelectModule, ToastModule, InputNumberModule,
+    ToggleSwitchModule, BadgeModule, TableModule, ScrollPanelModule, FormsModule
   ],
   templateUrl: './poolup.component.html',
-  styleUrl: './poolup.component.scss',
-  providers: [MessageService]
+  styleUrl: './poolup.component.scss'
 })
 export class PoolupComponent implements OnInit {
+  ranks: KarterDTO[] = [];
+  selectedRank = new KarterDTO();
+  consoles: ConsoleDTO[] = [];
+  selectedConsole = new ConsoleDTO();
+  cups: CupsDTO[] = [];
+  selectedCups = new CupsDTO();
+  valueToAdd = 0;
+  loading = false;
+  victory = false;
+  historique: HistoriqueDTO[] = [];
+  isHistoryVisible = true;
 
-  public ranks: KarterDTO[] = [];
-  public selectedRank: KarterDTO = new KarterDTO();
-
-  public consoles: ConsoleDTO[] = [];
-  public selectedConsole: ConsoleDTO = new ConsoleDTO();
-
-  public cups: CupsDTO[] = [];
-  public selectedCups: CupsDTO = new CupsDTO();
-
-  public valueToAdd: number = 0;
-  public loading: boolean = false;
-
-  public victory: boolean = false;
-
-  public historique: HistoriqueDTO[] = [];
-
-  public isHistoryVisible = true; // For collapsible history panel
-
-  constructor(private http: HttpClient, private messageService: MessageService) { }
+  constructor(
+    private apiService: ApiService,
+    private messageService: MessageService
+  ) { }
 
   ngOnInit() {
-    this.getAllRanks();
-    this.getAllConsoles();
+    this.loadRanks();
+    this.loadConsoles();
   }
 
-  public getAllRanks() {
-    this.http.get('http://localhost:8080/ranks')
-      .subscribe(
-        (response) => {
-          if (response == null)
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-          else {
-            this.ranks = response as [];
-            this.getKarterByName(this.selectedRank.name);
-          }
-        },
-        (error) => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
+  private loadRanks() {
+    this.apiService.get<KarterDTO[]>('ranks').subscribe(ranks => {
+      if (ranks) {
+        this.ranks = ranks;
+        if (this.selectedRank.name) {
+          this.selectKarterByName(this.selectedRank.name);
         }
-      );
-  }
-
-  public selectNewRank(selectedRank: any) {
-    this.selectedRank = selectedRank;
-    this.getHistoriqueByPlayerName(this.selectedRank.name);
-  }
-
-  public updatePlayer(): void {
-    this.loading = true;
-    if (this.selectedRank != null) {
-      this.selectedRank.points += this.valueToAdd;
-      if (this.victory)
-        this.selectedRank.victory++;
-      this.http.post('http://localhost:8080/ranks', this.selectedRank)
-        .subscribe(
-          (response) => {
-            this.messageService.add({ severity: 'success', summary: 'Mise à jour réussie', detail: 'Les points du participant ont bien été mis à jour' });
-            this.updateHistorique();
-            const name = this.selectedRank.name;
-            this.resetDatas();
-          },
-          (error) => {
-            this.resetDatas();
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-          }
-        );
-    }
-  }
-
-  private updateHistorique(): void {
-    let historiqueDTO = new HistoriqueDTO();
-    historiqueDTO.player = this.selectedRank;
-    historiqueDTO.console = this.selectedConsole;
-    historiqueDTO.cups = this.selectedCups;
-    historiqueDTO.points = this.valueToAdd;
-    historiqueDTO.victory = this.victory;
-
-    this.http.post('http://localhost:8080/historique', historiqueDTO)
-      .subscribe(
-        (response) => {
-          this.messageService.add({ severity: 'info', summary: 'Historique', detail: 'L\'historique a bien été mis à jour' });
-        },
-        (error) => {
-          this.resetDatas();
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-        }
-      );
-    this.getHistoriqueByPlayerName(historiqueDTO.player.name);
-  }
-
-  public isUpdateButtonAvailable(): boolean {
-
-    return this.valueToAdd == 0
-      || this.selectedRank == null
-      || this.selectedRank.name == ""
-      || this.selectedConsole == null
-      || this.selectedConsole.name == ""
-      || this.selectedCups == null
-      || this.selectedCups.name == "";
-  }
-
-  public getKarterByName(name: string): void {
-    this.ranks.forEach(rank => {
-      if (rank.name == name) {
-        this.selectedRank = rank;
-        this.getHistoriqueByPlayerName(this.selectedRank.name);
       }
+    });
+  }
+
+  private loadConsoles() {
+    this.apiService.get<ConsoleDTO[]>('consoles').subscribe(consoles => {
+      if (consoles) this.consoles = consoles;
+    });
+  }
+
+  selectNewRank(selectedRank: KarterDTO) {
+    this.selectedRank = selectedRank;
+    this.loadHistoryForPlayer(this.selectedRank.name);
+  }
+
+  updatePlayer() {
+    if (!this.canUpdate()) return;
+
+    this.loading = true;
+    this.selectedRank.points += this.valueToAdd;
+    if (this.victory) this.selectedRank.victory++;
+
+    this.apiService.post('ranks', this.selectedRank).subscribe(response => {
+      if (response) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Mise à jour réussie',
+          detail: 'Les points ont bien été mis à jour'
+        });
+        this.saveHistory();
+      }
+      this.resetForm();
+    });
+  }
+
+  private saveHistory() {
+    const entry = this.createHistoryEntry();
+    this.apiService.post('historique', entry).subscribe(response => {
+      if (response) {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Historique',
+          detail: 'Historique mis à jour'
+        });
+        this.loadHistoryForPlayer(entry.player.name);
+      }
+    });
+  }
+
+  private createHistoryEntry(): HistoriqueDTO {
+    const entry = new HistoriqueDTO();
+    entry.player = this.selectedRank;
+    entry.console = this.selectedConsole;
+    entry.cups = this.selectedCups;
+    entry.points = this.valueToAdd;
+    entry.victory = this.victory;
+    return entry;
+  }
+
+  isUpdateButtonAvailable(): boolean {
+    return this.valueToAdd === 0 ||
+      !this.selectedRank?.name ||
+      !this.selectedConsole?.name ||
+      !this.selectedCups?.name;
+  }
+
+  private canUpdate(): boolean {
+    return !this.isUpdateButtonAvailable();
+  }
+
+  private selectKarterByName(name: string) {
+    const karter = this.ranks.find(rank => rank.name === name);
+    if (karter) {
+      this.selectedRank = karter;
+      this.loadHistoryForPlayer(karter.name);
     }
+  }
+
+  private loadHistoryForPlayer(playerName: string) {
+    this.apiService.get<HistoriqueDTO[]>(`historique/${playerName}`).subscribe(history => {
+      if (history) this.historique = history;
+    });
+  }
+
+  onConsoleSelected() {
+    this.loadConsoles();
+    this.cups = this.selectedConsole?.name
+      ? this.getAvailableCups(this.selectedConsole.cups)
+      : [];
+  }
+
+  private getAvailableCups(allCups: CupsDTO[]): CupsDTO[] {
+    return allCups.filter(cup =>
+      !this.historique.some(entry => entry.cups.name === cup.name)
     );
   }
 
-  public getAllConsoles() {
-    this.http.get('http://localhost:8080/consoles')
-      .subscribe(
-        (response) => {
-          if (response == null)
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-          else {
-            this.consoles = response as [];
-          }
-        },
-        (error) => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-        }
-      );
-  }
-
-  public getHistoriqueByPlayerName(playerName: string) {
-    this.http.get('http://localhost:8080/historique/' + playerName)
-      .subscribe(
-        (response) => {
-          if (response == null)
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-          else {
-            this.historique = response as [];
-          }
-        },
-        (error) => {
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-        }
-      );
-  }
-
-  public onConsoleSelected() {
-    this.getAllConsoles();
-    if (this.selectedConsole != null && this.selectedConsole.name != "") {
-      this.cups = this.selectedConsole.cups;
-      this.historique.forEach(line => {
-        this.cups = this.cups.filter(cup => cup.name !== line.cups.name);
-      });
-    } else {
-      this.cups = [];
-    }
-  }
-
-  private resetDatas() {
-    this.getAllRanks();
+  private resetForm() {
+    this.loadRanks();
     this.valueToAdd = 0;
     this.loading = false;
     this.victory = false;
@@ -201,17 +161,16 @@ export class PoolupComponent implements OnInit {
     this.selectedConsole = new ConsoleDTO();
   }
 
-  public deleteHistorique(historique: HistoriqueDTO) {
-    this.http.delete('http://localhost:8080/historique/' + historique.id)
-      .subscribe(
-        (response) => {
-          this.messageService.add({ severity: 'info', summary: 'Historique', detail: 'La ligne a bien été supprimée' });
-          this.resetDatas();
-        },
-        (error) => {
-          this.resetDatas();
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Erreur lors de l\'appel de l\'API' });
-        }
-      );
+  deleteHistorique(entry: HistoriqueDTO) {
+    this.apiService.delete(`historique/${entry.id}`).subscribe(response => {
+      if (response !== null) {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Historique',
+          detail: 'Ligne supprimée'
+        });
+      }
+      this.resetForm();
+    });
   }
 }

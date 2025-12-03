@@ -1,0 +1,103 @@
+<div class="flex flex-col lg:grid lg:grid-cols-[20%_1fr_20%] h-screen w-full overflow-hidden relative">
+
+  <!-- Background -->
+  <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10"
+    style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper2.jpeg'); filter: blur(3px);"></div>
+
+  <!-- Left Column: Available Pool -->
+  <div
+    class="w-full h-48 lg:h-full p-4 bg-gray-900/70 border-b lg:border-b-0 lg:border-r border-white/20 flex flex-col overflow-hidden shrink-0">
+    @if (avatars.length > 0) {
+    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
+      <p
+        class="font-black text-white text-2xl lg:text-3xl text-center mb-2 sticky top-0 z-10 bg-gray-900/90 lg:bg-transparent p-2 rounded shadow-md">
+        Pool</p>
+      <div class="grid grid-cols-[repeat(auto-fill,60px)] gap-4 p-4">
+        @for (avatar of avatars; track avatar) {
+        <p-image [src]="'http://localhost:8080/images/players/' + avatar" alt="pool" width="70"
+          styleClass="w-full h-auto block" />
+        }
+      </div>
+    </p-scrollPanel>
+    }
+  </div>
+
+  <!-- Center Column: Main Content -->
+  <div class="flex flex-col justify-start lg:justify-center items-center p-2 lg:p-4 grow w-full overflow-y-auto">
+    <div class="flex flex-col items-center gap-2 lg:gap-4 w-full max-w-md">
+
+      <!-- Player count input -->
+      <div class="w-11/12 max-w-xs p-1 lg:p-2 flex flex-col items-center justify-center gap-1 mx-auto">
+        <label for="playerCount"
+          class="text-base lg:text-lg font-black text-white text-center uppercase tracking-wider shadow-md">Nombre de
+          joueurs :</label>
+        <p-inputNumber inputId="playerCount" [(ngModel)]="playerCount" [min]="1" [max]="getPlayersWithoutImages()"
+          [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
+          decrementButtonIcon="pi pi-minus" styleClass="tailwind-input"
+          inputStyleClass="text-center font-bold text-base p-1 rounded-md border-2 border-white/50 bg-white/90 text-gray-800" />
+      </div>
+
+      <!-- Drawn players display -->
+      <div
+        class="bg-red-500/85 rounded-2xl p-3 lg:p-6 flex justify-center items-center w-11/12 lg:w-full max-w-xs lg:max-w-md min-h-[150px] lg:min-h-[250px] h-auto border-2 border-white/30 shadow-xl mx-auto">
+        @if (isAnimating || drawnPlayers.length === 0) {
+        <!-- Single player animation -->
+        <img class="shadow-lg max-w-full max-h-[140px] lg:max-h-[230px] w-auto h-auto object-contain block"
+          [src]="'http://localhost:8080/images/players/' + avatar" alt="personnage" />
+        } @else {
+        <!-- Multi-player grid -->
+        <div
+          class="grid grid-cols-[repeat(auto-fit,60px)] lg:grid-cols-[repeat(auto-fit,80px)] gap-2 lg:gap-3 w-full justify-items-center">
+          @for (player of drawnPlayers; track player) {
+          <div class="flex flex-col items-center">
+            <p-image [src]="'http://localhost:8080/images/players/' + player" alt="personnage"
+              [width]="drawnPlayers.length > 3 ? '60' : '80'" styleClass="shadow-lg max-w-full h-auto" />
+          </div>
+          }
+        </div>
+        }
+      </div>
+
+      <!-- Spin button -->
+      <p-button styleClass="tailwind-button w-11/12 max-w-xs" [disabled]="!canSpin()" label="Tourner la roue"
+        (click)="onSpin()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Right Column: Excluded Players -->
+  <div
+    class="w-full h-48 lg:h-full p-4 bg-gray-900/70 border-b lg:border-b-0 lg:border-l border-white/20 flex flex-col overflow-hidden shrink-0">
+    @if (excludeAvatars.length > 0) {
+    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
+      <p
+        class="font-black text-white text-2xl lg:text-3xl text-center mb-2 sticky top-0 z-10 bg-gray-900/90 lg:bg-transparent p-2 rounded shadow-md">
+        Sont déjà passés</p>
+      <div class="grid grid-cols-[repeat(auto-fill,60px)] gap-4 p-4">
+        @for (avatar of excludeAvatars; track avatar) {
+        <div class="relative inline-block overflow-visible m-1 hover:opacity-75 group">
+          <p-badge [value]="'X'" severity="danger"
+            class="absolute -top-2 -left-2 z-20 cursor-pointer transition-transform hover:scale-125"
+            (click)="introduceAvatarByName(avatar)" />
+          <p-image styleClass="w-full h-auto block grayscale" [src]="'http://localhost:8080/images/players/' + avatar"
+            alt="pool" width="70" />
+        </div>
+        }
+      </div>
+    </p-scrollPanel>
+    }
+  </div>
+
+  <!-- Reset button (star) -->
+  <img
+    class="fixed right-4 bottom-4 lg:right-8 lg:bottom-8 z-50 cursor-pointer shadow-lg transition-transform w-16 lg:w-20 h-auto hover:scale-110"
+    pTooltip="Reset la pool" tooltipPosition="top" src="http://localhost:8080/images/ui/star.png" alt="reset"
+    (click)="resetExcludeAvatars()" />
+
+  <!-- Refresh button -->
+  <p-button icon="pi pi-refresh" [rounded]="true" severity="info"
+    styleClass="fixed right-24 bottom-4 lg:right-32 lg:bottom-8 z-50 shadow-lg w-12 h-12 lg:w-16 lg:h-16"
+    pTooltip="Actualiser les données" tooltipPosition="top" (onClick)="reloadPool()" />
+
+  <p-toast />
+</div>

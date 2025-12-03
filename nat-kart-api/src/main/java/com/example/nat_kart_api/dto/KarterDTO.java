@@ -1,12 +1,21 @@
 package com.example.nat_kart_api.dto;
 
 public class KarterDTO {
-
+    private Long playerId;
     private String name;
     private String picture;
     private int points;
     private int rank;
     private int victory;
+    private String category;
+
+    public Long getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(Long playerId) {
+        this.playerId = playerId;
+    }
 
     public String getName() {
         return name;
@@ -46,5 +55,13 @@ public class KarterDTO {
 
     public void setVictory(int victory) {
         this.victory = victory;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

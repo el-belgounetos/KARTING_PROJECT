@@ -25,11 +25,13 @@ export class AppComponent implements OnInit {
     ngOnInit() {
         this.logoPath = 'assets/images/logos/logo-natsystem.png';
         this.items = [
-            { label: 'Classement', route: 'natcup' },
-            { label: 'Roue des champions', route: 'natspin' },
-            { label: 'Roue des consoles', route: 'natspinconsole' },
-            { label: 'Gestion des participants', route: 'poolup' },
-            { label: 'Gestion des consoles', route: 'parameters-console' }
+            { label: 'Ranking', route: 'ranking' },
+            { label: 'Champion Wheel', route: 'champion-wheel' },
+            { label: 'Console Wheel', route: 'console-wheel' },
+            { label: 'Score Management', route: 'score-management' },
+            { label: 'Console Management', route: 'console-management' },
+            { label: 'Player Management', route: 'player-management' },
+            { label: 'Admin', route: 'admin' }
         ];
 
         // Synchronize active tab with current route

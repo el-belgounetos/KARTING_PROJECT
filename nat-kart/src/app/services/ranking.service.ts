@@ -18,7 +18,7 @@ export class RankingService {
     }
 
     getCupImage(rank: number): string {
-        const path = 'assets/cups/';
+        const path = 'http://localhost:8080/images/ranks/';
         switch (rank) {
             case 1: return path + 'golden-cup.png';
             case 2: return path + 'silver-cup.png';

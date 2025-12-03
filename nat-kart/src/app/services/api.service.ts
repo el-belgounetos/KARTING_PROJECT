@@ -32,6 +32,15 @@ export class ApiService {
         );
     }
 
+    put<T>(endpoint: string, body: any): Observable<T | null> {
+        return this.http.put<T>(`${this.baseUrl}/${endpoint}`, body).pipe(
+            catchError(error => {
+                this.handleError(error);
+                return of(null);
+            })
+        );
+    }
+
     delete<T>(endpoint: string): Observable<T | null> {
         return this.http.delete<T>(`${this.baseUrl}/${endpoint}`).pipe(
             catchError(error => {

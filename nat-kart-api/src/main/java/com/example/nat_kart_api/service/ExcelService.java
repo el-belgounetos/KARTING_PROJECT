@@ -18,22 +18,22 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    private final NatFolder folderService;
+    private final GameService gameService;
 
-    public ExcelService(NatFolder folderService) {
-        this.folderService = folderService;
+    public ExcelService(GameService gameService) {
+        this.gameService = gameService;
     }
 
     public void generateExcelForRanks(HttpServletResponse response) throws IOException {
-        List<KarterDTO> ranks = folderService.getAllRanks();
-        List<HistoriqueDTO> historique = folderService.getPlayerHistorique(); // Récupère l'historique
+        List<KarterDTO> ranks = gameService.getAllRanks();
+        List<HistoriqueDTO> historique = gameService.getPlayerHistorique(); // Récupère l'historique
 
         Workbook workbook = new XSSFWorkbook();
 
         // Première feuille : Classement
         Sheet classementSheet = workbook.createSheet("Classement");
         Row headerRow = classementSheet.createRow(0);
-        String[] columns = {"Rang", "Nom", "Image", "Points", "Nombre de victoires"};
+        String[] columns = { "Rang", "Nom", "Image", "Points", "Nombre de victoires" };
 
         for (int i = 0; i < columns.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -49,7 +49,7 @@ public class ExcelService {
             row.createCell(4).setCellValue(karter.getVictory());
 
             // Recherche de l'image
-            String imagePath = this.folderService.findMatchingPicture(karter.getPicture());
+            String imagePath = this.gameService.findMatchingPicture(karter.getPicture());
             if (imagePath != null) {
                 InputStream inputStream = new FileInputStream(imagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);
@@ -79,7 +79,7 @@ public class ExcelService {
         // Deuxième feuille : Historique
         Sheet historiqueSheet = workbook.createSheet("Historique");
         Row historiqueHeaderRow = historiqueSheet.createRow(0);
-        String[] historiqueColumns = {"Nom", "Nom de la console", "Nom de la course", "Points", "Victoire"};
+        String[] historiqueColumns = { "Nom", "Nom de la console", "Nom de la course", "Points", "Victoire" };
 
         for (int i = 0; i < historiqueColumns.length; i++) {
             Cell cell = historiqueHeaderRow.createCell(i);
@@ -96,7 +96,7 @@ public class ExcelService {
             row.createCell(4).setCellValue(historiqueItem.isVictory() ? "Oui" : "Non"); // Victoire
 
             // Recherche et ajout de l'image du joueur
-            String playerImagePath = this.folderService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
+            String playerImagePath = this.gameService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
             if (playerImagePath != null) {
                 InputStream inputStream = new FileInputStream(playerImagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);

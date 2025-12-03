@@ -1,0 +1,42 @@
+<div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
+  style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper3.jpg');"></div>
+<div class="h-[93vh] w-full relative">
+  <p-button class="absolute right-0 z-[999]" (click)="onExport()" label="Exporter" />
+  <p-table styleClass="rank-table mt-4 rounded" [value]="ranks" [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Rank</th>
+        <th></th>
+        <th>Joueur</th>
+        <th>Catégorie</th>
+        <th>Points</th>
+        <th>Victoires</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-player>
+      <tr>
+        @if (isCups(player.rank)) {
+        <td>
+          <img [src]="getRankCup(player.rank)" width="25" class="shadow-lg" />
+        </td>
+        } @else {
+        <td>{{player.rank}}</td>
+        }
+
+        <td>
+          @if (player.picture) {
+          <img [src]="'http://localhost:8080/images/players/' + player.picture" [alt]="player.name" width="55"
+            class="shadow-lg" />
+          } @else {
+          <img src="http://localhost:8080/images/players/unknown.png" [alt]="player.name" width="55"
+            class="shadow-lg opacity-50" />
+          }
+        </td>
+        <td>{{player.name}}</td>
+        <td>{{player.category || '-'}}</td>
+        <td>{{player.points}}</td>
+        <td>{{player.victory}}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

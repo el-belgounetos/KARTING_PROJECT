@@ -1,0 +1,11 @@
+/* Consoling Component - PrimeNG Button Override */
+
+::ng-deep .consoling-button .p-button {
+  background: linear-gradient(to right, rgba(65, 65, 65, 0) 0%, rgba(65, 65, 65, 0.9) 50%, rgba(65, 65, 65, 0) 100%) !important;
+  border: none !important;
+  transition: transform 0.2s;
+}
+
+::ng-deep .consoling-button .p-button:hover {
+  transform: scale(1.005);
+}

@@ -3,7 +3,6 @@ package com.example.nat_kart_api.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,13 +87,18 @@ public class ImageService {
 
         String currentDir = System.getProperty("user.dir");
         Path parentDir = Paths.get(currentDir).getParent();
-        Path imagesPath = parentDir.resolve("images");
+        Path imagesPath = parentDir.resolve("images").resolve("players");
 
         // Use File.separator for cross-platform compatibility
-        String fullPath = imagesPath.toString() + File.separator + picture;
+        Path fullPath = imagesPath.resolve(picture);
+
+        if (!Files.exists(fullPath)) {
+            log.warn("Image not found: {}", fullPath);
+            return null;
+        }
 
         log.debug("Resolved picture path: {}", fullPath);
-        return fullPath;
+        return fullPath.toString();
     }
 
     /**
@@ -115,4 +119,3 @@ public class ImageService {
         }
     }
 }
-

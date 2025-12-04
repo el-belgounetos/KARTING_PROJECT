@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
 import { ConsoleDTO } from '../../dto/consoleDTO';
+import { CounterDTO } from '../../dto/counterDTO';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-console-wheel',
@@ -28,10 +30,19 @@ export class ConsoleWheelComponent implements OnInit {
   }
 
   loadConsoles() {
-    this.apiService.get<ConsoleDTO[]>('consoles').subscribe(data => {
-      if (data) {
-        this.consoles.set(data);
-        this.consolesDisplayed.set([...data]);
+    forkJoin({
+      consoles: this.apiService.get<ConsoleDTO[]>('consoles'),
+      counters: this.apiService.get<CounterDTO[]>('counters')
+    }).subscribe(({ consoles, counters }) => {
+      if (consoles && counters) {
+        // Filter consoles that have a counter > 0
+        const availableConsoles = consoles.filter(console => {
+          const counter = counters.find(c => c.name === console.name);
+          return counter && counter.counter > 0;
+        });
+
+        this.consoles.set(availableConsoles);
+        this.consolesDisplayed.set([...availableConsoles]);
         this.initializeCupsImages();
       }
     });
@@ -43,6 +54,8 @@ export class ConsoleWheelComponent implements OnInit {
   }
 
   onSpin() {
+    if (this.consolesDisplayed().length === 0) return;
+
     this.loadingService.show();
     this.initializeCupsImages();
 

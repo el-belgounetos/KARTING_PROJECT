@@ -53,7 +53,11 @@ public class ExcelService {
             row.createCell(4).setCellValue(karter.getVictory());
 
             // Recherche de l'image
-            String imagePath = this.imageService.findMatchingPicture(karter.getPicture());
+            String imagePath = null;
+            if (karter.getPicture() != null && !karter.getPicture().isEmpty()) {
+                imagePath = this.imageService.findMatchingPicture(karter.getPicture());
+            }
+
             if (imagePath != null) {
                 InputStream inputStream = new FileInputStream(imagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);
@@ -100,7 +104,11 @@ public class ExcelService {
             row.createCell(4).setCellValue(historiqueItem.isVictory() ? "Oui" : "Non"); // Victoire
 
             // Recherche et ajout de l'image du joueur
-            String playerImagePath = this.imageService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
+            String playerImagePath = null;
+            if (historiqueItem.getPlayer().getPicture() != null && !historiqueItem.getPlayer().getPicture().isEmpty()) {
+                playerImagePath = this.imageService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
+            }
+
             if (playerImagePath != null) {
                 InputStream inputStream = new FileInputStream(playerImagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);

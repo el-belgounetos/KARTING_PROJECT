@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { BadgeModule } from 'primeng/badge';
-import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
@@ -16,7 +15,7 @@ import { NotificationService } from '../../services/notification.service';
   selector: 'app-champion-wheel',
   imports: [
     CommonModule, FormsModule, ImageModule, ButtonModule, InputNumberModule,
-    ScrollPanelModule, BadgeModule, ToastModule, TooltipModule
+    ScrollPanelModule, BadgeModule, TooltipModule
   ],
   templateUrl: './champion-wheel.component.html',
   styleUrl: './champion-wheel.component.scss'

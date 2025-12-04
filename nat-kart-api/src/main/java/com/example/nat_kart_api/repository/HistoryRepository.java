@@ -21,4 +21,11 @@ public interface HistoryRepository extends JpaRepository<HistoryEntity, Long> {
      * @return List of history entries for this player
      */
     List<HistoryEntity> findByPlayerOrderByIdDesc(PlayerEntity player);
+
+    /**
+     * Delete all history entries for a specific player.
+     *
+     * @param player The player entity
+     */
+    void deleteByPlayer(PlayerEntity player);
 }

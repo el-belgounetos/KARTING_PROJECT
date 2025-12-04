@@ -7,7 +7,6 @@ import { CupsDTO } from '../../dto/cupsDTO';
 import { HistoriqueDTO } from '../../dto/historiqueDTO';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TableModule } from 'primeng/table';
@@ -20,7 +19,7 @@ import { NotificationService } from '../../services/notification.service';
 @Component({
   selector: 'app-score-management',
   imports: [
-    CommonModule, ButtonModule, SelectModule, ToastModule, InputNumberModule,
+    CommonModule, ButtonModule, SelectModule, InputNumberModule,
     ToggleSwitchModule, BadgeModule, TableModule, ScrollPanelModule, FormsModule
   ],
   templateUrl: './score-management.component.html',

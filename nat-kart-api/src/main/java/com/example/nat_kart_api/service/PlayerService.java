@@ -23,6 +23,7 @@ public class PlayerService {
 
     private final CharacterService characterService;
     private final RankingService rankingService;
+    private final HistoryService historyService;
     private final PlayerRepository playerRepository;
 
     /**
@@ -157,6 +158,9 @@ public class PlayerService {
             if (player.getPicture() != null && !player.getPicture().isEmpty()) {
                 this.characterService.introduceCaracter(player.getPicture().replace(".png", ""));
             }
+            // Delete history first to avoid foreign key constraint violation
+            this.historyService.deleteHistoryByPlayer(player);
+
             // Delete from database
             playerRepository.delete(player);
         }
@@ -168,8 +172,10 @@ public class PlayerService {
      * Deletes all players and clears rankings.
      */
     public void deleteAllPlayers() {
-        // IMPORTANT: Delete rankings FIRST to avoid foreign key constraint violation
+        // IMPORTANT: Delete rankings and history FIRST to avoid foreign key constraint
+        // violation
         this.rankingService.clearRanking();
+        this.historyService.deleteAllHistory();
         playerRepository.deleteAll();
         this.characterService.resetExcludeList();
     }

@@ -27,9 +27,12 @@ public class HistoryEntity {
 
     /**
      * The player who played this game.
+     * When a player is deleted, all their history entries are automatically deleted
+     * (CASCADE).
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "player_id", nullable = false)
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private PlayerEntity player;
 
     /**

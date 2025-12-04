@@ -5,7 +5,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
-import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
@@ -23,7 +22,6 @@ import { TabsModule } from 'primeng/tabs';
     InputNumberModule,
     ButtonModule,
     ImageModule,
-    ToastModule,
     TableModule,
     TabsModule
   ],

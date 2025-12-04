@@ -5,13 +5,12 @@ import { CounterDTO } from '../../dto/counterDTO';
 import { ImageModule } from 'primeng/image';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-console-management',
-  imports: [CommonModule, FormsModule, ImageModule, InputNumberModule, ButtonModule, ToastModule],
+  imports: [CommonModule, FormsModule, ImageModule, InputNumberModule, ButtonModule],
   templateUrl: './console-management.component.html',
   styleUrl: './console-management.component.scss'
 })

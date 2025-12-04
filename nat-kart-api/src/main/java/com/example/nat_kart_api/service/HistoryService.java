@@ -108,6 +108,26 @@ public class HistoryService {
     }
 
     /**
+     * Deletes all history entries.
+     */
+    @Transactional
+    public void deleteAllHistory() {
+        historyRepository.deleteAll();
+        log.debug("Deleted all history entries");
+    }
+
+    /**
+     * Deletes all history entries for a specific player.
+     *
+     * @param player The player entity
+     */
+    @Transactional
+    public void deleteHistoryByPlayer(PlayerEntity player) {
+        historyRepository.deleteByPlayer(player);
+        log.debug("Deleted all history entries for player: {}", player.getName());
+    }
+
+    /**
      * Convert HistoryEntity to HistoriqueDTO.
      */
     private HistoriqueDTO toDTO(HistoryEntity entity) {

@@ -33,14 +33,14 @@ export class ConsoleManagementComponent implements OnInit {
     this.apiService.get<CounterDTO[]>('counters').subscribe(counters => {
       if (counters) {
         this.counters = counters;
-        this.consolesValues = this.counters.map(c => c.nConsole);
+        this.consolesValues = this.counters.map(c => c.counter);
       }
     });
   }
 
   onSaveCounters() {
     this.counters.forEach((counter, index) => {
-      counter.nConsole = this.consolesValues[index];
+      counter.counter = this.consolesValues[index];
     });
 
     this.apiService.post('counters', this.counters).subscribe(response => {

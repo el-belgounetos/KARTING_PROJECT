@@ -3,8 +3,10 @@ package com.example.nat_kart_api.service;
 import com.example.nat_kart_api.dto.ConsoleDTO;
 import com.example.nat_kart_api.dto.CounterDTO;
 import com.example.nat_kart_api.dto.CupsDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +14,14 @@ import java.util.List;
  * Service responsible for managing game consoles, cups, and counters.
  */
 @Service
+@RequiredArgsConstructor
 public class ConsoleService {
 
     private final ImageService imageService;
     private List<CounterDTO> counters = new ArrayList<>();
 
-    public ConsoleService(ImageService imageService) {
-        this.imageService = imageService;
+    @PostConstruct
+    public void init() {
         this.buildAllCountersByConsoles();
     }
 
@@ -82,3 +85,4 @@ public class ConsoleService {
         }
     }
 }
+

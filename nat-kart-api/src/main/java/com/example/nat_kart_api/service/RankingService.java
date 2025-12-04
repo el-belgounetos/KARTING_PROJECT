@@ -1,19 +1,21 @@
 package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.KarterDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Service responsible for managing player rankings, points, and victories.
  * Handles automatic re-ranking after point updates.
  */
 @Service
+@Slf4j
 public class RankingService {
 
-    private List<KarterDTO> ranks = new ArrayList<>();
+    private final List<KarterDTO> ranks = new CopyOnWriteArrayList<>();
 
     /**
      * Gets all player rankings.
@@ -110,8 +112,8 @@ public class RankingService {
     public boolean updatePictureByPlayerId(Long playerId, String newPicture) {
         for (KarterDTO karter : ranks) {
             if (karter.getPlayerId() != null && karter.getPlayerId().equals(playerId)) {
-                System.out.println("[DEBUG] Updating picture in ranking for playerId " + playerId + " from '"
-                        + karter.getPicture() + "' to '" + newPicture + "'");
+                log.debug("Updating picture in ranking for playerId {} from '{}' to '{}'", playerId,
+                        karter.getPicture(), newPicture);
                 karter.setPicture(newPicture);
                 return true;
             }

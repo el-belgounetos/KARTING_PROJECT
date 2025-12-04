@@ -1,9 +1,9 @@
 export class CounterDTO {
-  public nConsole: number = 0;
-  public console: string = '';
+  public counter: number = 0;
+  public name: string = '';
 
-  constructor(n: number, c: string) {
-    this.nConsole = n;
-    this.console = c;
+  constructor(counter: number, name: string) {
+    this.counter = counter;
+    this.name = name;
   }
 }

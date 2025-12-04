@@ -1,11 +1,13 @@
 package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.PlayerDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Service responsible for player management (CRUD operations).
@@ -13,18 +15,15 @@ import java.util.Optional;
  * ranking entries.
  */
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PlayerService {
 
     private final CharacterService characterService;
     private final RankingService rankingService;
 
-    private List<PlayerDTO> players = new ArrayList<>();
+    private final List<PlayerDTO> players = new CopyOnWriteArrayList<>();
     private int id = 1;
-
-    public PlayerService(CharacterService characterService, RankingService rankingService) {
-        this.characterService = characterService;
-        this.rankingService = rankingService;
-    }
 
     /**
      * Gets all players.
@@ -76,12 +75,11 @@ public class PlayerService {
      * @param playerDTO The player DTO with updated information
      */
     public void updatePlayer(PlayerDTO playerDTO) {
-        System.out.println(
-                "[DEBUG] updatePlayer called for ID: " + playerDTO.getId() + ", Category: " + playerDTO.getCategory());
+        log.debug("updatePlayer called for ID: {}, Category: {}", playerDTO.getId(), playerDTO.getCategory());
 
         for (PlayerDTO player : this.players) {
             if (player.getId().equals(playerDTO.getId())) {
-                System.out.println("[DEBUG] Found player to update: " + player.getName());
+                log.debug("Found player to update: {}", player.getName());
 
                 // Handle picture change
                 String oldPicture = player.getPicture();
@@ -89,13 +87,13 @@ public class PlayerService {
 
                 if (oldPicture != null && !oldPicture.equals(newPicture)) {
                     // Release old picture back to pool
-                    System.out.println("[DEBUG] Releasing old picture: " + oldPicture);
+                    log.debug("Releasing old picture: {}", oldPicture);
                     this.characterService.introduceCaracter(oldPicture.replace(".png", ""));
                 }
 
                 if (newPicture != null && !newPicture.isEmpty() && !newPicture.equals(oldPicture)) {
                     // Reserve new picture
-                    System.out.println("[DEBUG] Reserving new picture: " + newPicture);
+                    log.debug("Reserving new picture: {}", newPicture);
                     this.characterService.removeCaracter(newPicture.replace(".png", ""));
                 }
 
@@ -113,10 +111,9 @@ public class PlayerService {
                         playerDTO.getCategory());
 
                 if (karterFoundCategory) {
-                    System.out.println("[DEBUG] Updated category in ranking for playerId " + playerDTO.getId());
+                    log.debug("Updated category in ranking for playerId {}", playerDTO.getId());
                 } else {
-                    System.out
-                            .println("[DEBUG] WARNING: Karter not found in ranking for playerId: " + playerDTO.getId());
+                    log.warn("Karter not found in ranking for playerId: {}", playerDTO.getId());
                 }
 
                 // Update picture in ranking using playerId
@@ -126,16 +123,15 @@ public class PlayerService {
                             newPicture);
 
                     if (karterFoundPicture) {
-                        System.out.println("[DEBUG] Updated picture in ranking for playerId " + playerDTO.getId());
+                        log.debug("Updated picture in ranking for playerId {}", playerDTO.getId());
                     } else {
-                        System.out.println("[DEBUG] WARNING: Could not update picture in ranking for playerId: "
-                                + playerDTO.getId());
+                        log.warn("Could not update picture in ranking for playerId: {}", playerDTO.getId());
                     }
                 }
                 break;
             }
         }
-        System.out.println("[DEBUG] updatePlayer completed");
+        log.debug("updatePlayer completed");
     }
 
     /**
@@ -213,7 +209,7 @@ public class PlayerService {
         for (PlayerDTO player : this.players) {
             if (player.getPicture() != null &&
                     (player.getPicture().equals(pictureWithPng) || player.getPicture().equals(pictureWithoutPng))) {
-                System.out.println("[DEBUG] Removing picture " + picture + " from player " + player.getName());
+                log.debug("Removing picture {} from player {}", picture, player.getName());
                 player.setPicture(null);
             }
         }

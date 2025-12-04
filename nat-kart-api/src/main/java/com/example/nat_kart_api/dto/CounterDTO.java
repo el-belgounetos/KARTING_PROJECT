@@ -1,28 +1,13 @@
 package com.example.nat_kart_api.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CounterDTO {
-
-    public int nConsole;
-    public String console;
-
-    public CounterDTO(int nConsole, String console) {
-        this.nConsole = nConsole;
-        this.console = console;
-    }
-
-    public int getnConsole() {
-        return nConsole;
-    }
-
-    public void setnConsole(int nConsole) {
-        this.nConsole = nConsole;
-    }
-
-    public String getConsole() {
-        return console;
-    }
-
-    public void setConsole(String console) {
-        this.console = console;
-    }
+    private int counter;
+    private String name;
 }

@@ -20,8 +20,8 @@
       @for (counter of counters; track counter; let index = $index) {
       <div class="flex flex-col items-center justify-end text-center w-full lg:w-auto h-auto lg:h-full py-4 lg:py-0">
         <p-image styleClass="max-w-full object-contain mb-3"
-          [src]="'http://localhost:8080/images/consoles/'+ counter.console + '.png'" width="120"></p-image>
-        <label [for]="'console_' + index" class="sr-only">Console {{counter.console}}</label>
+          [src]="'http://localhost:8080/images/consoles/'+ counter.name + '.png'" width="120"></p-image>
+        <label [for]="'console_' + index" class="sr-only">Console {{counter.name}}</label>
         <p-inputNumber [inputId]="'console_' + index" [name]="'console_' + index"
           [(ngModel)]="consolesValues[index]"></p-inputNumber>
       </div>

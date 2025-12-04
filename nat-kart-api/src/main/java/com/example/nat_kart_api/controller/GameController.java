@@ -2,6 +2,7 @@ package com.example.nat_kart_api.controller;
 
 import com.example.nat_kart_api.dto.*;
 import com.example.nat_kart_api.service.*;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,17 +33,17 @@ public class GameController {
 
     // === Character / Avatar Management ===
 
-    @GetMapping("/personnages")
+    @GetMapping("/characters")
     public List<String> getAllCaracters() {
         return this.characterService.getAllCaracters();
     }
 
-    @GetMapping("/personnages/exclude")
+    @GetMapping("/characters/exclude")
     public List<String> getAllExcludeCaracters() {
         return this.characterService.getExcludePool();
     }
 
-    @PostMapping("/exclude/{name}")
+    @PostMapping("/characters/exclude/{name}")
     public List<String> excludeCaracterByName(@PathVariable String name) {
         // Remove the picture from any players using it
         this.playerService.removePictureFromPlayers(name);
@@ -50,12 +51,12 @@ public class GameController {
         return this.characterService.removeCaracter(name);
     }
 
-    @PostMapping("/exclude/clear")
+    @PostMapping("/characters/exclude/clear")
     public List<String> clearExcludeCaracters() {
         return this.characterService.resetExcludeList();
     }
 
-    @PostMapping("/introduce/{name}")
+    @PostMapping("/characters/include/{name}")
     public List<String> introduceCaracter(@PathVariable String name) {
         return this.characterService.introduceCaracter(name);
     }
@@ -68,7 +69,7 @@ public class GameController {
     }
 
     @PostMapping("/ranks")
-    public void updateRank(@RequestBody KarterDTO player) {
+    public void updateRank(@Valid @RequestBody KarterDTO player) {
         this.rankingService.updatePointsByName(
                 player.getName(),
                 player.getPoints(),
@@ -89,7 +90,7 @@ public class GameController {
     }
 
     @PostMapping("/counters")
-    public void setAllCounters(@RequestBody List<CounterDTO> counters) {
+    public void setAllCounters(@Valid @RequestBody List<CounterDTO> counters) {
         this.consoleService.setAllCounters(counters);
     }
 
@@ -101,7 +102,7 @@ public class GameController {
     }
 
     @PostMapping("/historique")
-    public void updatePlayerHistorique(@RequestBody HistoriqueDTO historique) {
+    public void updatePlayerHistorique(@Valid @RequestBody HistoriqueDTO historique) {
         this.historyService.updatePlayerHistorique(historique);
     }
 
@@ -118,13 +119,13 @@ public class GameController {
     }
 
     @PostMapping("/players")
-    public ResponseEntity<Void> createPlayer(@RequestBody PlayerDTO player) {
+    public ResponseEntity<Void> createPlayer(@Valid @RequestBody PlayerDTO player) {
         this.playerService.createPlayer(player);
         return ResponseEntity.status(201).build(); // 201 Created
     }
 
     @PutMapping("/players")
-    public ResponseEntity<Void> updatePlayer(@RequestBody PlayerDTO player) {
+    public ResponseEntity<Void> updatePlayer(@Valid @RequestBody PlayerDTO player) {
         this.playerService.updatePlayer(player);
         return ResponseEntity.ok().build(); // 200 OK
     }
@@ -147,4 +148,5 @@ public class GameController {
             @RequestParam(defaultValue = "true") boolean assignImage) {
         playerService.generatePlayers(count, assignImage);
     }
+
 }

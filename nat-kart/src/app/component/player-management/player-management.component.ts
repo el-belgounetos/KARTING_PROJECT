@@ -85,7 +85,7 @@ export class PlayerManagementComponent implements OnInit {
   }
 
   loadImages() {
-    this.apiService.get<string[]>('personnages').subscribe(images => {
+    this.apiService.get<string[]>('characters').subscribe(images => {
       if (images) {
         this.availableImages = images;
       }

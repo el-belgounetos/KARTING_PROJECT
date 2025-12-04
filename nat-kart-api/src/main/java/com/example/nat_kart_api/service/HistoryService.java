@@ -1,20 +1,22 @@
 package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.HistoriqueDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Service responsible for managing game history (historique).
  * Handles storage and retrieval of player game sessions.
  */
 @Service
+@Slf4j
 public class HistoryService {
 
-    private List<HistoriqueDTO> playerHistorique = new ArrayList<>();
+    private final List<HistoriqueDTO> playerHistorique = new CopyOnWriteArrayList<>();
     private int historiqueId = 1;
 
     /**
@@ -33,15 +35,15 @@ public class HistoryService {
      * @return List of historique DTOs for the specified player
      */
     public List<HistoriqueDTO> getPlayerHistoriqueByPlayerName(String playerName) {
-        System.out.println("[DEBUG] Getting history for player: " + playerName);
-        System.out.println("[DEBUG] Total history entries in memory: " + this.playerHistorique.size());
+        log.debug("Getting history for player: {}", playerName);
+        log.debug("Total history entries in memory: {}", this.playerHistorique.size());
 
         List<HistoriqueDTO> result = this.playerHistorique
                 .stream()
                 .filter(histo -> histo.getPlayer().getName().equals(playerName))
                 .toList();
 
-        System.out.println("[DEBUG] Found " + result.size() + " entries for " + playerName);
+        log.debug("Found {} entries for {}", result.size(), playerName);
         return result;
     }
 
@@ -52,13 +54,14 @@ public class HistoryService {
      */
     public void updatePlayerHistorique(HistoriqueDTO historiqueDTO) {
         historiqueDTO.setId(this.historiqueId);
-        System.out.println("[DEBUG] Saving history entry #" + this.historiqueId + " for player: " +
-                (historiqueDTO.getPlayer() != null ? historiqueDTO.getPlayer().getName() : "NULL"));
+        log.debug("Saving history entry #{} for player: {}",
+                this.historiqueId,
+                historiqueDTO.getPlayer() != null ? historiqueDTO.getPlayer().getName() : "NULL");
 
         this.playerHistorique.add(historiqueDTO);
         this.historiqueId++;
 
-        System.out.println("[DEBUG] Total history entries: " + this.playerHistorique.size());
+        log.debug("Total history entries: {}", this.playerHistorique.size());
     }
 
     /**

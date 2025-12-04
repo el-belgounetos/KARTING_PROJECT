@@ -1,7 +1,9 @@
 package com.example.nat_kart_api.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,8 +15,10 @@ import java.util.stream.Stream;
 /**
  * Service responsible for image file management.
  * Handles scanning directories and providing lists of available image files.
+ * Includes security validation to prevent Path Traversal attacks.
  */
 @Service
+@Slf4j
 public class ImageService {
 
     /**
@@ -30,12 +34,18 @@ public class ImageService {
         Path parentDir = Paths.get(currentDir).getParent();
         Path imagesPath = parentDir.resolve(pathFile);
 
+        log.debug("Scanning folder: {}", imagesPath);
+
         try (Stream<Path> paths = Files.walk(imagesPath)) {
-            return paths.filter(Files::isRegularFile)
+            List<String> images = paths.filter(Files::isRegularFile)
                     .filter(path -> !shouldExclude(path.getFileName().toString(), excludeList))
                     .map(path -> path.getFileName().toString())
                     .collect(Collectors.toList());
+
+            log.debug("Found {} images in {}", images.size(), pathFile);
+            return images;
         } catch (IOException e) {
+            log.error("Error scanning folder {}: {}", pathFile, e.getMessage());
             return List.of(); // Return empty list on error
         }
     }
@@ -65,15 +75,44 @@ public class ImageService {
 
     /**
      * Finds the absolute path for a given picture filename.
+     * Validates filename to prevent Path Traversal attacks.
      *
      * @param picture The picture filename
      * @return The absolute path to the picture
-     * @throws IOException if the path cannot be resolved
+     * @throws IOException              if the path cannot be resolved
+     * @throws IllegalArgumentException if the filename is invalid
      */
     public String findMatchingPicture(String picture) throws IOException {
+        // Security: Validate filename to prevent Path Traversal
+        validateFileName(picture);
+
         String currentDir = System.getProperty("user.dir");
         Path parentDir = Paths.get(currentDir).getParent();
         Path imagesPath = parentDir.resolve("images");
-        return imagesPath.toString() + "\\\\" + picture;
+
+        // Use File.separator for cross-platform compatibility
+        String fullPath = imagesPath.toString() + File.separator + picture;
+
+        log.debug("Resolved picture path: {}", fullPath);
+        return fullPath;
+    }
+
+    /**
+     * Validates a filename to prevent Path Traversal attacks.
+     * Rejects filenames containing "..", "/", or "\".
+     *
+     * @param fileName The filename to validate
+     * @throws IllegalArgumentException if the filename is invalid
+     */
+    private void validateFileName(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filename cannot be null or empty");
+        }
+
+        if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            log.warn("Rejected potentially malicious filename: {}", fileName);
+            throw new IllegalArgumentException("Invalid filename: " + fileName);
+        }
     }
 }
+

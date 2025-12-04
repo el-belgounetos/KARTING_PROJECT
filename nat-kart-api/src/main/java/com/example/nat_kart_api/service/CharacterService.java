@@ -1,9 +1,10 @@
 package com.example.nat_kart_api.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -11,15 +12,16 @@ import java.util.stream.Collectors;
  * Handles exclusion and inclusion of characters from the selection pool.
  */
 @Service
+@RequiredArgsConstructor
 public class CharacterService {
 
     private final ImageService imageService;
 
-    private List<String> excludeList;
-    private List<String> excludeCaracters;
+    private final List<String> excludeList = new CopyOnWriteArrayList<>();
+    private final List<String> excludeCaracters = new CopyOnWriteArrayList<>();
 
-    public CharacterService(ImageService imageService) {
-        this.imageService = imageService;
+    @jakarta.annotation.PostConstruct
+    public void init() {
         this.resetExcludeList();
     }
 
@@ -73,9 +75,9 @@ public class CharacterService {
      * @return List of all available characters
      */
     public List<String> resetExcludeList() {
-        excludeList = new ArrayList<>();
+        excludeList.clear();
         excludeList.add("unknown");
-        excludeCaracters = new ArrayList<>();
+        excludeCaracters.clear();
         return getAllCaracters();
     }
 }

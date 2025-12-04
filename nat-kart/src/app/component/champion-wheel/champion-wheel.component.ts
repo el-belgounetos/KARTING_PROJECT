@@ -59,7 +59,7 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   loadCharacters() {
-    this.apiService.get<string[]>('personnages').subscribe(data => {
+    this.apiService.get<string[]>('characters').subscribe(data => {
       if (data) {
         this.avatars = data;
         // After loading characters, check players to filter assigned ones

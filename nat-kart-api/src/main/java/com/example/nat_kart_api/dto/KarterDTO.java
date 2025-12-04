@@ -1,67 +1,29 @@
 package com.example.nat_kart_api.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class KarterDTO {
     private Long playerId;
+
+    @NotBlank(message = "Le nom est obligatoire")
     private String name;
-    private String picture;
+
+    @Min(value = 0, message = "Les points ne peuvent pas être négatifs")
     private int points;
-    private int rank;
+
+    @Min(value = 0, message = "Les victoires ne peuvent pas être négatives")
     private int victory;
+
+    private String picture;
     private String category;
 
-    public Long getPlayerId() {
-        return playerId;
-    }
-
-    public void setPlayerId(Long playerId) {
-        this.playerId = playerId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
-    }
-
-    public int getVictory() {
-        return victory;
-    }
-
-    public void setVictory(int victory) {
-        this.victory = victory;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    @Min(value = 1, message = "Le rang doit être au minimum 1")
+    private int rank; // Position dans le classement
 }

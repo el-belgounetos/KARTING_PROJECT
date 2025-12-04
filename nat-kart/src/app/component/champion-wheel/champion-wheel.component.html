@@ -42,8 +42,10 @@
         class="bg-red-500/85 rounded-2xl p-3 lg:p-6 flex justify-center items-center w-11/12 lg:w-full max-w-xs lg:max-w-md min-h-[150px] lg:min-h-[250px] h-auto border-2 border-white/30 shadow-xl mx-auto">
         @if (isAnimating || drawnPlayers.length === 0) {
         <!-- Single player animation -->
+        @if (avatar) {
         <img class="shadow-lg max-w-full max-h-[140px] lg:max-h-[230px] w-auto h-auto object-contain block"
           [src]="'http://localhost:8080/images/players/' + avatar" alt="personnage" />
+        }
         } @else {
         <!-- Multi-player grid -->
         <div

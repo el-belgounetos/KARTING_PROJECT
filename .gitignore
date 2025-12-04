@@ -2,3 +2,4 @@ nat-kart/node_modules
 nat-kart/.angular
 nat-kart-api/target
 *.jar
+*.db

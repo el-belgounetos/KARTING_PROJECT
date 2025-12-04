@@ -4,12 +4,16 @@ import com.example.nat_kart_api.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Global exception handler for the application.
@@ -20,6 +24,28 @@ import java.time.LocalDateTime;
 @RestController
 @Slf4j
 public class GlobalExceptionHandler {
+
+    /**
+     * Handles validation errors from @Valid annotations.
+     * Returns detailed field-by-field error messages.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(error.getField(), error.getDefaultMessage());
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("message", "Erreurs de validation");
+        response.put("errors", fieldErrors);
+        response.put("timestamp", LocalDateTime.now());
+
+        log.warn("Validation errors: {}", fieldErrors);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 
     /**
      * Handles ResourceNotFoundException - returns 404 Not Found.

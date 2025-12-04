@@ -46,6 +46,7 @@ export class PlayerManagementComponent implements OnInit {
   loading: boolean = false;
   isEditMode: boolean = false;
   selectedTabIndex: string = "0"; // "0" = List, "1" = Create/Edit
+  validationErrors: { [key: string]: string } = {}; // Track field-specific errors
 
   constructor(
     private apiService: ApiService,
@@ -97,6 +98,9 @@ export class PlayerManagementComponent implements OnInit {
   }
 
   onSubmit() {
+    // Clear previous validation errors
+    this.validationErrors = {};
+
     if (!this.isValid()) {
       this.messageService.add({
         severity: 'warn',
@@ -113,7 +117,7 @@ export class PlayerManagementComponent implements OnInit {
       : this.apiService.post('players', this.player);
 
     apiCall.subscribe({
-      next: () => {
+      next: (response) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Succès',
@@ -125,7 +129,28 @@ export class PlayerManagementComponent implements OnInit {
         this.selectedTabIndex = "0"; // Return to list
         this.loading = false;
       },
-      error: () => {
+      error: (err: any) => {
+        // Capture field-specific validation errors
+        if (err?.error?.errors) {
+          this.validationErrors = err.error.errors;
+
+          // Display a summary toast for validation errors
+          const errorCount = Object.keys(err.error.errors).length;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreurs de validation',
+            detail: `${errorCount} champ(s) invalide(s). Veuillez corriger les erreurs.`,
+            life: 5000
+          });
+        } else {
+          // Other errors
+          const errorMessage = err.error?.message || 'Une erreur est survenue';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: errorMessage
+          });
+        }
         this.loading = false;
       }
     });
@@ -151,11 +176,13 @@ export class PlayerManagementComponent implements OnInit {
       picture: '',
       category: ''
     };
+    this.validationErrors = {}; // Clear validation errors
     this.isEditMode = false;
   }
 
   editPlayer(player: PlayerDTO) {
     this.player = { ...player }; // Clone to avoid direct modification
+    this.validationErrors = {}; // Clear validation errors when editing
     this.isEditMode = true;
     this.selectedTabIndex = "1"; // Switch to form tab
   }

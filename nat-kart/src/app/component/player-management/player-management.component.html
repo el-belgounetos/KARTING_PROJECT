@@ -11,7 +11,7 @@
                 <p-tab value="1">{{ isEditMode ? 'Modification' : 'Création' }}</p-tab>
             </p-tablist>
             <p-tabpanels>
-                <!-- TAB 1: Liste des joueurs (maintenant premier) -->
+                <!-- TAB 1: Liste des joueurs -->
                 <p-tabpanel value="0">
                     <p-table [value]="players" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
                         [rowsPerPageOptions]="[10, 25, 50]" [tableStyle]="{ 'min-width': '50rem' }"
@@ -30,7 +30,7 @@
                             <tr>
                                 <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
                                 <th>Avatar</th>
-                                <th pSortableColumn="pseudo">Pseudo <p-sortIcon field="pseudo" /></th>
+                                <th pSortableColumn="pseudo">Pseudo<p-sortIcon field="pseudo" /></th>
                                 <th pSortableColumn="name">Nom <p-sortIcon field="name" /></th>
                                 <th pSortableColumn="firstname">Prénom <p-sortIcon field="firstname" /></th>
                                 <th>Catégorie</th>
@@ -90,31 +90,51 @@
                             <div class="flex flex-col gap-2">
                                 <label for="pseudo" class="text-white font-semibold">Pseudo *</label>
                                 <input pInputText id="pseudo" name="pseudo" autocomplete="username"
-                                    [(ngModel)]="player.pseudo" placeholder="Pseudo" [disabled]="isEditMode" />
+                                    [(ngModel)]="player.pseudo" placeholder="Pseudo" [disabled]="isEditMode"
+                                    [class.border-red-500]="validationErrors['pseudo']" />
+                                @if (validationErrors['pseudo']) {
+                                <small class="text-red-400">{{ validationErrors['pseudo'] }}</small>
+                                }
                             </div>
 
                             <div class="flex flex-col gap-2">
                                 <label for="name" class="text-white font-semibold">Nom *</label>
                                 <input pInputText id="name" name="name" autocomplete="family-name"
-                                    [(ngModel)]="player.name" placeholder="Nom" />
+                                    [(ngModel)]="player.name" placeholder="Nom"
+                                    [class.border-red-500]="validationErrors['name']" />
+                                @if (validationErrors['name']) {
+                                <small class="text-red-400">{{ validationErrors['name'] }}</small>
+                                }
                             </div>
 
                             <div class="flex flex-col gap-2">
                                 <label for="firstname" class="text-white font-semibold">Prénom *</label>
                                 <input pInputText id="firstname" name="firstname" autocomplete="given-name"
-                                    [(ngModel)]="player.firstname" placeholder="Prénom" />
+                                    [(ngModel)]="player.firstname" placeholder="Prénom"
+                                    [class.border-red-500]="validationErrors['firstname']" />
+                                @if (validationErrors['firstname']) {
+                                <small class="text-red-400">{{ validationErrors['firstname'] }}</small>
+                                }
                             </div>
 
                             <div class="flex flex-col gap-2">
                                 <label for="age" class="text-white font-semibold">Age *</label>
                                 <p-inputNumber inputId="age" name="age" [(ngModel)]="player.age" [min]="0" [max]="120"
-                                    placeholder="Age" styleClass="w-full" />
+                                    placeholder="Age" styleClass="w-full"
+                                    [ngClass]="{'border-red-500': validationErrors['age']}" />
+                                @if (validationErrors['age']) {
+                                <small class="text-red-400">{{ validationErrors['age'] }}</small>
+                                }
                             </div>
 
                             <div class="flex flex-col gap-2">
                                 <label for="email" class="text-white font-semibold">Email *</label>
                                 <input pInputText id="email" name="email" autocomplete="email"
-                                    [(ngModel)]="player.email" placeholder="Email" />
+                                    [(ngModel)]="player.email" placeholder="Email"
+                                    [class.border-red-500]="validationErrors['email']" />
+                                @if (validationErrors['email']) {
+                                <small class="text-red-400">{{ validationErrors['email'] }}</small>
+                                }
                             </div>
 
                             <div class="flex flex-col gap-2">

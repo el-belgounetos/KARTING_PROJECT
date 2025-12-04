@@ -1,13 +1,15 @@
 package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.PlayerDTO;
+import com.example.nat_kart_api.entity.PlayerEntity;
+import com.example.nat_kart_api.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Service responsible for player management (CRUD operations).
@@ -21,9 +23,39 @@ public class PlayerService {
 
     private final CharacterService characterService;
     private final RankingService rankingService;
+    private final PlayerRepository playerRepository;
 
-    private final List<PlayerDTO> players = new CopyOnWriteArrayList<>();
-    private int id = 1;
+    /**
+     * Converts PlayerEntity to PlayerDTO.
+     */
+    private PlayerDTO toDTO(PlayerEntity entity) {
+        PlayerDTO dto = new PlayerDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setFirstname(entity.getFirstname());
+        dto.setAge(entity.getAge());
+        dto.setEmail(entity.getEmail());
+        dto.setPseudo(entity.getPseudo());
+        dto.setPicture(entity.getPicture());
+        dto.setCategory(entity.getCategory());
+        return dto;
+    }
+
+    /**
+     * Converts PlayerDTO to PlayerEntity.
+     */
+    private PlayerEntity toEntity(PlayerDTO dto) {
+        PlayerEntity entity = new PlayerEntity();
+        entity.setId(dto.getId());
+        entity.setName(dto.getName());
+        entity.setFirstname(dto.getFirstname());
+        entity.setAge(dto.getAge());
+        entity.setEmail(dto.getEmail());
+        entity.setPseudo(dto.getPseudo());
+        entity.setPicture(dto.getPicture());
+        entity.setCategory(dto.getCategory());
+        return entity;
+    }
 
     /**
      * Gets all players.
@@ -31,7 +63,9 @@ public class PlayerService {
      * @return List of all player DTOs
      */
     public List<PlayerDTO> getAllPlayers() {
-        return this.players;
+        return playerRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -41,16 +75,15 @@ public class PlayerService {
      */
     public void createPlayer(PlayerDTO player) {
         // Check for duplicates
-        boolean exists = this.players.stream()
-                .anyMatch(p -> p.getPseudo().equalsIgnoreCase(player.getPseudo()));
-        if (exists) {
+        if (playerRepository.existsByPseudoIgnoreCase(player.getPseudo())) {
             return;
         }
 
-        // Auto-assign ID
-        player.setId((long) id++);
-
-        this.players.add(player);
+        // Save to database (ID is auto-generated)
+        PlayerEntity entity = toEntity(player);
+        entity.setId(null); // Ensure ID is null for new entity
+        PlayerEntity saved = playerRepository.save(entity);
+        player.setId(saved.getId()); // Update DTO with generated ID
 
         // Remove picture from pool if selected
         if (player.getPicture() != null && !player.getPicture().isEmpty()) {
@@ -77,58 +110,60 @@ public class PlayerService {
     public void updatePlayer(PlayerDTO playerDTO) {
         log.debug("updatePlayer called for ID: {}, Category: {}", playerDTO.getId(), playerDTO.getCategory());
 
-        for (PlayerDTO player : this.players) {
-            if (player.getId().equals(playerDTO.getId())) {
-                log.debug("Found player to update: {}", player.getName());
+        Optional<PlayerEntity> optionalPlayer = playerRepository.findById(playerDTO.getId());
+        if (optionalPlayer.isPresent()) {
+            PlayerEntity player = optionalPlayer.get();
+            log.debug("Found player to update: {}", player.getName());
 
-                // Handle picture change
-                String oldPicture = player.getPicture();
-                String newPicture = playerDTO.getPicture();
+            // Handle picture change
+            String oldPicture = player.getPicture();
+            String newPicture = playerDTO.getPicture();
 
-                if (oldPicture != null && !oldPicture.equals(newPicture)) {
-                    // Release old picture back to pool
-                    log.debug("Releasing old picture: {}", oldPicture);
-                    this.characterService.introduceCaracter(oldPicture.replace(".png", ""));
-                }
+            if (oldPicture != null && !oldPicture.equals(newPicture)) {
+                // Release old picture back to pool
+                log.debug("Releasing old picture: {}", oldPicture);
+                this.characterService.introduceCaracter(oldPicture.replace(".png", ""));
+            }
 
-                if (newPicture != null && !newPicture.isEmpty() && !newPicture.equals(oldPicture)) {
-                    // Reserve new picture
-                    log.debug("Reserving new picture: {}", newPicture);
-                    this.characterService.removeCaracter(newPicture.replace(".png", ""));
-                }
+            if (newPicture != null && !newPicture.isEmpty() && !newPicture.equals(oldPicture)) {
+                // Reserve new picture
+                log.debug("Reserving new picture: {}", newPicture);
+                this.characterService.removeCaracter(newPicture.replace(".png", ""));
+            }
 
-                // Update player fields
-                player.setName(playerDTO.getName());
-                player.setFirstname(playerDTO.getFirstname());
-                player.setAge(playerDTO.getAge());
-                player.setEmail(playerDTO.getEmail());
-                player.setCategory(playerDTO.getCategory());
-                player.setPicture(newPicture); // Update picture
+            // Update player fields
+            player.setName(playerDTO.getName());
+            player.setFirstname(playerDTO.getFirstname());
+            player.setAge(playerDTO.getAge());
+            player.setEmail(playerDTO.getEmail());
+            player.setCategory(playerDTO.getCategory());
+            player.setPicture(newPicture); // Update picture
 
-                // Update category in ranking using playerId
-                boolean karterFoundCategory = rankingService.updateCategoryByPlayerId(
+            // Save updated entity to database
+            playerRepository.save(player);
+
+            // Update category in ranking using playerId
+            boolean karterFoundCategory = rankingService.updateCategoryByPlayerId(
+                    playerDTO.getId(),
+                    playerDTO.getCategory());
+
+            if (karterFoundCategory) {
+                log.debug("Updated category in ranking for playerId {}", playerDTO.getId());
+            } else {
+                log.warn("Karter not found in ranking for playerId: {}", playerDTO.getId());
+            }
+
+            // Update picture in ranking using playerId
+            if (newPicture != null && !newPicture.equals(oldPicture)) {
+                boolean karterFoundPicture = rankingService.updatePictureByPlayerId(
                         playerDTO.getId(),
-                        playerDTO.getCategory());
+                        newPicture);
 
-                if (karterFoundCategory) {
-                    log.debug("Updated category in ranking for playerId {}", playerDTO.getId());
+                if (karterFoundPicture) {
+                    log.debug("Updated picture in ranking for playerId {}", playerDTO.getId());
                 } else {
-                    log.warn("Karter not found in ranking for playerId: {}", playerDTO.getId());
+                    log.warn("Could not update picture in ranking for playerId: {}", playerDTO.getId());
                 }
-
-                // Update picture in ranking using playerId
-                if (newPicture != null && !newPicture.equals(oldPicture)) {
-                    boolean karterFoundPicture = rankingService.updatePictureByPlayerId(
-                            playerDTO.getId(),
-                            newPicture);
-
-                    if (karterFoundPicture) {
-                        log.debug("Updated picture in ranking for playerId {}", playerDTO.getId());
-                    } else {
-                        log.warn("Could not update picture in ranking for playerId: {}", playerDTO.getId());
-                    }
-                }
-                break;
             }
         }
         log.debug("updatePlayer completed");
@@ -141,19 +176,18 @@ public class PlayerService {
      */
     public void deletePlayer(String pseudo) {
         // Find player to get picture
-        Optional<PlayerDTO> playerOpt = this.players.stream()
-                .filter(p -> p.getPseudo().equals(pseudo))
-                .findFirst();
+        Optional<PlayerEntity> playerOpt = playerRepository.findByPseudo(pseudo);
 
         if (playerOpt.isPresent()) {
-            PlayerDTO player = playerOpt.get();
+            PlayerEntity player = playerOpt.get();
             // Re-introduce picture to pool if it exists
             if (player.getPicture() != null && !player.getPicture().isEmpty()) {
                 this.characterService.introduceCaracter(player.getPicture().replace(".png", ""));
             }
+            // Delete from database
+            playerRepository.delete(player);
         }
 
-        this.players.removeIf(p -> p.getPseudo().equals(pseudo));
         this.rankingService.deleteRankingEntry(pseudo);
     }
 
@@ -161,7 +195,7 @@ public class PlayerService {
      * Deletes all players and clears rankings.
      */
     public void deleteAllPlayers() {
-        this.players.clear();
+        playerRepository.deleteAll();
         this.rankingService.clearRanking();
         this.characterService.resetExcludeList();
     }
@@ -173,7 +207,7 @@ public class PlayerService {
      * @param assignImage Whether to assign avatars automatically
      */
     public void generatePlayers(int count, boolean assignImage) {
-        int startIdx = this.players.size() + 1;
+        int startIdx = (int) playerRepository.count() + 1;
 
         for (int i = 0; i < count; i++) {
             int currentIdx = startIdx + i;
@@ -206,11 +240,13 @@ public class PlayerService {
         String pictureWithPng = picture.endsWith(".png") ? picture : picture + ".png";
         String pictureWithoutPng = picture.replace(".png", "");
 
-        for (PlayerDTO player : this.players) {
+        List<PlayerEntity> players = playerRepository.findAll();
+        for (PlayerEntity player : players) {
             if (player.getPicture() != null &&
                     (player.getPicture().equals(pictureWithPng) || player.getPicture().equals(pictureWithoutPng))) {
                 log.debug("Removing picture {} from player {}", picture, player.getName());
                 player.setPicture(null);
+                playerRepository.save(player);
             }
         }
     }

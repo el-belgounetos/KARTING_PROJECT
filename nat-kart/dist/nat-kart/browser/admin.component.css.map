@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/component/admin/admin.component.scss"],
-  "sourcesContent": [":host {\r\n    display: block;\r\n    width: 100%;\r\n}"],
-  "mappings": ";AAAA;AACI,WAAA;AACA,SAAA;;",
-  "names": []
-}

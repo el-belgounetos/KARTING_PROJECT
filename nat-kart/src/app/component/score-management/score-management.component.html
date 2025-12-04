@@ -11,7 +11,7 @@
     class="w-full h-48 lg:h-full p-4 bg-gray-900/60 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden shrink-0">
     <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="ranks-scroll">
       <div class="flex flex-col gap-2">
-        @for (rank of ranks; track $index) {
+        @for (rank of ranks(); track $index) {
         <div
           class="flex items-center gap-4 p-3 rounded-lg bg-gray-700/80 cursor-pointer transition-all hover:bg-gray-600/90 hover:translate-x-1"
           [class.!bg-primary]="selectedRank?.name === rank.name" (click)="selectNewRank(rank)">
@@ -56,7 +56,7 @@
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank?.points }}</span>
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank?.rank }}</span>
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank?.victory }}</span>
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ historique.length }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ historique().length }}</span>
           </div>
         </div>
       </div>
@@ -77,7 +77,7 @@
       </div>
 
       <div class="grid grid-cols-2 max-lg:grid-cols-1 gap-8 items-start">
-        <p-select (click)="onConsoleSelected()" styleClass="w-full" [options]="consoles" [(ngModel)]="selectedConsole"
+        <p-select (click)="onConsoleSelected()" styleClass="w-full" [options]="consoles()" [(ngModel)]="selectedConsole"
           optionLabel="name" [showClear]="true" placeholder="Choisir une console">
           <ng-template pTemplate="selectedConsole">
             @if (selectedConsole) {
@@ -98,8 +98,8 @@
         </p-select>
 
         @if (selectedConsole != null && selectedConsole.name != '') {
-        <p-select styleClass="w-full" [options]="cups" [(ngModel)]="selectedCups" optionLabel="name" [showClear]="true"
-          placeholder="Choisir une coupe">
+        <p-select styleClass="w-full" [options]="cups()" [(ngModel)]="selectedCups" optionLabel="name"
+          [showClear]="true" placeholder="Choisir une coupe">
           <ng-template pTemplate="selectedCups">
             @if (selectedCups) {
             <div class="flex items-center gap-2">
@@ -120,7 +120,7 @@
         }
       </div>
 
-      <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loading"
+      <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loadingService.loading()"
         [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
     </div>
   </div>
@@ -145,7 +145,7 @@
 
       @if (isHistoryVisible) {
       <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
-        <p-table [value]="historique" styleClass="historique-table" [rowHover]="true">
+        <p-table [value]="historique()" styleClass="historique-table" [rowHover]="true">
           <ng-template pTemplate="header">
             <tr>
               <th>Joueur</th>

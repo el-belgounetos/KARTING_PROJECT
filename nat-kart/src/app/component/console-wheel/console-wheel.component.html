@@ -5,7 +5,8 @@
   <!-- Button with toggle for consoles list -->
   <div class="flex flex-col items-center gap-2 mb-4">
     <div class="relative flex justify-center items-center w-full max-w-[500px]">
-      <p-button styleClass="consoling-button" [disabled]="isLoading" label="Tourner la roue" (click)="onSpin()">
+      <p-button styleClass="consoling-button" [disabled]="loadingService.loading()" label="Tourner la roue"
+        (click)="onSpin()">
       </p-button>
 
       <div class="absolute right-0">
@@ -21,7 +22,7 @@
   @if (isConsolesVisible) {
   <div class="flex flex-col lg:grid gap-4 overflow-y-auto lg:overflow-visible flex-1"
     [ngStyle]="{'grid-template-columns': calculateConsolesPerLine() > 0 ? 'repeat(' + calculateConsolesPerLine() + ', 1fr)' : '1fr'}">
-    @for (console of consolesDisplayed; track console; let index = $index) {
+    @for (console of consolesDisplayed(); track console; let index = $index) {
     <div
       class="h-auto lg:h-full text-white font-bold text-lg lg:text-xl bg-gray-700/90 border-2 border-gray-500 rounded-xl lg:rounded-2xl flex flex-col items-center justify-between text-center p-6 lg:p-4 gap-4">
       <div class="text-xl lg:text-lg">{{ console.name }}</div>
@@ -30,7 +31,7 @@
 
       <div
         class="bg-black/65 w-[120px] h-[120px] flex flex-col items-center justify-center border-4 border-yellow-400 rounded-lg lg:rounded-xl">
-        <p-image [src]="allCupsImages[index]" width="100" class="flex-shrink-0" />
+        <p-image [src]="allCupsImages()[index]" width="100" class="flex-shrink-0" />
       </div>
     </div>
     }

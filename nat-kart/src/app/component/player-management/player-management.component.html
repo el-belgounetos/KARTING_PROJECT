@@ -13,7 +13,7 @@
             <p-tabpanels>
                 <!-- TAB 1: Liste des joueurs -->
                 <p-tabpanel value="0">
-                    <p-table [value]="players" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
+                    <p-table [value]="players()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
                         [rowsPerPageOptions]="[10, 25, 50]" [tableStyle]="{ 'min-width': '50rem' }"
                         [globalFilterFields]="['pseudo', 'name', 'firstname']" #dt>
                         <ng-template pTemplate="caption">
@@ -150,7 +150,7 @@
                             <div
                                 class="bg-gray-700/50 p-4 rounded-xl border border-white/10 h-[400px] overflow-y-auto custom-scroll">
                                 <div class="grid grid-cols-4 gap-4">
-                                    @for (img of availableImages; track img) {
+                                    @for (img of availableImages(); track img) {
                                     <div class="cursor-pointer rounded-lg p-2 transition-all hover:bg-white/10 border-2"
                                         [class.border-primary]="player.picture === img"
                                         [class.border-transparent]="player.picture !== img" (click)="selectImage(img)">
@@ -174,7 +174,8 @@
                             styleClass="px-8 py-3 text-lg" />
                         }
                         <p-button [label]="isEditMode ? 'Modifier le joueur' : 'Créer le joueur'" icon="pi pi-check"
-                            [loading]="loading" (onClick)="onSubmit()" styleClass="px-8 py-3 text-lg" />
+                            [loading]="loadingService.loading()" (onClick)="onSubmit()"
+                            styleClass="px-8 py-3 text-lg" />
                     </div>
                 </p-tabpanel>
             </p-tabpanels>

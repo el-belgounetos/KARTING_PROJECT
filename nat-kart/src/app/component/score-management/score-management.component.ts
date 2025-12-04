@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { KarterDTO } from '../../dto/karterDTO';
@@ -14,7 +14,8 @@ import { TableModule } from 'primeng/table';
 import { BadgeModule } from 'primeng/badge';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ApiService } from '../../services/api.service';
-import { MessageService } from 'primeng/api';
+import { LoadingService } from '../../services/loading.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-score-management',
@@ -26,22 +27,22 @@ import { MessageService } from 'primeng/api';
   styleUrl: './score-management.component.scss'
 })
 export class ScoreManagementComponent implements OnInit {
-  ranks: KarterDTO[] = [];
-  selectedRank: KarterDTO | null = null; // No default selection
-  consoles: ConsoleDTO[] = [];
+  // Signals for reactive state
+  ranks = signal<KarterDTO[]>([]);
+  consoles = signal<ConsoleDTO[]>([]);
+  cups = signal<CupsDTO[]>([]);
+  historique = signal<HistoriqueDTO[]>([]);
+
+  selectedRank: KarterDTO | null = null;
   selectedConsole: ConsoleDTO | null = null;
-  cups: CupsDTO[] = [];
   selectedCups: CupsDTO | null = null;
   valueToAdd = 0;
-  loading = false;
   victory = false;
-  historique: HistoriqueDTO[] = [];
   isHistoryVisible = true;
 
-  constructor(
-    private apiService: ApiService,
-    private messageService: MessageService
-  ) { }
+  private apiService = inject(ApiService);
+  public loadingService = inject(LoadingService);
+  private notificationService = inject(NotificationService);
 
   ngOnInit() {
     this.loadRanks();
@@ -51,7 +52,7 @@ export class ScoreManagementComponent implements OnInit {
   private loadRanks() {
     this.apiService.get<KarterDTO[]>('ranks').subscribe(ranks => {
       if (ranks) {
-        this.ranks = ranks;
+        this.ranks.set(ranks);
         // Only reload if a player was already selected
         if (this.selectedRank && this.selectedRank.name) {
           this.selectKarterByName(this.selectedRank.name);
@@ -62,7 +63,7 @@ export class ScoreManagementComponent implements OnInit {
 
   private loadConsoles() {
     this.apiService.get<ConsoleDTO[]>('consoles').subscribe(consoles => {
-      if (consoles) this.consoles = consoles;
+      if (consoles) this.consoles.set(consoles);
     });
   }
 
@@ -76,19 +77,14 @@ export class ScoreManagementComponent implements OnInit {
     if (!this.canUpdate() || !this.selectedRank) return;
 
     console.log('updatePlayer: Starting update for', this.selectedRank.name);
-    this.loading = true;
+    this.loadingService.show();
     this.selectedRank.points += this.valueToAdd;
     if (this.victory) this.selectedRank.victory++;
 
     this.apiService.post('ranks', this.selectedRank).subscribe({
       next: (response) => {
         console.log('updatePlayer: POST /ranks response:', response);
-        // Always show success message and save history, even if response is null
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Mise à jour réussie',
-          detail: 'Les points ont bien été mis à jour'
-        });
+        this.notificationService.success('Mise à jour réussie', 'Les points ont bien été mis à jour');
         console.log('updatePlayer: Calling saveHistory()');
         this.saveHistory();
         this.resetForm();
@@ -108,11 +104,7 @@ export class ScoreManagementComponent implements OnInit {
       next: (response) => {
         console.log('saveHistory: Response received:', response);
         if (response) {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Historique',
-            detail: 'Historique mis à jour'
-          });
+          this.notificationService.info('Historique', 'Historique mis à jour');
           // Only load history if player name exists
           if (entry.player && entry.player.name) {
             this.loadHistoryForPlayer(entry.player.name);
@@ -147,7 +139,7 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private selectKarterByName(name: string) {
-    const karter = this.ranks.find(rank => rank.name === name);
+    const karter = this.ranks().find(rank => rank.name === name);
     if (karter) {
       this.selectedRank = karter;
       this.loadHistoryForPlayer(karter.name);
@@ -155,10 +147,9 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private loadHistoryForPlayer(playerName: string) {
-    // Guard against null/undefined playerName
     if (!playerName) {
       console.warn('loadHistoryForPlayer called with null/undefined playerName');
-      this.historique = [];
+      this.historique.set([]);
       return;
     }
     console.log('loadHistoryForPlayer: Making API call for', playerName);
@@ -166,30 +157,31 @@ export class ScoreManagementComponent implements OnInit {
       next: (history) => {
         console.log('loadHistoryForPlayer: Received response:', history);
         if (history) {
-          this.historique = history;
-          console.log('loadHistoryForPlayer: historique updated, length:', this.historique.length);
+          this.historique.set(history);
+          console.log('loadHistoryForPlayer: historique updated, length:', this.historique().length);
         } else {
           console.warn('loadHistoryForPlayer: Response is null/undefined');
-          this.historique = [];
+          this.historique.set([]);
         }
       },
       error: (err) => {
         console.error('loadHistoryForPlayer: API error:', err);
-        this.historique = [];
+        this.historique.set([]);
       }
     });
   }
 
   onConsoleSelected() {
     this.loadConsoles();
-    this.cups = this.selectedConsole?.cups
+    this.cups.set(this.selectedConsole?.cups
       ? this.getAvailableCups(this.selectedConsole.cups)
-      : [];
+      : []);
   }
 
   private getAvailableCups(allCups: CupsDTO[]): CupsDTO[] {
+    const currentHistory = this.historique();
     return allCups.filter(cup =>
-      !this.historique.some(entry => entry.cups.name === cup.name)
+      !currentHistory.some(entry => entry.cups.name === cup.name)
     );
   }
 
@@ -197,7 +189,7 @@ export class ScoreManagementComponent implements OnInit {
     console.log('resetForm called, selectedRank:', this.selectedRank);
     this.loadRanks();
     this.valueToAdd = 0;
-    this.loading = false;
+    this.loadingService.hide();
     this.victory = false;
     this.selectedCups = null;
     this.selectedConsole = null;
@@ -210,15 +202,10 @@ export class ScoreManagementComponent implements OnInit {
     }
   }
 
-
   deleteHistorique(entry: HistoriqueDTO) {
     this.apiService.delete(`historique/${entry.id}`).subscribe(response => {
       if (response !== null) {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Historique',
-          detail: 'Ligne supprimée'
-        });
+        this.notificationService.info('Historique', 'Ligne supprimée');
       }
       this.resetForm();
     });

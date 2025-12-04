@@ -2,7 +2,7 @@
   style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper3.jpg');"></div>
 <div class="h-[93vh] w-full relative">
   <p-button class="absolute right-0 z-[999]" (click)="onExport()" label="Exporter" />
-  <p-table styleClass="rank-table mt-4 rounded" [value]="ranks" [tableStyle]="{'min-width': '60rem'}">
+  <p-table styleClass="rank-table mt-4 rounded" [value]="ranks()" [tableStyle]="{'min-width': '60rem'}">
     <ng-template pTemplate="header">
       <tr>
         <th>Rank</th>

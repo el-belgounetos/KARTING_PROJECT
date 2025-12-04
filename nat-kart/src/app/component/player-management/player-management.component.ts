@@ -1,15 +1,15 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
-import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
+import { LoadingService } from '../../services/loading.service';
+import { NotificationService } from '../../services/notification.service';
 import { PlayerDTO } from '../../dto/playerDTO';
-
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 
@@ -41,18 +41,17 @@ export class PlayerManagementComponent implements OnInit {
     category: ''
   };
 
-  availableImages: string[] = [];
-  players: PlayerDTO[] = [];
-  loading: boolean = false;
+  // Signals for reactive state
+  availableImages = signal<string[]>([]);
+  players = signal<PlayerDTO[]>([]);
+
   isEditMode: boolean = false;
   selectedTabIndex: string = "0"; // "0" = List, "1" = Create/Edit
-  validationErrors: { [key: string]: string } = {}; // Track field-specific errors
+  validationErrors: { [key: string]: string } = {};
 
-  constructor(
-    private apiService: ApiService,
-    private messageService: MessageService,
-    private cdr: ChangeDetectorRef
-  ) { }
+  private apiService = inject(ApiService);
+  public loadingService = inject(LoadingService);
+  private notificationService = inject(NotificationService);
 
   ngOnInit() {
     this.loadImages();
@@ -64,22 +63,16 @@ export class PlayerManagementComponent implements OnInit {
       next: (data) => {
         console.log('Players loaded:', data);
         if (data) {
-          this.players = data;
-          // If no players, show creation tab ("1"). Otherwise show list tab ("0")
+          this.players.set(data);
           if (!this.isEditMode) {
-            this.selectedTabIndex = this.players.length === 0 ? "1" : "0";
-            console.log('Setting tab index to:', this.selectedTabIndex, 'Players count:', this.players.length);
-            // Force change detection to update the tab UI
-            this.cdr.detectChanges();
+            this.selectedTabIndex = this.players().length === 0 ? "1" : "0";
           }
         }
       },
       error: (err) => {
         console.error('Error loading players:', err);
-        // If error loading, assume no players and show creation tab
         if (!this.isEditMode) {
           this.selectedTabIndex = "1";
-          this.cdr.detectChanges();
         }
       }
     });
@@ -88,7 +81,7 @@ export class PlayerManagementComponent implements OnInit {
   loadImages() {
     this.apiService.get<string[]>('characters').subscribe(images => {
       if (images) {
-        this.availableImages = images;
+        this.availableImages.set(images);
       }
     });
   }
@@ -98,19 +91,14 @@ export class PlayerManagementComponent implements OnInit {
   }
 
   onSubmit() {
-    // Clear previous validation errors
     this.validationErrors = {};
 
     if (!this.isValid()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Attention',
-        detail: 'Veuillez remplir tous les champs obligatoires.'
-      });
+      this.notificationService.warn('Attention', 'Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
-    this.loading = true;
+    this.loadingService.show();
 
     const apiCall = this.isEditMode
       ? this.apiService.put('players', this.player)
@@ -118,40 +106,29 @@ export class PlayerManagementComponent implements OnInit {
 
     apiCall.subscribe({
       next: (response) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: this.isEditMode ? 'Joueur modifié avec succès!' : 'Joueur créé avec succès!'
-        });
+        this.notificationService.success(
+          'Succès',
+          this.isEditMode ? 'Joueur modifié avec succès!' : 'Joueur créé avec succès!'
+        );
         this.resetForm();
         this.loadImages();
         this.loadPlayers();
-        this.selectedTabIndex = "0"; // Return to list
-        this.loading = false;
+        this.selectedTabIndex = "0";
+        this.loadingService.hide();
       },
       error: (err: any) => {
-        // Capture field-specific validation errors
         if (err?.error?.errors) {
           this.validationErrors = err.error.errors;
-
-          // Display a summary toast for validation errors
           const errorCount = Object.keys(err.error.errors).length;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erreurs de validation',
-            detail: `${errorCount} champ(s) invalide(s). Veuillez corriger les erreurs.`,
-            life: 5000
-          });
+          this.notificationService.error(
+            'Erreurs de validation',
+            `${errorCount} champ(s) invalide(s). Veuillez corriger les erreurs.`
+          );
         } else {
-          // Other errors
           const errorMessage = err.error?.message || 'Une erreur est survenue';
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erreur',
-            detail: errorMessage
-          });
+          this.notificationService.error('Erreur', errorMessage);
         }
-        this.loading = false;
+        this.loadingService.hide();
       }
     });
   }
@@ -162,7 +139,6 @@ export class PlayerManagementComponent implements OnInit {
       this.player.firstname &&
       this.player.email &&
       this.player.pseudo
-      // Picture is now optional
     );
   }
 
@@ -176,36 +152,28 @@ export class PlayerManagementComponent implements OnInit {
       picture: '',
       category: ''
     };
-    this.validationErrors = {}; // Clear validation errors
+    this.validationErrors = {};
     this.isEditMode = false;
   }
 
   editPlayer(player: PlayerDTO) {
-    this.player = { ...player }; // Clone to avoid direct modification
-    this.validationErrors = {}; // Clear validation errors when editing
+    this.player = { ...player };
+    this.validationErrors = {};
     this.isEditMode = true;
-    this.selectedTabIndex = "1"; // Switch to form tab
+    this.selectedTabIndex = "1";
   }
 
   deletePlayer(player: PlayerDTO) {
     if (confirm(`Êtes-vous sûr de vouloir supprimer ${player.pseudo} ?`)) {
       this.apiService.delete(`players/${player.pseudo}`).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Succès',
-            detail: 'Joueur supprimé avec succès'
-          });
+          this.notificationService.success('Succès', 'Joueur supprimé avec succès');
           this.loadPlayers();
-          this.loadImages(); // Refresh available images
+          this.loadImages();
         },
         error: (err) => {
           console.error('Error deleting player:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erreur',
-            detail: 'Impossible de supprimer le joueur'
-          });
+          this.notificationService.error('Erreur', 'Impossible de supprimer le joueur');
         }
       });
     }
@@ -214,6 +182,5 @@ export class PlayerManagementComponent implements OnInit {
   cancelEdit() {
     this.resetForm();
     this.selectedTabIndex = "0";
-    this.cdr.detectChanges();
   }
 }

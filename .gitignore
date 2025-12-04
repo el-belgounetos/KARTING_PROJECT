@@ -1,6 +1,37 @@
-nat-kart/node_modules
-nat-kart/.angular
-nat-kart-api/target
-*.jar
-*.db
+# Angular build output
+nat-kart/dist/
+
+# Angular cache
+nat-kart/.angular/cache
+
+# Node modules
+nat-kart/node_modules/
+
+# Environment files
+*.env
+
+# Logs
+*log*
+
+# Compile error
 nat-kart-api/compile-error.txt
+# Target
+nat-kart-api/target
+
+# JAR
+*.jar
+
+# Database
+*.db
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp

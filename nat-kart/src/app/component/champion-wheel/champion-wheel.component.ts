@@ -9,8 +9,8 @@ import { BadgeModule } from 'primeng/badge';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ApiService } from '../../services/api.service';
-import { MessageService } from 'primeng/api';
 import { LoadingService } from '../../services/loading.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-champion-wheel',
@@ -35,7 +35,7 @@ export class ChampionWheelComponent implements OnInit {
   hasPlayers: boolean = false;
 
   private apiService = inject(ApiService);
-  private messageService = inject(MessageService);
+  private notificationService = inject(NotificationService);
   public loadingService = inject(LoadingService);
 
   ngOnInit() {
@@ -91,17 +91,15 @@ export class ChampionWheelComponent implements OnInit {
   onSpin() {
     if (!this.canSpin()) {
       if (!this.hasPlayers) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Attention',
-          detail: 'Aucun joueur n\'a été créé. Veuillez créer des joueurs avant de lancer la roue.'
-        });
+        this.notificationService.warn(
+          'Attention',
+          'Aucun joueur n\'a été créé. Veuillez créer des joueurs avant de lancer la roue.'
+        );
       } else {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Attention',
-          detail: 'Tous les joueurs ont déjà une image assignée.'
-        });
+        this.notificationService.warn(
+          'Attention',
+          'Tous les joueurs ont déjà une image assignée.'
+        );
       }
       return;
     }
@@ -111,11 +109,10 @@ export class ChampionWheelComponent implements OnInit {
     const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
     if (this.playerCount > playersWithoutImages) {
       this.playerCount = playersWithoutImages;
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Ajustement',
-        detail: `Le nombre de tirages a été ajusté à ${this.playerCount} (nombre de joueurs sans image).`
-      });
+      this.notificationService.info(
+        'Ajustement',
+        `Le nombre de tirages a été ajusté à ${this.playerCount} (nombre de joueurs sans image).`
+      );
     }
 
     this.loadingService.show();
@@ -188,11 +185,10 @@ export class ChampionWheelComponent implements OnInit {
     this.apiService.put('players', player).subscribe({
       error: (err: any) => {
         console.error('Error updating player:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: `Impossible de mettre à jour l'avatar pour ${player.pseudo}`
-        });
+        this.notificationService.error(
+          'Erreur',
+          `Impossible de mettre à jour l'avatar pour ${player.pseudo}`
+        );
       }
     });
   }
@@ -210,22 +206,20 @@ export class ChampionWheelComponent implements OnInit {
           }
         });
 
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Reset',
-          detail: 'La pool a été réinitialisée et les images désassignées'
-        });
+        this.notificationService.info(
+          'Reset',
+          'La pool a été réinitialisée et les images désassignées'
+        );
 
         // Reload to refresh everything
         setTimeout(() => this.reloadPool(), 500);
       },
       error: (err) => {
         console.error('Error resetting pool:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de réinitialiser la pool'
-        });
+        this.notificationService.error(
+          'Erreur',
+          'Impossible de réinitialiser la pool'
+        );
       }
     });
   }
@@ -234,11 +228,10 @@ export class ChampionWheelComponent implements OnInit {
     this.loadCharacters(); // Load available avatars
     this.loadExcludedCharacters(); // Load excluded avatars
     this.checkPlayers(); // Load players data
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Actualisation',
-      detail: 'La liste des joueurs et des avatars a été actualisée'
-    });
+    this.notificationService.info(
+      'Actualisation',
+      'La liste des joueurs et des avatars a été actualisée'
+    );
   }
 
   introduceAvatarByName(name: string) {
@@ -258,11 +251,10 @@ export class ChampionWheelComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error introducing avatar:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de réintroduire l\'avatar'
-        });
+        this.notificationService.error(
+          'Erreur',
+          'Impossible de réintroduire l\'avatar'
+        );
       }
     });
   }

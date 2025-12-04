@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CounterDTO } from '../../dto/counterDTO';
@@ -7,8 +7,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
-import { MessageService } from 'primeng/api';
-
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-console-management',
@@ -17,13 +16,12 @@ import { MessageService } from 'primeng/api';
   styleUrl: './console-management.component.scss'
 })
 export class ConsoleManagementComponent implements OnInit {
-  counters: CounterDTO[] = [];
+  // Signals for reactive state
+  counters = signal<CounterDTO[]>([]);
   consolesValues: number[] = [];
 
-  constructor(
-    private apiService: ApiService,
-    private messageService: MessageService
-  ) { }
+  private apiService = inject(ApiService);
+  private notificationService = inject(NotificationService);
 
   ngOnInit() {
     this.loadCounters();
@@ -32,24 +30,22 @@ export class ConsoleManagementComponent implements OnInit {
   loadCounters() {
     this.apiService.get<CounterDTO[]>('counters').subscribe(counters => {
       if (counters) {
-        this.counters = counters;
-        this.consolesValues = this.counters.map(c => c.counter);
+        this.counters.set(counters);
+        this.consolesValues = counters.map(c => c.counter);
       }
     });
   }
 
   onSaveCounters() {
-    this.counters.forEach((counter, index) => {
-      counter.counter = this.consolesValues[index];
-    });
+    const updatedCounters = this.counters().map((counter, index) => ({
+      ...counter,
+      counter: this.consolesValues[index]
+    }));
 
-    this.apiService.post('counters', this.counters).subscribe(response => {
+    this.apiService.post('counters', updatedCounters).subscribe(response => {
       if (response) {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Les compteurs ont été mis à jour'
-        });
+        this.notificationService.success('Succès', 'Les compteurs ont été mis à jour');
+        this.counters.set(updatedCounters);
       }
     });
   }

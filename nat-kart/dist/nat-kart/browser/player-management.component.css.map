@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/component/player-management/player-management.component.scss"],
-  "sourcesContent": [".custom-scroll {\r\n    &::-webkit-scrollbar {\r\n        width: 8px;\r\n    }\r\n\r\n    &::-webkit-scrollbar-track {\r\n        background: rgba(255, 255, 255, 0.1);\r\n        border-radius: 4px;\r\n    }\r\n\r\n    &::-webkit-scrollbar-thumb {\r\n        background: rgba(255, 255, 255, 0.3);\r\n        border-radius: 4px;\r\n\r\n        &:hover {\r\n            background: rgba(255, 255, 255, 0.5);\r\n        }\r\n    }\r\n}"],
-  "mappings": ";AACI,CAAA,aAAA;AACI,SAAA;;AAGJ,CAJA,aAIA;AACI,cAAA,KAAA,GAAA,EAAA,GAAA,EAAA,GAAA,EAAA;AACA,iBAAA;;AAGJ,CATA,aASA;AACI,cAAA,KAAA,GAAA,EAAA,GAAA,EAAA,GAAA,EAAA;AACA,iBAAA;;AAEA,CAbJ,aAaI,yBAAA;AACI,cAAA,KAAA,GAAA,EAAA,GAAA,EAAA,GAAA,EAAA;;",
-  "names": []
-}

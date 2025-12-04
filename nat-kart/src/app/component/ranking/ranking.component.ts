@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { ImageModule } from 'primeng/image';
 import { TableModule } from 'primeng/table';
 import { KarterDTO } from '../../dto/karterDTO';
@@ -13,13 +13,12 @@ import { RankingService } from '../../services/ranking.service';
   styleUrl: './ranking.component.scss'
 })
 export class RankingComponent implements OnInit, OnDestroy {
-  public ranks: KarterDTO[] = [];
-  private pollingInterval: any;
+  // Signal for reactive state
+  ranks = signal<KarterDTO[]>([]);
 
-  constructor(
-    private apiService: ApiService,
-    private rankingService: RankingService
-  ) { }
+  private pollingInterval: any;
+  private apiService = inject(ApiService);
+  private rankingService = inject(RankingService);
 
   ngOnInit() {
     this.getAllRanks();
@@ -37,9 +36,9 @@ export class RankingComponent implements OnInit, OnDestroy {
   }
 
   public getAllRanks() {
-    this.apiService.get<KarterDTO[]>('ranks').subscribe(ranks => {
-      if (ranks) {
-        this.ranks = this.rankingService.sortByRanking(ranks);
+    this.apiService.get<KarterDTO[]>('ranks').subscribe(ranksData => {
+      if (ranksData) {
+        this.ranks.set(this.rankingService.sortByRanking(ranksData));
       }
     });
   }

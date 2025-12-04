@@ -1,3 +1,6 @@
+@if (loadingService.loading()) {
+  <app-loader />
+}
 <div class="card h-[5vh]">
   <p-tabs [value]="activeItem" (valueChange)="onActiveItemChange($event)">
     <p-tablist>

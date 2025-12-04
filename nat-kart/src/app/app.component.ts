@@ -1,16 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
+import { LoadingService } from './services/loading.service';
+import { LoaderComponent } from './component/loader/loader.component';
 
 @Component({
     selector: 'app-root',
     imports: [
         TabsModule,
         ButtonModule,
-        RouterOutlet
+        RouterOutlet,
+        LoaderComponent
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
@@ -20,6 +23,8 @@ export class AppComponent implements OnInit {
     items: MenuItem[] = [];
     activeItem: number = 0;
     public logoPath: String = '';
+    public loadingService = inject(LoadingService);
+
     constructor(private router: Router) { }
 
     ngOnInit() {

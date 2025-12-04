@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/component/consoling/consoling.component.scss"],
-  "sourcesContent": ["/* Consoling Component - PrimeNG Button Override */\r\n\r\n::ng-deep .consoling-button .p-button {\r\n  background: linear-gradient(to right, rgba(65, 65, 65, 0) 0%, rgba(65, 65, 65, 0.9) 50%, rgba(65, 65, 65, 0) 100%) !important;\r\n  border: none !important;\r\n  transition: transform 0.2s;\r\n}\r\n\r\n::ng-deep .consoling-button .p-button:hover {\r\n  transform: scale(1.005);\r\n}"],
-  "mappings": "AAEA,UAAA,CAAA,iBAAA,CAAA,SACE,WAAA,gBAAA,GAAA,KAAA,CAAA,SAAA,CAAA,SAAA,CAAA,qBACA,OAAA,eACA,WAAA,UAAA,IAGF,UAAA,CANA,iBAMA,CANA,QAMA,OACE,UAAA,MAAA",
-  "names": []
-}

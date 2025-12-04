@@ -1,7 +1,9 @@
-export class KarterDTO {
-  public name: string = '';
-  public picture: string = '';
-  public points: number = 0;
-  public rank: number = 0;
-  public victory: number = 0;
+export interface KarterDTO {
+  playerId?: number;
+  name: string;
+  picture?: string;
+  points: number;
+  rank: number;
+  victory: number;
+  category?: string;
 }

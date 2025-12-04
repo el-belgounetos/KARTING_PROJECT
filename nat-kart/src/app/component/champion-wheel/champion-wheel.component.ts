@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ApiService } from '../../services/api.service';
 import { MessageService } from 'primeng/api';
+import { LoadingService } from '../../services/loading.service';
 
 @Component({
   selector: 'app-champion-wheel',
@@ -21,20 +22,21 @@ import { MessageService } from 'primeng/api';
   styleUrl: './champion-wheel.component.scss'
 })
 export class ChampionWheelComponent implements OnInit {
-  avatars: string[] = [];
-  excludeAvatars: string[] = [];
-  drawnPlayers: string[] = [];
+  // Signals for reactive state
+  avatars = signal<string[]>([]);
+  excludeAvatars = signal<string[]>([]);
+  drawnPlayers = signal<string[]>([]);
+  players = signal<any[]>([]);
+
+  // Regular properties
   avatar: string = '';
   playerCount: number = 1;
-  isLoading = false;
   isAnimating = false;
   hasPlayers: boolean = false;
-  players: any[] = [];
 
-  constructor(
-    private apiService: ApiService,
-    private messageService: MessageService
-  ) { }
+  private apiService = inject(ApiService);
+  private messageService = inject(MessageService);
+  public loadingService = inject(LoadingService);
 
   ngOnInit() {
     this.reloadPool();
@@ -42,15 +44,16 @@ export class ChampionWheelComponent implements OnInit {
 
   checkPlayers() {
     this.apiService.get<any[]>('players').subscribe(players => {
-      this.players = players || [];
-      this.hasPlayers = this.players.length > 0;
+      const playerList = players || [];
+      this.players.set(playerList);
+      this.hasPlayers = playerList.length > 0;
 
       if (this.hasPlayers) {
         // Count players WITHOUT images
-        const playersWithoutImages = this.players.filter(p => !p.picture || p.picture === '').length;
+        const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
 
         // Ensure max spins doesn't exceed players without images or available avatars
-        this.playerCount = Math.min(playersWithoutImages, this.avatars.length > 0 ? this.avatars.length : 1);
+        this.playerCount = Math.min(playersWithoutImages, this.avatars().length > 0 ? this.avatars().length : 1);
       }
     });
   }
@@ -59,11 +62,12 @@ export class ChampionWheelComponent implements OnInit {
     // Load available avatars from backend (already filtered by backend)
     this.apiService.get<string[]>('characters').subscribe(data => {
       if (data) {
-        this.avatars = data;
+        this.avatars.set(data);
 
         // Update displayed avatar if not set
-        if (this.avatars.length > 0 && (!this.avatar || !this.avatars.includes(this.avatar))) {
-          this.avatar = this.avatars[0];
+        const currentAvatars = this.avatars();
+        if (currentAvatars.length > 0 && (!this.avatar || !currentAvatars.includes(this.avatar))) {
+          this.avatar = currentAvatars[0];
         }
       }
     });
@@ -73,14 +77,15 @@ export class ChampionWheelComponent implements OnInit {
     // Load excluded avatars from backend
     this.apiService.get<string[]>('characters/exclude').subscribe(data => {
       if (data) {
-        this.excludeAvatars = data;
+        this.excludeAvatars.set(data);
       }
     });
   }
 
   canSpin(): boolean {
-    const playersWithoutImages = this.players.filter(p => !p.picture || p.picture === '').length;
-    return this.avatars.length > 0 && this.hasPlayers && playersWithoutImages > 0;
+    const playerList = this.players();
+    const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
+    return this.avatars().length > 0 && this.hasPlayers && playersWithoutImages > 0;
   }
 
   onSpin() {
@@ -102,7 +107,8 @@ export class ChampionWheelComponent implements OnInit {
     }
 
     // Force clamp playerCount to players without images
-    const playersWithoutImages = this.players.filter(p => !p.picture || p.picture === '').length;
+    const playerList = this.players();
+    const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
     if (this.playerCount > playersWithoutImages) {
       this.playerCount = playersWithoutImages;
       this.messageService.add({
@@ -112,16 +118,17 @@ export class ChampionWheelComponent implements OnInit {
       });
     }
 
-    this.isLoading = true;
+    this.loadingService.show();
     this.isAnimating = true;
-    this.drawnPlayers = [];
+    this.drawnPlayers.set([]);
 
     // Animation loop
     let counter = 0;
     const maxSpins = 20;
     const interval = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * this.avatars.length);
-      this.avatar = this.avatars[randomIndex];
+      const currentAvatars = this.avatars();
+      const randomIndex = Math.floor(Math.random() * currentAvatars.length);
+      this.avatar = currentAvatars[randomIndex];
       counter++;
 
       if (counter >= maxSpins) {
@@ -133,7 +140,7 @@ export class ChampionWheelComponent implements OnInit {
 
   private performDraw() {
     // Draw unique avatars based on playerCount
-    const available = [...this.avatars];
+    const available = [...this.avatars()];
     const drawn: string[] = [];
 
     // Safety check: ensure we don't draw more than available avatars or players
@@ -147,10 +154,11 @@ export class ChampionWheelComponent implements OnInit {
       available.splice(randomIndex, 1); // Remove from available for this draw
     }
 
-    this.drawnPlayers = drawn;
+    this.drawnPlayers.set(drawn);
 
     // Assign drawn avatars to players WITHOUT images
-    const playersWithoutImages = this.players.filter(p => !p.picture || p.picture === '');
+    const playerList = this.players();
+    const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '');
     for (let i = 0; i < drawn.length; i++) {
       if (i < playersWithoutImages.length) {
         playersWithoutImages[i].picture = drawn[i];
@@ -166,12 +174,13 @@ export class ChampionWheelComponent implements OnInit {
       this.checkPlayers();
     }, 500);
 
-    this.isLoading = false;
+    this.loadingService.hide();
     this.isAnimating = false;
 
     // Update displayed avatar to first drawn if single player, or just stop animation
-    if (this.drawnPlayers.length === 1) {
-      this.avatar = this.drawnPlayers[0];
+    const drawnList = this.drawnPlayers();
+    if (drawnList.length === 1) {
+      this.avatar = drawnList[0];
     }
   }
 
@@ -193,7 +202,8 @@ export class ChampionWheelComponent implements OnInit {
     this.apiService.post('characters/exclude/clear', {}).subscribe({
       next: () => {
         // Unassign images from all players
-        this.players.forEach(player => {
+        const playerList = this.players();
+        playerList.forEach(player => {
           if (player.picture) {
             player.picture = '';
             this.updatePlayer(player);
@@ -236,7 +246,8 @@ export class ChampionWheelComponent implements OnInit {
     this.apiService.post(`characters/include/${name.replace('.png', '')}`, {}).subscribe({
       next: () => {
         // Find player with this picture and remove it
-        const playerWithPicture = this.players.find(p => p.picture === name);
+        const playerList = this.players();
+        const playerWithPicture = playerList.find(p => p.picture === name);
         if (playerWithPicture) {
           playerWithPicture.picture = '';
           this.updatePlayer(playerWithPicture);
@@ -257,6 +268,7 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   getPlayersWithoutImages(): number {
-    return this.players.filter(p => !p.picture || p.picture === '').length;
+    const playerList = this.players();
+    return playerList.filter(p => !p.picture || p.picture === '').length;
   }
 }

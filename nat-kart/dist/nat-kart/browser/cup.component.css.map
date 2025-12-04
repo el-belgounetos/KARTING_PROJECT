@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/component/cup/cup.component.scss"],
-  "sourcesContent": ["/* Cup Component - PrimeNG Table Overrides */\r\n\r\n::ng-deep .rank-table th,\r\n::ng-deep .rank-table tr,\r\n::ng-deep .rank-table td {\r\n  background-color: rgba(64, 64, 64, .5) !important;\r\n  font-weight: bold !important;\r\n  color: white !important;\r\n  font-size: 20px !important;\r\n  border: none !important;\r\n  padding: 0 !important;\r\n}\r\n\r\n::ng-deep .rank-table .p-datatable-wrapper {\r\n  padding: 0;\r\n  margin-top: 1%;\r\n  border-radius: 3px;\r\n}"],
-  "mappings": "AAEA,UAAA,CAAA,WAAA,GAAA,UAAA,CAAA,WAAA,GAAA,UAAA,CAAA,WAAA,GAGE,iBAAA,oBACA,YAAA,cACA,MAAA,eACA,UAAA,eACA,OAAA,eATF,QAUE,YAGF,UAAA,CAXA,WAWA,CAAA,oBAbA,QAcE,EACA,WAAA,GAfF,cAgBE",
-  "names": []
-}

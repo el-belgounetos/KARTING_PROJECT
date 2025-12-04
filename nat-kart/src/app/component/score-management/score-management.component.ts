@@ -29,9 +29,9 @@ export class ScoreManagementComponent implements OnInit {
   ranks: KarterDTO[] = [];
   selectedRank: KarterDTO | null = null; // No default selection
   consoles: ConsoleDTO[] = [];
-  selectedConsole = new ConsoleDTO();
+  selectedConsole: ConsoleDTO | null = null;
   cups: CupsDTO[] = [];
-  selectedCups = new CupsDTO();
+  selectedCups: CupsDTO | null = null;
   valueToAdd = 0;
   loading = false;
   victory = false;
@@ -126,13 +126,13 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private createHistoryEntry(): HistoriqueDTO {
-    const entry = new HistoriqueDTO();
-    entry.player = this.selectedRank!; // Non-null assertion - safe because canUpdate checks
-    entry.console = this.selectedConsole;
-    entry.cups = this.selectedCups;
-    entry.points = this.valueToAdd;
-    entry.victory = this.victory;
-    return entry;
+    return {
+      player: this.selectedRank!,
+      console: this.selectedConsole!,
+      cups: this.selectedCups!,
+      points: this.valueToAdd,
+      victory: this.victory
+    };
   }
 
   isUpdateButtonAvailable(): boolean {
@@ -182,7 +182,7 @@ export class ScoreManagementComponent implements OnInit {
 
   onConsoleSelected() {
     this.loadConsoles();
-    this.cups = this.selectedConsole?.name
+    this.cups = this.selectedConsole?.cups
       ? this.getAvailableCups(this.selectedConsole.cups)
       : [];
   }
@@ -199,8 +199,8 @@ export class ScoreManagementComponent implements OnInit {
     this.valueToAdd = 0;
     this.loading = false;
     this.victory = false;
-    this.selectedCups = new CupsDTO();
-    this.selectedConsole = new ConsoleDTO();
+    this.selectedCups = null;
+    this.selectedConsole = null;
     // Reload history for currently selected player
     if (this.selectedRank && this.selectedRank.name) {
       console.log('Reloading history for:', this.selectedRank.name);
@@ -209,6 +209,7 @@ export class ScoreManagementComponent implements OnInit {
       console.log('No selected player to reload history for');
     }
   }
+
 
   deleteHistorique(entry: HistoriqueDTO) {
     this.apiService.delete(`historique/${entry.id}`).subscribe(response => {

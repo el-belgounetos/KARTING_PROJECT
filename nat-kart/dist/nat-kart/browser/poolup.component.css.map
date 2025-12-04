@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/component/poolup/poolup.component.scss"],
-  "sourcesContent": ["/* Poolup Component - PrimeNG Overrides Only */\r\n\r\n/* Custom Scrollbar */\r\n::ng-deep .ranks-scroll .p-scrollpanel-wrapper {\r\n  border-right: none;\r\n}\r\n\r\n::ng-deep .ranks-scroll .p-scrollpanel-bar {\r\n  background-color: rgba(255, 255, 255, 0.2);\r\n  opacity: 0.5;\r\n  transition: opacity 0.3s;\r\n}\r\n\r\n::ng-deep .ranks-scroll .p-scrollpanel-bar:hover {\r\n  opacity: 0.8;\r\n}\r\n\r\n/* Historique Table */\r\n::ng-deep .historique-table .p-datatable {\r\n  font-size: clamp(0.75rem, 1.5vw, 0.875rem);\r\n}\r\n\r\n::ng-deep .historique-table .p-datatable-thead>tr>th {\r\n  background-color: rgba(64, 64, 64, 0.9);\r\n  color: white;\r\n  border: none;\r\n  padding: 0.5rem;\r\n}\r\n\r\n::ng-deep .historique-table .p-datatable-thead>tr>th:last-child {\r\n  width: 3rem;\r\n  min-width: 3rem;\r\n}\r\n\r\n::ng-deep .historique-table .p-datatable-tbody>tr {\r\n  background-color: rgba(64, 64, 64, 0.5);\r\n  color: white;\r\n  overflow: visible;\r\n}"],
-  "mappings": "AAGA,UAAA,CAAA,aAAA,CAAA,sBACE,aAAA,KAGF,UAAA,CAJA,aAIA,CAAA,kBACE,iBAAA,MACA,QAAA,GACA,WAAA,QAAA,IAGF,UAAA,CAVA,aAUA,CANA,iBAMA,OACE,QAAA,GAIF,UAAA,CAAA,iBAAA,CAAA,YACE,UAAA,MAAA,MAAA,CAAA,KAAA,CAAA,SAGF,UAAA,CAJA,iBAIA,CAAA,iBAAA,CAAA,EAAA,CAAA,GACE,iBAAA,UACA,MAAA,KACA,OAAA,KAzBF,QA0BE,MAGF,UAAA,CAXA,iBAWA,CAPA,iBAOA,CAAA,EAAA,CAAA,EAAA,YACE,MAAA,KACA,UAAA,KAGF,UAAA,CAhBA,iBAgBA,CAAA,iBAAA,CAAA,GACE,iBAAA,UACA,MAAA,KACA,SAAA",
-  "names": []
-}

@@ -1,0 +1,11 @@
+{
+    "nav": {
+        "ranking": "Classement",
+        "championWheel": "Roue des champions",
+        "consoleWheel": "Roue des consoles",
+        "scoreManagement": "Gestion des scores",
+        "consoleManagement": "Gestion des consoles",
+        "playerManagement": "Gestion des joueurs",
+        "admin": "Admin"
+    }
+}

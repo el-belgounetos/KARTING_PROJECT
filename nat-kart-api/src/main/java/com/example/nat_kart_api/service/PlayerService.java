@@ -168,8 +168,9 @@ public class PlayerService {
      * Deletes all players and clears rankings.
      */
     public void deleteAllPlayers() {
-        playerRepository.deleteAll();
+        // IMPORTANT: Delete rankings FIRST to avoid foreign key constraint violation
         this.rankingService.clearRanking();
+        playerRepository.deleteAll();
         this.characterService.resetExcludeList();
     }
 

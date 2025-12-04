@@ -2,13 +2,13 @@ package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.HistoriqueDTO;
 import com.example.nat_kart_api.dto.KarterDTO;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,15 +18,19 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    private final GameService gameService;
+    private final HistoryService historyService;
+    private final ImageService imageService;
+    private final RankingService rankingService;
 
-    public ExcelService(GameService gameService) {
-        this.gameService = gameService;
+    public ExcelService(HistoryService historyService, ImageService imageService, RankingService rankingService) {
+        this.historyService = historyService;
+        this.imageService = imageService;
+        this.rankingService = rankingService;
     }
 
     public void generateExcelForRanks(HttpServletResponse response) throws IOException {
-        List<KarterDTO> ranks = gameService.getAllRanks();
-        List<HistoriqueDTO> historique = gameService.getPlayerHistorique(); // Récupère l'historique
+        List<KarterDTO> ranks = rankingService.getAllRanks();
+        List<HistoriqueDTO> historique = historyService.getPlayerHistorique();
 
         Workbook workbook = new XSSFWorkbook();
 
@@ -49,7 +53,7 @@ public class ExcelService {
             row.createCell(4).setCellValue(karter.getVictory());
 
             // Recherche de l'image
-            String imagePath = this.gameService.findMatchingPicture(karter.getPicture());
+            String imagePath = this.imageService.findMatchingPicture(karter.getPicture());
             if (imagePath != null) {
                 InputStream inputStream = new FileInputStream(imagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);
@@ -96,11 +100,11 @@ public class ExcelService {
             row.createCell(4).setCellValue(historiqueItem.isVictory() ? "Oui" : "Non"); // Victoire
 
             // Recherche et ajout de l'image du joueur
-            String playerImagePath = this.gameService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
+            String playerImagePath = this.imageService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
             if (playerImagePath != null) {
                 InputStream inputStream = new FileInputStream(playerImagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);
-                int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
+                workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
                 inputStream.close();
             }
         }

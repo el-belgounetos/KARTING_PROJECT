@@ -183,4 +183,10 @@ export class PlayerManagementComponent implements OnInit {
       });
     }
   }
+
+  cancelEdit() {
+    this.resetForm();
+    this.selectedTabIndex = "0";
+    this.cdr.detectChanges();
+  }
 }

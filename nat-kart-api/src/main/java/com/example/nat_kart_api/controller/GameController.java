@@ -1,116 +1,150 @@
 package com.example.nat_kart_api.controller;
 
-import com.example.nat_kart_api.dto.ConsoleDTO;
-import com.example.nat_kart_api.dto.CounterDTO;
-import com.example.nat_kart_api.dto.HistoriqueDTO;
-import com.example.nat_kart_api.dto.KarterDTO;
-import com.example.nat_kart_api.service.GameService;
+import com.example.nat_kart_api.dto.*;
+import com.example.nat_kart_api.service.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class GameController {
 
-    private GameService gameService;
+    private final CharacterService characterService;
+    private final RankingService rankingService;
+    private final ConsoleService consoleService;
+    private final HistoryService historyService;
+    private final PlayerService playerService;
 
-    public GameController(GameService gameService) {
-        this.gameService = gameService;
+    public GameController(
+            CharacterService characterService,
+            RankingService rankingService,
+            ConsoleService consoleService,
+            HistoryService historyService,
+            PlayerService playerService) {
+        this.characterService = characterService;
+        this.rankingService = rankingService;
+        this.consoleService = consoleService;
+        this.historyService = historyService;
+        this.playerService = playerService;
     }
+
+    // === Character / Avatar Management ===
 
     @GetMapping("/personnages")
     public List<String> getAllCaracters() {
-        return this.gameService.getAllCaracters();
+        return this.characterService.getAllCaracters();
     }
 
     @GetMapping("/personnages/exclude")
     public List<String> getAllExcludeCaracters() {
-        return this.gameService.getExcludePool();
+        return this.characterService.getExcludePool();
     }
 
     @PostMapping("/exclude/{name}")
     public List<String> excludeCaracterByName(@PathVariable String name) {
-        return this.gameService.removeCaracter(name);
+        // Remove the picture from any players using it
+        this.playerService.removePictureFromPlayers(name);
+        // Then exclude it from the pool
+        return this.characterService.removeCaracter(name);
     }
 
     @PostMapping("/exclude/clear")
     public List<String> clearExcludeCaracters() {
-        return this.gameService.resetExcludeList();
+        return this.characterService.resetExcludeList();
     }
 
     @PostMapping("/introduce/{name}")
     public List<String> introduceCaracter(@PathVariable String name) {
-        return this.gameService.introduceCaracter(name);
+        return this.characterService.introduceCaracter(name);
     }
+
+    // === Ranking Management ===
 
     @GetMapping("/ranks")
     public List<KarterDTO> getAllRanks() {
-        return this.gameService.getAllRanks();
+        return this.rankingService.getAllRanks();
     }
 
     @PostMapping("/ranks")
     public void updateRank(@RequestBody KarterDTO player) {
-        this.gameService.updatePointsByName(player.getName(), player.getPoints(), player.getVictory());
+        this.rankingService.updatePointsByName(
+                player.getName(),
+                player.getPoints(),
+                player.getVictory(),
+                player.getCategory());
     }
+
+    // === Console Management ===
 
     @GetMapping("/consoles")
     public List<ConsoleDTO> getAllConsoles() {
-        return this.gameService.getAllConsole();
-    }
-
-    @GetMapping("/historique/{playerName}")
-    public List<HistoriqueDTO> getPlayerHistorique(@PathVariable String playerName) {
-        return this.gameService.getPlayerHistoriqueByPlayerName(playerName);
-    }
-
-    @PostMapping("/historique")
-    public void updatePlayerHistorique(@RequestBody HistoriqueDTO historique) {
-        this.gameService.updatePlayerHistorique(historique);
-    }
-
-    @DeleteMapping("/historique/{historiqueId}")
-    public void getPlayerHistorique(@PathVariable int historiqueId) {
-        this.gameService.deleteHistoriqueById(historiqueId);
+        return this.consoleService.getAllConsole();
     }
 
     @GetMapping("/counters")
     public List<CounterDTO> getAllCounters() {
-        return this.gameService.getAllCounters();
+        return this.consoleService.getAllCounters();
     }
 
     @PostMapping("/counters")
     public void setAllCounters(@RequestBody List<CounterDTO> counters) {
-        this.gameService.setAllCounters(counters);
+        this.consoleService.setAllCounters(counters);
     }
 
+    // === History Management ===
+
+    @GetMapping("/historique/{playerName}")
+    public List<HistoriqueDTO> getPlayerHistorique(@PathVariable String playerName) {
+        return this.historyService.getPlayerHistoriqueByPlayerName(playerName);
+    }
+
+    @PostMapping("/historique")
+    public void updatePlayerHistorique(@RequestBody HistoriqueDTO historique) {
+        this.historyService.updatePlayerHistorique(historique);
+    }
+
+    @DeleteMapping("/historique/{historiqueId}")
+    public void deleteHistorique(@PathVariable int historiqueId) {
+        this.historyService.deleteHistoriqueById(historiqueId, this.rankingService.getAllRanks());
+    }
+
+    // === Player Management ===
+
     @GetMapping("/players")
-    public List<com.example.nat_kart_api.dto.PlayerDTO> getAllPlayers() {
-        return this.gameService.getAllPlayers();
+    public ResponseEntity<List<PlayerDTO>> getAllPlayers() {
+        return ResponseEntity.ok(this.playerService.getAllPlayers());
     }
 
     @PostMapping("/players")
-    public void createPlayer(@RequestBody com.example.nat_kart_api.dto.PlayerDTO player) {
-        this.gameService.createPlayer(player);
+    public ResponseEntity<Void> createPlayer(@RequestBody PlayerDTO player) {
+        this.playerService.createPlayer(player);
+        return ResponseEntity.status(201).build(); // 201 Created
     }
 
     @PutMapping("/players")
-    public void updatePlayer(@RequestBody com.example.nat_kart_api.dto.PlayerDTO player) {
-        this.gameService.updatePlayer(player);
-    }
-
-    @PostMapping("/admin/generate-players/{count}")
-    public void generatePlayers(@PathVariable int count, @RequestParam(defaultValue = "true") boolean assignImage) {
-        gameService.generatePlayers(count, assignImage);
+    public ResponseEntity<Void> updatePlayer(@RequestBody PlayerDTO player) {
+        this.playerService.updatePlayer(player);
+        return ResponseEntity.ok().build(); // 200 OK
     }
 
     @DeleteMapping("/players")
-    public void deleteAllPlayers() {
-        this.gameService.deleteAllPlayers();
+    public ResponseEntity<Void> deleteAllPlayers() {
+        this.playerService.deleteAllPlayers();
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     @DeleteMapping("/players/{pseudo}")
-    public void deletePlayer(@PathVariable String pseudo) {
-        this.gameService.deletePlayer(pseudo);
+    public ResponseEntity<Void> deletePlayer(@PathVariable String pseudo) {
+        this.playerService.deletePlayer(pseudo);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
+    @PostMapping("/admin/generate-players/{count}")
+    public void generatePlayers(
+            @PathVariable int count,
+            @RequestParam(defaultValue = "true") boolean assignImage) {
+        playerService.generatePlayers(count, assignImage);
+    }
 }

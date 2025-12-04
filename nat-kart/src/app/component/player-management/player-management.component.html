@@ -150,8 +150,7 @@
 
                     <div class="flex justify-center gap-4 mt-8">
                         @if (isEditMode) {
-                        <p-button label="Annuler" icon="pi pi-times" severity="secondary"
-                            (onClick)="resetForm(); selectedTabIndex = '0'; cdr.detectChanges()"
+                        <p-button label="Annuler" icon="pi pi-times" severity="secondary" (onClick)="cancelEdit()"
                             styleClass="px-8 py-3 text-lg" />
                         }
                         <p-button [label]="isEditMode ? 'Modifier le joueur' : 'Créer le joueur'" icon="pi pi-check"

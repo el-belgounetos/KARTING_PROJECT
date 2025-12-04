@@ -7,7 +7,7 @@ import { MessageService } from 'primeng/api';
     providedIn: 'root'
 })
 export class ApiService {
-    private baseUrl = 'http://localhost:8080';
+    private baseUrl = 'http://localhost:8080/api';
 
     constructor(
         private http: HttpClient,

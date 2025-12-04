@@ -2,8 +2,10 @@ package com.example.nat_kart_api.repository;
 
 import com.example.nat_kart_api.entity.PlayerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,4 +30,13 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
      * @return true if exists, false otherwise
      */
     boolean existsByPseudoIgnoreCase(String pseudo);
+
+    /**
+     * Find all pictures currently assigned to players (non-null and non-empty).
+     * Used to rebuild the excluded avatars list on application startup.
+     *
+     * @return List of picture filenames in use
+     */
+    @Query("SELECT DISTINCT p.picture FROM PlayerEntity p WHERE p.picture IS NOT NULL AND p.picture != ''")
+    List<String> findAllAssignedPictures();
 }

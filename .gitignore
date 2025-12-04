@@ -3,3 +3,4 @@ nat-kart/.angular
 nat-kart-api/target
 *.jar
 *.db
+nat-kart-api/compile-error.txt

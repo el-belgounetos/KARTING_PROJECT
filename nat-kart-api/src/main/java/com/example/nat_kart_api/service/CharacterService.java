@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class CharacterService {
 
     private final ImageService imageService;
+    private final com.example.nat_kart_api.repository.PlayerRepository playerRepository;
 
     private final List<String> excludeList = new CopyOnWriteArrayList<>();
     private final List<String> excludeCaracters = new CopyOnWriteArrayList<>();
@@ -23,6 +24,25 @@ public class CharacterService {
     @jakarta.annotation.PostConstruct
     public void init() {
         this.resetExcludeList();
+        this.rebuildExcludedAvatarsFromDatabase();
+    }
+
+    /**
+     * Rebuild the excluded avatars list from database on startup.
+     * Queries all assigned player pictures and adds them to exclusion lists.
+     */
+    private void rebuildExcludedAvatarsFromDatabase() {
+        List<String> assignedPictures = playerRepository.findAllAssignedPictures();
+
+        for (String picture : assignedPictures) {
+            // Remove .png extension if present
+            String pictureWithoutExtension = picture.replace(".png", "");
+
+            if (!excludeList.contains(pictureWithoutExtension)) {
+                excludeList.add(pictureWithoutExtension);
+                excludeCaracters.add(pictureWithoutExtension);
+            }
+        }
     }
 
     /**

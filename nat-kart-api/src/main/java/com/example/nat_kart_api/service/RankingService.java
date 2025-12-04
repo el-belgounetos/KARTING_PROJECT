@@ -133,6 +133,32 @@ public class RankingService {
     }
 
     /**
+     * Adjust points and victories for a player (used when deleting history).
+     * Applies deltas to current values.
+     *
+     * @param playerId     The player's ID
+     * @param pointsDelta  Points to add (negative to subtract)
+     * @param victoryDelta Victories to add (negative to subtract)
+     */
+    @Transactional
+    public void adjustPoints(Long playerId, int pointsDelta, int victoryDelta) {
+        PlayerEntity player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new RuntimeException("Player not found with id: " + playerId));
+
+        RankingEntity ranking = rankingRepository.findByPlayer(player)
+                .orElseThrow(() -> new RuntimeException("Ranking not found for player: " + player.getPseudo()));
+
+        // Apply deltas
+        ranking.setPoints(ranking.getPoints() + pointsDelta);
+        ranking.setVictory(ranking.getVictory() + victoryDelta);
+
+        rankingRepository.save(ranking);
+
+        // Recalculate ranks
+        this.rerankEveryone();
+    }
+
+    /**
      * Convert RankingEntity to KarterDTO.
      * Player information (name, picture, category) is retrieved from the player
      * relationship.

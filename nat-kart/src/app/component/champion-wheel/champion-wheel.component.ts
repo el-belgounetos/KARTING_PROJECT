@@ -45,9 +45,6 @@ export class ChampionWheelComponent implements OnInit {
       this.players = players || [];
       this.hasPlayers = this.players.length > 0;
 
-      // Filter out avatars that are already assigned to players
-      this.filterAvailableAvatars();
-
       if (this.hasPlayers) {
         // Count players WITHOUT images
         const playersWithoutImages = this.players.filter(p => !p.picture || p.picture === '').length;
@@ -59,39 +56,26 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   loadCharacters() {
+    // Load available avatars from backend (already filtered by backend)
     this.apiService.get<string[]>('characters').subscribe(data => {
       if (data) {
         this.avatars = data;
-        // After loading characters, check players to filter assigned ones
-        this.checkPlayers();
+
+        // Update displayed avatar if not set
+        if (this.avatars.length > 0 && (!this.avatar || !this.avatars.includes(this.avatar))) {
+          this.avatar = this.avatars[0];
+        }
       }
     });
   }
 
-  filterAvailableAvatars() {
-    if (this.players.length > 0 && this.avatars.length > 0) {
-      const assignedPictures = this.players
-        .map(p => p.picture)
-        .filter(p => p != null && p !== '');
-
-      console.log('Assigned pictures:', assignedPictures);
-      console.log('Avatars before filter:', this.avatars);
-
-      // ADD ASSIGNED PICTURES TO EXCLUDEAVATARS FOR DISPLAY IN "SONT DEJA PASSES"
-      this.excludeAvatars = [...assignedPictures];
-
-      this.avatars = this.avatars.filter(avatar => !assignedPictures.includes(avatar));
-
-      console.log('Avatars after filter:', this.avatars);
-      console.log('ExcludeAvatars:', this.excludeAvatars);
-
-      // Update displayed avatar if current one was removed or not set
-      if (this.avatars.length > 0) {
-        if (!this.avatar || !this.avatars.includes(this.avatar)) {
-          this.avatar = this.avatars[0];
-        }
+  loadExcludedCharacters() {
+    // Load excluded avatars from backend
+    this.apiService.get<string[]>('characters/exclude').subscribe(data => {
+      if (data) {
+        this.excludeAvatars = data;
       }
-    }
+    });
   }
 
   canSpin(): boolean {
@@ -174,11 +158,13 @@ export class ChampionWheelComponent implements OnInit {
       }
     }
 
-    // Update excluded avatars
-    this.drawnPlayers.forEach(player => {
-      this.excludeAvatars.push(player);
-      this.avatars = this.avatars.filter(a => a !== player);
-    });
+    // Backend automatically manages exclusion via CharacterService
+    // Reload data to get updated available and excluded lists
+    setTimeout(() => {
+      this.loadCharacters();
+      this.loadExcludedCharacters();
+      this.checkPlayers();
+    }, 500);
 
     this.isLoading = false;
     this.isAnimating = false;
@@ -203,30 +189,41 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   resetExcludeAvatars() {
-    // Unassign images from all players
-    this.players.forEach(player => {
-      if (player.picture) {
-        player.picture = '';
-        this.updatePlayer(player);
+    // Call backend to clear exclusions and unassign player images
+    this.apiService.post('characters/exclude/clear', {}).subscribe({
+      next: () => {
+        // Unassign images from all players
+        this.players.forEach(player => {
+          if (player.picture) {
+            player.picture = '';
+            this.updatePlayer(player);
+          }
+        });
+
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Reset',
+          detail: 'La pool a été réinitialisée et les images désassignées'
+        });
+
+        // Reload to refresh everything
+        setTimeout(() => this.reloadPool(), 500);
+      },
+      error: (err) => {
+        console.error('Error resetting pool:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de réinitialiser la pool'
+        });
       }
     });
-
-    // Reset the pools
-    this.avatars = [...this.avatars, ...this.excludeAvatars];
-    this.excludeAvatars = [];
-
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Reset',
-      detail: 'La pool a été réinitialisée et les images désassignées'
-    });
-
-    // Reload to refresh everything
-    setTimeout(() => this.reloadPool(), 500);
   }
 
   reloadPool() {
-    this.loadCharacters(); // This will chain call checkPlayers and filterAvailableAvatars
+    this.loadCharacters(); // Load available avatars
+    this.loadExcludedCharacters(); // Load excluded avatars
+    this.checkPlayers(); // Load players data
     this.messageService.add({
       severity: 'info',
       summary: 'Actualisation',
@@ -235,15 +232,28 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   introduceAvatarByName(name: string) {
-    // Find player with this picture and remove it
-    const playerWithPicture = this.players.find(p => p.picture === name);
-    if (playerWithPicture) {
-      playerWithPicture.picture = '';
-      this.updatePlayer(playerWithPicture);
-    }
+    // Call backend to re-introduce avatar
+    this.apiService.post(`characters/include/${name.replace('.png', '')}`, {}).subscribe({
+      next: () => {
+        // Find player with this picture and remove it
+        const playerWithPicture = this.players.find(p => p.picture === name);
+        if (playerWithPicture) {
+          playerWithPicture.picture = '';
+          this.updatePlayer(playerWithPicture);
+        }
 
-    this.excludeAvatars = this.excludeAvatars.filter(a => a !== name);
-    this.avatars.push(name);
+        // Reload to refresh the pools
+        setTimeout(() => this.reloadPool(), 300);
+      },
+      error: (err) => {
+        console.error('Error introducing avatar:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de réintroduire l\'avatar'
+        });
+      }
+    });
   }
 
   getPlayersWithoutImages(): number {

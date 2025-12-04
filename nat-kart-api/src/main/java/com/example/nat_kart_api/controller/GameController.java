@@ -107,7 +107,7 @@ public class GameController {
 
     @DeleteMapping("/historique/{historiqueId}")
     public void deleteHistorique(@PathVariable int historiqueId) {
-        this.historyService.deleteHistoriqueById(historiqueId, this.rankingService.getAllRanks());
+        this.historyService.deleteHistoriqueById(historiqueId);
     }
 
     // === Player Management ===

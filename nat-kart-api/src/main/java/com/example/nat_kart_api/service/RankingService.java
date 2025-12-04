@@ -5,6 +5,7 @@ import com.example.nat_kart_api.entity.PlayerEntity;
 import com.example.nat_kart_api.entity.RankingEntity;
 import com.example.nat_kart_api.repository.PlayerRepository;
 import com.example.nat_kart_api.repository.RankingRepository;
+import com.example.nat_kart_api.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +45,7 @@ public class RankingService {
     public void updatePointsByPlayerId(Long playerId, int newPoints, int victory) {
         // Find player by ID
         PlayerEntity player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new RuntimeException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
 
         // Find or create ranking for this player
         RankingEntity ranking = rankingRepository.findByPlayer(player)
@@ -74,7 +75,7 @@ public class RankingService {
     @Transactional
     public void createRankingEntry(Long playerId) {
         PlayerEntity player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new RuntimeException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
 
         // Check if ranking already exists
         if (rankingRepository.findByPlayer(player).isPresent()) {
@@ -99,10 +100,10 @@ public class RankingService {
     @Transactional
     public void deleteRankingEntry(String playerPseudo) {
         PlayerEntity player = playerRepository.findByPseudo(playerPseudo)
-                .orElseThrow(() -> new RuntimeException("Player not found: " + playerPseudo));
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found: " + playerPseudo));
 
         RankingEntity ranking = rankingRepository.findByPlayer(player)
-                .orElseThrow(() -> new RuntimeException("Ranking not found for player: " + playerPseudo));
+                .orElseThrow(() -> new ResourceNotFoundException("Ranking not found for player: " + playerPseudo));
 
         rankingRepository.delete(ranking);
         this.rerankEveryone();
@@ -143,10 +144,11 @@ public class RankingService {
     @Transactional
     public void adjustPoints(Long playerId, int pointsDelta, int victoryDelta) {
         PlayerEntity player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new RuntimeException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
 
         RankingEntity ranking = rankingRepository.findByPlayer(player)
-                .orElseThrow(() -> new RuntimeException("Ranking not found for player: " + player.getPseudo()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Ranking not found for player: " + player.getPseudo()));
 
         // Apply deltas
         ranking.setPoints(ranking.getPoints() + pointsDelta);

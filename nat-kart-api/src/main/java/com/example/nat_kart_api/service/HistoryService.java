@@ -8,6 +8,7 @@ import com.example.nat_kart_api.entity.HistoryEntity;
 import com.example.nat_kart_api.entity.PlayerEntity;
 import com.example.nat_kart_api.repository.HistoryRepository;
 import com.example.nat_kart_api.repository.PlayerRepository;
+import com.example.nat_kart_api.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -92,7 +93,7 @@ public class HistoryService {
     @Transactional
     public void deleteHistoriqueById(int id) {
         HistoryEntity history = historyRepository.findById((long) id)
-                .orElseThrow(() -> new RuntimeException("History entry not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("History entry not found: " + id));
 
         // Calculate deltas (negative to subtract from player's total)
         int pointsDelta = -history.getPoints();
@@ -177,7 +178,8 @@ public class HistoryService {
         // Find and set player
         if (dto.getPlayer() != null && dto.getPlayer().getPlayerId() != null) {
             PlayerEntity player = playerRepository.findById(dto.getPlayer().getPlayerId())
-                    .orElseThrow(() -> new RuntimeException("Player not found: " + dto.getPlayer().getPlayerId()));
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException("Player not found: " + dto.getPlayer().getPlayerId()));
             entity.setPlayer(player);
         }
 

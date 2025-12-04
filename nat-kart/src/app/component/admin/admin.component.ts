@@ -5,8 +5,9 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { ApiService } from '../../services/api.service';
+import { LoadingService } from '../../services/loading.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
     selector: 'app-admin',
@@ -25,34 +26,32 @@ import { ApiService } from '../../services/api.service';
 export class AdminComponent {
     playerCount: number = 5;
     assignImage: boolean = true;
-    loading: boolean = false;
 
     constructor(
         private apiService: ApiService,
-        private messageService: MessageService
+        private loadingService: LoadingService,
+        private notificationService: NotificationService
     ) { }
 
     generatePlayers() {
         console.log('generatePlayers called, count:', this.playerCount, 'assignImage:', this.assignImage);
-        this.loading = true;
+        this.loadingService.show();
         this.apiService.post(`admin/generate-players/${this.playerCount}?assignImage=${this.assignImage}`, {}).subscribe({
             next: () => {
                 console.log('generatePlayers: Success');
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: `${this.playerCount} joueurs ont été générés avec succès !`
-                });
-                this.loading = false;
+                this.notificationService.success(
+                    'Succès',
+                    `${this.playerCount} joueurs ont été générés avec succès !`
+                );
+                this.loadingService.hide();
             },
             error: (err) => {
                 console.error('generatePlayers: Error', err);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Une erreur est survenue lors de la génération des joueurs.'
-                });
-                this.loading = false;
+                this.notificationService.error(
+                    'Erreur',
+                    'Une erreur est survenue lors de la génération des joueurs.'
+                );
+                this.loadingService.hide();
             }
         });
     }
@@ -61,25 +60,23 @@ export class AdminComponent {
         console.log('resetParticipants called');
         if (confirm('Êtes-vous sûr de vouloir supprimer TOUS les participants ? Cette action est irréversible.')) {
             console.log('User confirmed reset');
-            this.loading = true;
+            this.loadingService.show();
             this.apiService.delete('players').subscribe({
                 next: () => {
                     console.log('resetParticipants: Success');
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Succès',
-                        detail: 'Tous les participants ont été supprimés'
-                    });
-                    this.loading = false;
+                    this.notificationService.success(
+                        'Succès',
+                        'Tous les participants ont été supprimés'
+                    );
+                    this.loadingService.hide();
                 },
                 error: (err) => {
                     console.error('resetParticipants: Error', err);
-                    this.loading = false;
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Erreur',
-                        detail: 'Erreur lors de la réinitialisation'
-                    });
+                    this.loadingService.hide();
+                    this.notificationService.error(
+                        'Erreur',
+                        'Erreur lors de la réinitialisation'
+                    );
                 }
             });
         } else {

@@ -70,11 +70,10 @@ public class GameController {
 
     @PostMapping("/ranks")
     public void updateRank(@Valid @RequestBody KarterDTO player) {
-        this.rankingService.updatePointsByName(
-                player.getName(),
+        this.rankingService.updatePointsByPlayerId(
+                player.getPlayerId(),
                 player.getPoints(),
-                player.getVictory(),
-                player.getCategory());
+                player.getVictory());
     }
 
     // === Console Management ===

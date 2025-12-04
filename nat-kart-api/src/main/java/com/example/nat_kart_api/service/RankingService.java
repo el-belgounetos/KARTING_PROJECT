@@ -1,185 +1,160 @@
 package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.KarterDTO;
-import com.example.nat_kart_api.entity.KarterEntity;
-import com.example.nat_kart_api.repository.KarterRepository;
+import com.example.nat_kart_api.entity.PlayerEntity;
+import com.example.nat_kart_api.entity.RankingEntity;
+import com.example.nat_kart_api.repository.PlayerRepository;
+import com.example.nat_kart_api.repository.RankingRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Service responsible for managing player rankings, points, and victories.
- * Handles automatic re-ranking after point updates.
+ * Service for managing player rankings and scores.
  */
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class RankingService {
 
-    private final KarterRepository karterRepository;
+    private final RankingRepository rankingRepository;
+    private final PlayerRepository playerRepository;
 
     /**
-     * Converts KarterEntity to KarterDTO.
-     */
-    private KarterDTO toDTO(KarterEntity entity) {
-        KarterDTO dto = new KarterDTO();
-        dto.setPlayerId(entity.getPlayerId());
-        dto.setName(entity.getName());
-        dto.setPoints(entity.getPoints());
-        dto.setVictory(entity.getVictory());
-        dto.setPicture(entity.getPicture());
-        dto.setCategory(entity.getCategory());
-        dto.setRank(entity.getRank());
-        return dto;
-    }
-
-    /**
-     * Converts KarterDTO to KarterEntity.
-     */
-    private KarterEntity toEntity(KarterDTO dto) {
-        KarterEntity entity = new KarterEntity();
-        entity.setPlayerId(dto.getPlayerId());
-        entity.setName(dto.getName());
-        entity.setPoints(dto.getPoints());
-        entity.setVictory(dto.getVictory());
-        entity.setPicture(dto.getPicture());
-        entity.setCategory(dto.getCategory());
-        entity.setRank(dto.getRank());
-        return entity;
-    }
-
-    /**
-     * Gets all player rankings.
+     * Get all rankings sorted by points (highest first).
      *
-     * @return List of karter DTOs with ranking information
+     * @return List of ranking DTOs
      */
     public List<KarterDTO> getAllRanks() {
-        return karterRepository.findAllByOrderByPointsDesc().stream()
+        return rankingRepository.findAllByOrderByPointsDesc().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Updates points and victories for a player by name.
-     * Also synchronizes category from player data.
+     * Update points and victories for a player by their ID.
      *
-     * @param name      The player name
-     * @param newPoints The new points total
-     * @param victory   The new victory count
-     * @param category  The player's category
+     * @param playerId  The player's ID
+     * @param newPoints New points value
+     * @param victory   New victory count
      */
     @Transactional
-    public void updatePointsByName(String name, int newPoints, int victory, String category) {
-        Optional<KarterEntity> karterOpt = karterRepository.findByName(name);
-        if (karterOpt.isPresent()) {
-            KarterEntity karter = karterOpt.get();
-            karter.setPoints(newPoints);
-            karter.setVictory(victory);
-            karter.setCategory(category);
-            karterRepository.save(karter);
-            this.rerankEveryone();
+    public void updatePointsByPlayerId(Long playerId, int newPoints, int victory) {
+        // Find player by ID
+        PlayerEntity player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new RuntimeException("Player not found with id: " + playerId));
+
+        // Find or create ranking for this player
+        RankingEntity ranking = rankingRepository.findByPlayer(player)
+                .orElseGet(() -> {
+                    RankingEntity newRanking = new RankingEntity();
+                    newRanking.setPlayer(player);
+                    newRanking.setPoints(0);
+                    newRanking.setVictory(0);
+                    newRanking.setRank(0);
+                    return newRanking;
+                });
+
+        // Update points and victories
+        ranking.setPoints(newPoints);
+        ranking.setVictory(victory);
+        rankingRepository.save(ranking);
+
+        // Recalculate ranks
+        this.rerankEveryone();
+    }
+
+    /**
+     * Create a new ranking entry for a player.
+     *
+     * @param playerId The player's ID
+     */
+    @Transactional
+    public void createRankingEntry(Long playerId) {
+        PlayerEntity player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new RuntimeException("Player not found with id: " + playerId));
+
+        // Check if ranking already exists
+        if (rankingRepository.findByPlayer(player).isPresent()) {
+            throw new RuntimeException("Ranking already exists for player: " + player.getPseudo());
         }
-    }
 
-    /**
-     * Creates a new ranking entry for a player.
-     *
-     * @param playerId Player's unique ID
-     * @param name     Player's display name (pseudo)
-     * @param picture  Player's avatar filename
-     * @param category Player's category
-     */
-    @Transactional
-    public void createRankingEntry(Long playerId, String name, String picture, String category) {
-        KarterEntity newKarter = new KarterEntity();
-        newKarter.setPlayerId(playerId);
-        newKarter.setName(name);
-        newKarter.setPicture(picture);
-        newKarter.setCategory(category);
-        newKarter.setPoints(0);
-        newKarter.setVictory(0);
-        newKarter.setRank(1);
+        RankingEntity ranking = new RankingEntity();
+        ranking.setPlayer(player);
+        ranking.setPoints(0);
+        ranking.setVictory(0);
+        ranking.setRank(0);
+        rankingRepository.save(ranking);
 
-        karterRepository.save(newKarter);
         this.rerankEveryone();
     }
 
     /**
-     * Deletes a ranking entry by player name.
+     * Delete ranking entry for a player.
      *
-     * @param name The player name to remove from rankings
+     * @param playerPseudo The player's pseudo
      */
     @Transactional
-    public void deleteRankingEntry(String name) {
-        karterRepository.deleteByName(name);
+    public void deleteRankingEntry(String playerPseudo) {
+        PlayerEntity player = playerRepository.findByPseudo(playerPseudo)
+                .orElseThrow(() -> new RuntimeException("Player not found: " + playerPseudo));
+
+        RankingEntity ranking = rankingRepository.findByPlayer(player)
+                .orElseThrow(() -> new RuntimeException("Ranking not found for player: " + playerPseudo));
+
+        rankingRepository.delete(ranking);
         this.rerankEveryone();
     }
 
     /**
-     * Clears all ranking entries.
+     * Clear all rankings.
      */
     @Transactional
     public void clearRanking() {
-        karterRepository.deleteAll();
+        rankingRepository.deleteAll();
     }
 
     /**
-     * Updates the category for a player by their ID.
+     * Recalculate ranks for all players based on points.
+     * Players with more points get better (lower) rank numbers.
+     */
+    @Transactional
+    public void rerankEveryone() {
+        List<RankingEntity> rankings = rankingRepository.findAllByOrderByPointsDesc();
+
+        int rank = 1;
+        for (RankingEntity ranking : rankings) {
+            ranking.setRank(rank++);
+        }
+
+        rankingRepository.saveAll(rankings);
+    }
+
+    /**
+     * Convert RankingEntity to KarterDTO.
+     * Player information (name, picture, category) is retrieved from the player
+     * relationship.
      *
-     * @param playerId    The player's ID
-     * @param newCategory The new category value
-     * @return true if player was found and updated, false otherwise
+     * @param entity The ranking entity
+     * @return The DTO
      */
-    @Transactional
-    public boolean updateCategoryByPlayerId(Long playerId, String newCategory) {
-        Optional<KarterEntity> karterOpt = karterRepository.findByPlayerId(playerId);
-        if (karterOpt.isPresent()) {
-            KarterEntity karter = karterOpt.get();
-            karter.setCategory(newCategory);
-            karterRepository.save(karter);
-            return true;
-        }
-        return false;
-    }
+    private KarterDTO toDTO(RankingEntity entity) {
+        PlayerEntity player = entity.getPlayer();
 
-    /**
-     * Updates the picture (avatar) for a player by their ID.
-     *
-     * @param playerId   The player's ID
-     * @param newPicture The new picture filename
-     * @return true if player was found and updated, false otherwise
-     */
-    @Transactional
-    public boolean updatePictureByPlayerId(Long playerId, String newPicture) {
-        Optional<KarterEntity> karterOpt = karterRepository.findByPlayerId(playerId);
-        if (karterOpt.isPresent()) {
-            KarterEntity karter = karterOpt.get();
-            log.debug("Updating picture in ranking for playerId {} from '{}' to '{}'", playerId,
-                    karter.getPicture(), newPicture);
-            karter.setPicture(newPicture);
-            karterRepository.save(karter);
-            return true;
-        }
-        return false;
-    }
+        // Combine player's name and firstname for display
+        String displayName = player.getName() + " " + player.getFirstname();
 
-    /**
-     * Re-ranks all players based on their points (descending order).
-     * Assigns rank numbers (1st, 2nd, 3rd, etc.).
-     */
-    @Transactional
-    private void rerankEveryone() {
-        List<KarterEntity> allKarters = karterRepository.findAllByOrderByPointsDesc();
+        KarterDTO dto = new KarterDTO();
+        dto.setPlayerId(player.getId());
+        dto.setName(displayName);
+        dto.setPoints(entity.getPoints());
+        dto.setVictory(entity.getVictory());
+        dto.setPicture(player.getPicture());
+        dto.setCategory(player.getCategory());
+        dto.setRank(entity.getRank());
 
-        for (int i = 0; i < allKarters.size(); i++) {
-            KarterEntity karter = allKarters.get(i);
-            karter.setRank(i + 1);
-            karterRepository.save(karter);
-        }
+        return dto;
     }
 }

@@ -90,20 +90,13 @@ public class PlayerService {
             this.characterService.removeCaracter(player.getPicture().replace(".png", ""));
         }
 
-        // Create ranking entry
-        String displayName = (player.getPseudo() != null && !player.getPseudo().isEmpty())
-                ? player.getPseudo()
-                : player.getName();
-
-        rankingService.createRankingEntry(
-                player.getId(),
-                displayName,
-                player.getPicture(),
-                player.getCategory());
+        // Create ranking entry - player data will be accessed via JPA relationship
+        rankingService.createRankingEntry(saved.getId());
     }
 
     /**
-     * Updates an existing player and syncs category to ranking.
+     * Updates an existing player.
+     * Player changes are automatically reflected in rankings via JPA relationship.
      *
      * @param playerDTO The player DTO with updated information
      */
@@ -137,34 +130,14 @@ public class PlayerService {
             player.setAge(playerDTO.getAge());
             player.setEmail(playerDTO.getEmail());
             player.setCategory(playerDTO.getCategory());
-            player.setPicture(newPicture); // Update picture
+            player.setPicture(newPicture);
 
             // Save updated entity to database
             playerRepository.save(player);
 
-            // Update category in ranking using playerId
-            boolean karterFoundCategory = rankingService.updateCategoryByPlayerId(
-                    playerDTO.getId(),
-                    playerDTO.getCategory());
-
-            if (karterFoundCategory) {
-                log.debug("Updated category in ranking for playerId {}", playerDTO.getId());
-            } else {
-                log.warn("Karter not found in ranking for playerId: {}", playerDTO.getId());
-            }
-
-            // Update picture in ranking using playerId
-            if (newPicture != null && !newPicture.equals(oldPicture)) {
-                boolean karterFoundPicture = rankingService.updatePictureByPlayerId(
-                        playerDTO.getId(),
-                        newPicture);
-
-                if (karterFoundPicture) {
-                    log.debug("Updated picture in ranking for playerId {}", playerDTO.getId());
-                } else {
-                    log.warn("Could not update picture in ranking for playerId: {}", playerDTO.getId());
-                }
-            }
+            // No need to manually sync to ranking - JPA relationship handles it
+            // automatically
+            log.debug("Player updated - changes automatically reflected in ranking via JPA");
         }
         log.debug("updatePlayer completed");
     }

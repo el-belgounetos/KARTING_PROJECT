@@ -1,8 +1,14 @@
-<div class="card bar-menu">
-  <p-tabMenu
-    [model]="items"
-    [activeItem]="activeItem"
-    (activeItemChange)="onActiveItemChange($event)">
-  </p-tabMenu>
-</div>
+@if (loadingService.loading()) {
+<app-loader />
+}
+<p-confirmDialog />
+<nav class="card h-[5vh] sticky top-0 z-50" aria-label="Navigation principale">
+  <p-tabs [value]="activeItem()" (valueChange)="onActiveItemChange($event)">
+    <p-tablist>
+      @for (item of items; track item.label; let idx = $index) {
+      <p-tab [value]="idx">{{ item.label }}</p-tab>
+      }
+    </p-tablist>
+  </p-tabs>
+</nav>
 <router-outlet></router-outlet>

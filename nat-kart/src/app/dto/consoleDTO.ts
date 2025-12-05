@@ -1,7 +1,7 @@
 import { CupsDTO } from './cupsDTO';
 
-export class ConsoleDTO {
-  public name: string = '';
-  public picture: string = '';
-  public cups: CupsDTO[] = [];
+export interface ConsoleDTO {
+  name: string;
+  picture: string;
+  cups?: CupsDTO[];
 }

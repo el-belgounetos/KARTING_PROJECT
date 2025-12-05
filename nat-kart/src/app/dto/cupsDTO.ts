@@ -1,4 +1,4 @@
-export class CupsDTO {
-  public name: string = '';
-  public picture: string = '';
+export interface CupsDTO {
+  name: string;
+  picture: string;
 }

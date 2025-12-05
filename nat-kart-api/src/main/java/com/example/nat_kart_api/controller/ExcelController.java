@@ -6,7 +6,10 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.springframework.web.bind.annotation.RequestMapping;
+
 @RestController
+@RequestMapping("/api")
 public class ExcelController {
 
     private final ExcelService excelService;

@@ -1,0 +1,39 @@
+/* Poolup Component - PrimeNG Overrides Only */
+
+/* Custom Scrollbar */
+::ng-deep .ranks-scroll .p-scrollpanel-wrapper {
+  border-right: none;
+}
+
+::ng-deep .ranks-scroll .p-scrollpanel-bar {
+  background-color: rgba(255, 255, 255, 0.2);
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+::ng-deep .ranks-scroll .p-scrollpanel-bar:hover {
+  opacity: 0.8;
+}
+
+/* Historique Table */
+::ng-deep .history-table .p-datatable {
+  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+}
+
+::ng-deep .history-table .p-datatable-thead>tr>th {
+  background-color: rgba(64, 64, 64, 0.9);
+  color: white;
+  border: none;
+  padding: 0.5rem;
+}
+
+::ng-deep .history-table .p-datatable-thead>tr>th:last-child {
+  width: 3rem;
+  min-width: 3rem;
+}
+
+::ng-deep .history-table .p-datatable-tbody>tr {
+  background-color: rgba(64, 64, 64, 0.5);
+  color: white;
+  overflow: visible;
+}

@@ -1,0 +1,28 @@
+<div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
+  [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper5.jpg') + ')'"></div>
+<main class="h-[95vh] w-full flex flex-col overflow-hidden pt-[5vh]">
+
+  <!-- Button -->
+  <header class="w-full flex justify-center items-center py-4">
+    <p-button styleClass="consoling-button" [disabled]="isSpinning()" label="Tourner la roue" (click)="onSpin()">
+    </p-button>
+  </header>
+
+  <!-- Consoles List - Vertical on mobile, Grid on desktop -->
+  <section aria-label="Consoles disponibles" class="flex flex-col lg:grid gap-4 overflow-y-auto flex-1 px-4 pb-4"
+    [ngStyle]="{'grid-template-columns': calculateConsolesPerLine() > 0 ? 'repeat(' + calculateConsolesPerLine() + ', 1fr)' : '1fr'}">
+    @for (console of consolesDisplayed(); track console; let index = $index) {
+    <div
+      class="h-auto lg:h-full text-white font-bold text-lg lg:text-xl bg-gray-700/90 border-2 border-gray-500 rounded-xl lg:rounded-2xl flex flex-col items-center justify-between text-center p-6 lg:p-4 gap-4">
+      <div class="text-xl lg:text-lg">{{ console.name }}</div>
+      <p-image [src]="imageService.getConsoleImageUrl(console.picture)" alt="console" width="120"
+        class="flex-shrink-0"></p-image>
+
+      <div
+        class="bg-black/65 w-[120px] h-[120px] flex flex-col items-center justify-center border-4 border-yellow-400 rounded-lg lg:rounded-xl">
+        <p-image [src]="allCupsImages()[index]" width="100" class="flex-shrink-0" />
+      </div>
+    </div>
+    }
+  </section>
+</main>

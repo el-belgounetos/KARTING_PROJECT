@@ -1,14 +1,14 @@
 package com.example.nat_kart_api.service;
 
-import com.example.nat_kart_api.dto.HistoriqueDTO;
-import com.example.nat_kart_api.dto.KarterDTO;
+import com.example.nat_kart_api.dto.HistoryDTO;
+import com.example.nat_kart_api.dto.RankingDTO;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,22 +18,26 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    private final NatFolder folderService;
+    private final HistoryService historyService;
+    private final ImageService imageService;
+    private final RankingService rankingService;
 
-    public ExcelService(NatFolder folderService) {
-        this.folderService = folderService;
+    public ExcelService(HistoryService historyService, ImageService imageService, RankingService rankingService) {
+        this.historyService = historyService;
+        this.imageService = imageService;
+        this.rankingService = rankingService;
     }
 
     public void generateExcelForRanks(HttpServletResponse response) throws IOException {
-        List<KarterDTO> ranks = folderService.getAllRanks();
-        List<HistoriqueDTO> historique = folderService.getPlayerHistorique(); // Récupère l'historique
+        List<RankingDTO> ranks = rankingService.getAllRanks();
+        List<HistoryDTO> historique = historyService.getPlayerHistory();
 
         Workbook workbook = new XSSFWorkbook();
 
         // Première feuille : Classement
         Sheet classementSheet = workbook.createSheet("Classement");
         Row headerRow = classementSheet.createRow(0);
-        String[] columns = {"Rang", "Nom", "Image", "Points", "Nombre de victoires"};
+        String[] columns = { "Rang", "Nom", "Image", "Points", "Nombre de victoires" };
 
         for (int i = 0; i < columns.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -41,7 +45,7 @@ public class ExcelService {
         }
 
         int rowIdx = 1;
-        for (KarterDTO karter : ranks) {
+        for (RankingDTO karter : ranks) {
             Row row = classementSheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(karter.getRank());
             row.createCell(1).setCellValue(karter.getName());
@@ -49,7 +53,11 @@ public class ExcelService {
             row.createCell(4).setCellValue(karter.getVictory());
 
             // Recherche de l'image
-            String imagePath = this.folderService.findMatchingPicture(karter.getPicture());
+            String imagePath = null;
+            if (karter.getPicture() != null && !karter.getPicture().isEmpty()) {
+                imagePath = this.imageService.findMatchingPicture(karter.getPicture());
+            }
+
             if (imagePath != null) {
                 InputStream inputStream = new FileInputStream(imagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);
@@ -79,7 +87,7 @@ public class ExcelService {
         // Deuxième feuille : Historique
         Sheet historiqueSheet = workbook.createSheet("Historique");
         Row historiqueHeaderRow = historiqueSheet.createRow(0);
-        String[] historiqueColumns = {"Nom", "Nom de la console", "Nom de la course", "Points", "Victoire"};
+        String[] historiqueColumns = { "Nom", "Nom de la console", "Nom de la course", "Points", "Victoire" };
 
         for (int i = 0; i < historiqueColumns.length; i++) {
             Cell cell = historiqueHeaderRow.createCell(i);
@@ -87,7 +95,7 @@ public class ExcelService {
         }
 
         int historiqueRowIdx = 1;
-        for (HistoriqueDTO historiqueItem : historique) {
+        for (HistoryDTO historiqueItem : historique) {
             Row row = historiqueSheet.createRow(historiqueRowIdx++);
             row.createCell(0).setCellValue(historiqueItem.getPlayer().getName()); // Nom du joueur
             row.createCell(1).setCellValue(historiqueItem.getConsole().getName()); // Nom de la console
@@ -96,11 +104,15 @@ public class ExcelService {
             row.createCell(4).setCellValue(historiqueItem.isVictory() ? "Oui" : "Non"); // Victoire
 
             // Recherche et ajout de l'image du joueur
-            String playerImagePath = this.folderService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
+            String playerImagePath = null;
+            if (historiqueItem.getPlayer().getPicture() != null && !historiqueItem.getPlayer().getPicture().isEmpty()) {
+                playerImagePath = this.imageService.findMatchingPicture(historiqueItem.getPlayer().getPicture());
+            }
+
             if (playerImagePath != null) {
                 InputStream inputStream = new FileInputStream(playerImagePath);
                 byte[] imageBytes = IOUtils.toByteArray(inputStream);
-                int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
+                workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
                 inputStream.close();
             }
         }

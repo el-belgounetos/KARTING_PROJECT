@@ -1,0 +1,177 @@
+<div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
+  [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'"></div>
+
+<!-- Poolup Layout: Flex column on mobile, Grid on desktop (like Kart) -->
+<main
+  class="flex flex-col lg:grid lg:grid-cols-[minmax(250px,20%)_1fr_minmax(350px,30%)] h-screen w-full overflow-x-hidden overflow-y-auto lg:overflow-hidden relative bg-[rgba(45,45,45,0.7)]"
+  style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;">
+
+  <!-- Left Sidebar: Avatar List -->
+  <aside aria-label="Liste des joueurs"
+    class="w-full h-48 lg:h-full p-4 bg-gray-900/60 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden shrink-0">
+    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="ranks-scroll">
+      <div class="flex flex-col gap-2">
+        @for (rank of ranks(); track $index) {
+        <div
+          class="flex items-center gap-4 p-3 rounded-lg bg-gray-700/80 cursor-pointer transition-all hover:bg-gray-600/90 hover:translate-x-1"
+          [class.!bg-primary]="selectedRank?.name === rank.name" (click)="selectNewRank(rank)">
+          @if (rank.picture) {
+          <img [src]="imageService.getPlayerImageUrl(rank.picture)"
+            class="w-[clamp(40px,5vw,60px)] h-[clamp(40px,5vw,60px)] object-cover rounded-full shrink-0"
+            [alt]="rank.name" />
+          } @else {
+          <img [src]="imageService.getPlayerImageUrl('unknown.png')"
+            class="w-[clamp(40px,5vw,60px)] h-[clamp(40px,5vw,60px)] object-cover rounded-full shrink-0 opacity-50"
+            [alt]="rank.name" />
+          }
+          <div class="flex-1 min-w-0">
+            <span
+              class="font-bold text-white text-[clamp(0.875rem,1.5vw,1rem)] whitespace-nowrap overflow-hidden text-ellipsis">{{
+              rank.name }}</span>
+          </div>
+        </div>
+        }
+      </div>
+    </p-scrollPanel>
+  </aside>
+
+  <!-- Main Content: Details & Controls -->
+  <section aria-label="Modification des scores" class="p-8 flex flex-col items-center gap-8 overflow-y-auto">
+    <div class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-white drop-shadow-md text-center mb-4">
+      Modification des rangs
+    </div>
+
+    @if (selectedRank) {
+    <div class="bg-gray-700/90 rounded-2xl p-8 shadow-2xl border border-white/10 backdrop-blur-sm w-full max-w-[800px]">
+      <div class="flex items-center gap-8">
+        @if (selectedRank.picture) {
+        <img [src]="imageService.getPlayerImageUrl(selectedRank.picture)" [alt]="selectedRank.name"
+          class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0" />
+        } @else {
+        <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="selectedRank.name"
+          class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0 opacity-50" />
+        }
+        <div class="flex-1 min-w-0">
+          <div class="text-[clamp(1.25rem,3vw,2rem)] font-bold text-white mb-2">{{ selectedRank.name }}</div>
+          <div class="flex flex-wrap gap-4 text-white/80 text-[clamp(0.75rem,1.5vw,1rem)]">
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank.points }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank.rank }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank.victory }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ history().length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="w-full max-w-[800px] flex flex-col gap-6 bg-gray-700/90 p-8 rounded-2xl border border-white/10">
+      <div class="grid grid-cols-2 max-lg:grid-cols-1 gap-8 items-start">
+        <div class="flex flex-col gap-2 text-white">
+          <label for="pointToAdd" class="font-bold text-[clamp(0.75rem,1.5vw,0.9rem)] text-white/90">Points à
+            ajouter</label>
+          <p-inputNumber inputId="pointToAdd" [(ngModel)]="valueToAdd" />
+        </div>
+
+        <div class="flex flex-col gap-2 text-white">
+          <label class="font-bold text-[clamp(0.75rem,1.5vw,0.9rem)] text-white/90">Victoire</label>
+          <p-toggleSwitch [(ngModel)]="victory" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 max-lg:grid-cols-1 gap-8 items-start">
+        <p-select (click)="onConsoleSelected()" styleClass="w-full" [options]="consoles()" [(ngModel)]="selectedConsole"
+          optionLabel="name" [showClear]="true" placeholder="Choisir une console">
+          <ng-template pTemplate="selectedConsole">
+            @if (selectedConsole) {
+            <div class="flex items-center gap-2">
+              <img [src]="imageService.getConsoleImageUrl(selectedConsole.picture)"
+                class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
+              <div>{{ selectedConsole.name }}</div>
+            </div>
+            }
+          </ng-template>
+          <ng-template let-selectedConsole pTemplate="item">
+            <div class="flex items-center gap-2">
+              <img [src]="imageService.getConsoleImageUrl(selectedConsole.picture)"
+                class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
+              <div>{{ selectedConsole.name }}</div>
+            </div>
+          </ng-template>
+        </p-select>
+
+        @if (selectedConsole != null && selectedConsole.name != '') {
+        <p-select styleClass="w-full" [options]="cups()" [(ngModel)]="selectedCups" optionLabel="name"
+          [showClear]="true" placeholder="Choisir une coupe">
+          <ng-template pTemplate="selectedCups">
+            @if (selectedCups) {
+            <div class="flex items-center gap-2">
+              <img [src]="imageService.getCupImageUrl(selectedConsole.name + '/' + selectedCups.picture)"
+                class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
+              <div>{{ selectedCups.name }}</div>
+            </div>
+            }
+          </ng-template>
+          <ng-template let-selectedCups pTemplate="item">
+            <div class="flex items-center gap-2">
+              <img [src]="imageService.getCupImageUrl(selectedConsole.name + '/' + selectedCups.picture)"
+                class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
+              <div>{{ selectedCups.name }}</div>
+            </div>
+          </ng-template>
+        </p-select>
+        }
+      </div>
+
+      <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loadingService.loading()"
+        [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
+    </div>
+    }
+  </section>
+
+  <!-- Right Sidebar: History (Collapsible) -->
+  <aside aria-label="Historique des scores"
+    class="w-full lg:h-full p-4 bg-gray-900/60 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col overflow-hidden shrink-0"
+    [ngClass]="{'h-16': !isHistoryVisible, 'h-64': isHistoryVisible}">
+    @if (selectedRank != null && selectedRank.name != '') {
+    <div class="h-full flex flex-col gap-4">
+      <!-- Header with toggle button -->
+      <div
+        class="flex items-center justify-between p-2 lg:p-4 border-b border-white/10 bg-gray-900/90 lg:bg-transparent sticky top-0 z-10 rounded shadow-md">
+        <div class="text-[clamp(1rem,2.5vw,1.5rem)] font-bold text-white text-center flex-1">
+          Historique
+        </div>
+        <button (click)="isHistoryVisible = !isHistoryVisible"
+          class="ml-2 p-2 text-white hover:bg-white/10 rounded transition-colors">
+          <i [class]="isHistoryVisible ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+        </button>
+      </div>
+
+      @if (isHistoryVisible) {
+      <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
+        <p-table [value]="history()" styleClass="history-table" [rowHover]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Joueur</th>
+              <th>Pts</th>
+              <th>Console</th>
+              <th>Coupe</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-line>
+            <tr>
+              <td>{{ line.player.name }}</td>
+              <td>{{ line.points }}</td>
+              <td>{{ line.console.name }}</td>
+              <td>{{ line.cups.name }}</td>
+              <td><p-badge [value]="'X'" severity="danger" class="badge-del cursor-pointer hover:scale-110 inline-block"
+                  (click)="deleteHistory(line)" /></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-scrollPanel>
+      }
+    </div>
+    }
+  </aside>
+
+</main>

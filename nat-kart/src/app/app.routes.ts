@@ -1,15 +1,18 @@
 import { Routes } from '@angular/router';
-import { KartComponent } from './component/kart/kart.component';
-import { CupComponent } from './component/cup/cup.component';
-import { PoolupComponent } from './component/poolup/poolup.component';
-import { ConsolingComponent } from './component/consoling/consoling.component';
-import { ParametersComponent } from './component/parameters/parameters.component';
+import { ChampionWheelComponent } from './component/champion-wheel/champion-wheel.component';
+import { RankingComponent } from './component/ranking/ranking.component';
+import { ScoreManagementComponent } from './component/score-management/score-management.component';
+import { ConsoleWheelComponent } from './component/console-wheel/console-wheel.component';
+import { ConsoleManagementComponent } from './component/console-management/console-management.component';
 
 export const routes: Routes = [
-  {path : 'natcup', component: CupComponent},
-  {path : 'natspin', component: KartComponent},
-  {path : 'poolup', component: PoolupComponent},
-  {path : 'natspinconsole', component: ConsolingComponent},
-  {path : 'parameters-console', component: ParametersComponent},
-  { path: '**', redirectTo: '' }
+  { path: 'ranking', component: RankingComponent },
+  { path: 'champion-wheel', component: ChampionWheelComponent },
+  { path: 'score-management', component: ScoreManagementComponent },
+  { path: 'console-wheel', component: ConsoleWheelComponent },
+  { path: 'console-management', component: ConsoleManagementComponent },
+  { path: 'player-management', loadComponent: () => import('./component/player-management/player-management.component').then(m => m.PlayerManagementComponent) },
+  { path: 'admin', loadComponent: () => import('./component/admin/admin.component').then(m => m.AdminComponent) },
+  { path: '', redirectTo: 'ranking', pathMatch: 'full' },
+  { path: '**', redirectTo: 'ranking' }
 ];

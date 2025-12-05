@@ -31,7 +31,7 @@
         <label for="playerCount"
           class="text-base lg:text-lg font-black text-white text-center uppercase tracking-wider shadow-md">Nombre de
           joueurs :</label>
-        <p-inputNumber inputId="playerCount" [(ngModel)]="playerCount" [min]="1" [max]="getPlayersWithoutImages()"
+        <p-inputNumber inputId="playerCount" [(ngModel)]="playerCount" [min]="1" [max]="getMaxAssignable()"
           [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
           decrementButtonIcon="pi pi-minus" styleClass="tailwind-input"
           inputStyleClass="text-center font-bold text-base p-1 rounded-md border-2 border-white/50 bg-white/90 text-gray-800" />

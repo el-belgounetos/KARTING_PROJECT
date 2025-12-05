@@ -48,12 +48,10 @@ export class ChampionWheelComponent implements OnInit {
       this.players.set(playerList);
       this.hasPlayers = playerList.length > 0;
 
-      if (this.hasPlayers) {
-        // Count players WITHOUT images
-        const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
-
-        // Ensure max spins doesn't exceed players without images or available avatars
-        this.playerCount = Math.min(playersWithoutImages, this.avatars().length > 0 ? this.avatars().length : 1);
+      // Ensure playerCount doesn't exceed max assignable
+      const maxAssignable = this.getMaxAssignable();
+      if (this.playerCount > maxAssignable) {
+        this.playerCount = Math.max(1, maxAssignable);
       }
     });
   }
@@ -262,5 +260,11 @@ export class ChampionWheelComponent implements OnInit {
   getPlayersWithoutImages(): number {
     const playerList = this.players();
     return playerList.filter(p => !p.picture || p.picture === '').length;
+  }
+
+  getMaxAssignable(): number {
+    const playersWithoutImages = this.getPlayersWithoutImages();
+    const availableAvatars = this.avatars().length;
+    return Math.min(playersWithoutImages, availableAvatars);
   }
 }

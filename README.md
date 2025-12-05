@@ -55,15 +55,6 @@ Ce script va :
 3. Lancer l'API Backend (nécessite que le JAR soit déjà généré).
 4. Lancer le serveur de développement Frontend (`ng serve`).
 
-**⚠️ Important pour la première utilisation :**
-Le script exécute le Backend via son fichier `.jar`. Sur une machine vierge, vous devez générer ce fichier au moins une fois manuellement avant d'utiliser le script :
-```powershell
-cd nat-kart-api
-.\mvnw.cmd clean package -DskipTests
-cd ..
-.\START.bat
-```
-
 ---
 
 ## 📂 Structure du Projet

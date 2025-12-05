@@ -3,7 +3,7 @@ package com.example.nat_kart_api.service;
 import com.example.nat_kart_api.dto.HistoryDTO;
 import com.example.nat_kart_api.dto.RankingDTO;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.compress.utils.IOUtils;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
@@ -60,7 +60,7 @@ public class ExcelService {
 
             if (imagePath != null) {
                 InputStream inputStream = new FileInputStream(imagePath);
-                byte[] imageBytes = IOUtils.toByteArray(inputStream);
+                byte[] imageBytes = inputStream.readAllBytes();
                 int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
                 inputStream.close();
 
@@ -111,7 +111,7 @@ public class ExcelService {
 
             if (playerImagePath != null) {
                 InputStream inputStream = new FileInputStream(playerImagePath);
-                byte[] imageBytes = IOUtils.toByteArray(inputStream);
+                byte[] imageBytes = inputStream.readAllBytes();
                 workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
                 inputStream.close();
             }

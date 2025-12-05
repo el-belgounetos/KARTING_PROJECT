@@ -72,6 +72,7 @@ public class HistoryService {
      * @param HistoryDTO The history entry to add
      */
     @Transactional
+    @SuppressWarnings("null")
     public void updatePlayerHistory(HistoryDTO historyDTO) {
         log.debug("Saving history entry for player: {}",
                 historyDTO.getPlayer() != null ? historyDTO.getPlayer().getName() : "NULL");

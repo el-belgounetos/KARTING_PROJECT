@@ -4,6 +4,8 @@ Bienvenue sur le projet **KARTING_PROJECT**. Ce guide détaille étape par étap
 
 ---
 
+## Merci à Louis GAUTHIER pour la V1 de l'application qui m'a bien aidé !
+
 ## 📋 Prérequis
 
 Avant de commencer, assurez-vous d'avoir les outils suivants installés sur votre machine.

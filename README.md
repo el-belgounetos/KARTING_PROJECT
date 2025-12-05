@@ -169,4 +169,4 @@ Le projet utilise **H2 Database** en mode fichier. Cela signifie que :
 
 Si vous rencontrez des erreurs de port (ex: "Address already in use"), vérifiez qu'aucun autre processus n'utilise les ports **8080** ou **4200**, ou modifiez les configurations respectives.
 
-Bon développement ! 🏎️💨
+Bon développement ! 

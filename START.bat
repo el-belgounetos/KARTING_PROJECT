@@ -4,7 +4,10 @@ REM Chemin du répertoire où se trouve le fichier batch (Karting Project)
 set BASE_DIR=%~dp0
 
 REM Chemin relatif de ton fichier JAR généré (API Java Spring Boot)
+
+cd "%BASE_DIR%nat-kart-api"
 set JAR_PATH="%BASE_DIR%nat-kart-api\target\nat-kart-api-0.0.1-SNAPSHOT.jar"
+call mvnw.cmd clean package -DskipTests
 
 REM Étape 1 : Build Angular
 echo Building Angular application...

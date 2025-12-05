@@ -16,23 +16,23 @@
 }
 
 /* Historique Table */
-::ng-deep .historique-table .p-datatable {
+::ng-deep .history-table .p-datatable {
   font-size: clamp(0.75rem, 1.5vw, 0.875rem);
 }
 
-::ng-deep .historique-table .p-datatable-thead>tr>th {
+::ng-deep .history-table .p-datatable-thead>tr>th {
   background-color: rgba(64, 64, 64, 0.9);
   color: white;
   border: none;
   padding: 0.5rem;
 }
 
-::ng-deep .historique-table .p-datatable-thead>tr>th:last-child {
+::ng-deep .history-table .p-datatable-thead>tr>th:last-child {
   width: 3rem;
   min-width: 3rem;
 }
 
-::ng-deep .historique-table .p-datatable-tbody>tr {
+::ng-deep .history-table .p-datatable-tbody>tr {
   background-color: rgba(64, 64, 64, 0.5);
   color: white;
   overflow: visible;

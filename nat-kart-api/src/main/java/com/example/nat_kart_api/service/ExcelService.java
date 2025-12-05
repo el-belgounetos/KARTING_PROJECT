@@ -1,6 +1,6 @@
 package com.example.nat_kart_api.service;
 
-import com.example.nat_kart_api.dto.HistoriqueDTO;
+import com.example.nat_kart_api.dto.HistoryDTO;
 import com.example.nat_kart_api.dto.KarterDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.compress.utils.IOUtils;
@@ -30,7 +30,7 @@ public class ExcelService {
 
     public void generateExcelForRanks(HttpServletResponse response) throws IOException {
         List<KarterDTO> ranks = rankingService.getAllRanks();
-        List<HistoriqueDTO> historique = historyService.getPlayerHistorique();
+        List<HistoryDTO> historique = historyService.getPlayerHistory();
 
         Workbook workbook = new XSSFWorkbook();
 
@@ -95,7 +95,7 @@ public class ExcelService {
         }
 
         int historiqueRowIdx = 1;
-        for (HistoriqueDTO historiqueItem : historique) {
+        for (HistoryDTO historiqueItem : historique) {
             Row row = historiqueSheet.createRow(historiqueRowIdx++);
             row.createCell(0).setCellValue(historiqueItem.getPlayer().getName()); // Nom du joueur
             row.createCell(1).setCellValue(historiqueItem.getConsole().getName()); // Nom de la console

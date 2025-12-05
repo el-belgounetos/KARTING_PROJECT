@@ -56,7 +56,7 @@
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank?.points }}</span>
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank?.rank }}</span>
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank?.victory }}</span>
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ historique().length }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ history().length }}</span>
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@
 
       @if (isHistoryVisible) {
       <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
-        <p-table [value]="historique()" styleClass="historique-table" [rowHover]="true">
+        <p-table [value]="history()" styleClass="history-table" [rowHover]="true">
           <ng-template pTemplate="header">
             <tr>
               <th>Joueur</th>
@@ -162,7 +162,7 @@
               <td>{{ line.console.name }}</td>
               <td>{{ line.cups.name }}</td>
               <td><p-badge [value]="'X'" severity="danger" class="badge-del cursor-pointer hover:scale-110 inline-block"
-                  (click)="deleteHistorique(line)" /></td>
+                  (click)="deleteHistory(line)" /></td>
             </tr>
           </ng-template>
         </p-table>

@@ -1,6 +1,6 @@
 package com.example.nat_kart_api.service;
 
-import com.example.nat_kart_api.dto.HistoriqueDTO;
+import com.example.nat_kart_api.dto.HistoryDTO;
 import com.example.nat_kart_api.dto.ConsoleDTO;
 import com.example.nat_kart_api.dto.CupsDTO;
 import com.example.nat_kart_api.dto.KarterDTO;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Service responsible for managing game history (historique).
+ * Service responsible for managing game history (History).
  * Handles storage and retrieval of player game sessions using database
  * persistence.
  */
@@ -34,9 +34,9 @@ public class HistoryService {
     /**
      * Gets all history entries.
      *
-     * @return List of all historique DTOs
+     * @return List of all History DTOs
      */
-    public List<HistoriqueDTO> getPlayerHistorique() {
+    public List<HistoryDTO> getPlayerHistory() {
         return historyRepository.findAll().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
@@ -46,13 +46,13 @@ public class HistoryService {
      * Gets history entries for a specific player.
      *
      * @param playerName The player's name
-     * @return List of historique DTOs for the specified player
+     * @return List of History DTOs for the specified player
      */
-    public List<HistoriqueDTO> getPlayerHistoriqueByPlayerName(String playerName) {
+    public List<HistoryDTO> getPlayerHistoryByPlayerName(String playerName) {
         log.debug("Getting history for player: {}", playerName);
 
         // Find all players and filter by name (since name could be "Name Firstname")
-        List<HistoriqueDTO> result = historyRepository.findAll().stream()
+        List<HistoryDTO> result = historyRepository.findAll().stream()
                 .map(this::toDTO)
                 .filter(dto -> {
                     if (dto.getPlayer() == null)
@@ -69,14 +69,14 @@ public class HistoryService {
     /**
      * Adds a new history entry.
      *
-     * @param historiqueDTO The history entry to add
+     * @param HistoryDTO The history entry to add
      */
     @Transactional
-    public void updatePlayerHistorique(HistoriqueDTO historiqueDTO) {
+    public void updatePlayerHistory(HistoryDTO historyDTO) {
         log.debug("Saving history entry for player: {}",
-                historiqueDTO.getPlayer() != null ? historiqueDTO.getPlayer().getName() : "NULL");
+                historyDTO.getPlayer() != null ? historyDTO.getPlayer().getName() : "NULL");
 
-        HistoryEntity entity = toEntity(historiqueDTO);
+        HistoryEntity entity = toEntity(historyDTO);
         HistoryEntity saved = historyRepository.save(entity);
 
         log.debug("Saved history entry with ID: {}", saved.getId());
@@ -88,10 +88,10 @@ public class HistoryService {
      * Now decoupled from RankingService - calls adjustPoints instead of
      * manipulating ranks directly.
      *
-     * @param id The historique entry ID to delete
+     * @param id The History entry ID to delete
      */
     @Transactional
-    public void deleteHistoriqueById(int id) {
+    public void deleteHistoryById(int id) {
         HistoryEntity history = historyRepository.findById((long) id)
                 .orElseThrow(() -> new ResourceNotFoundException("History entry not found: " + id));
 
@@ -129,10 +129,10 @@ public class HistoryService {
     }
 
     /**
-     * Convert HistoryEntity to HistoriqueDTO.
+     * Convert HistoryEntity to HistoryDTO.
      */
-    private HistoriqueDTO toDTO(HistoryEntity entity) {
-        HistoriqueDTO dto = new HistoriqueDTO();
+    private HistoryDTO toDTO(HistoryEntity entity) {
+        HistoryDTO dto = new HistoryDTO();
         dto.setId(entity.getId().intValue());
         dto.setPoints(entity.getPoints());
         dto.setVictory(entity.getVictory());
@@ -168,9 +168,9 @@ public class HistoryService {
     }
 
     /**
-     * Convert HistoriqueDTO to HistoryEntity.
+     * Convert HistoryDTO to HistoryEntity.
      */
-    private HistoryEntity toEntity(HistoriqueDTO dto) {
+    private HistoryEntity toEntity(HistoryDTO dto) {
         HistoryEntity entity = new HistoryEntity();
         entity.setPoints(dto.getPoints());
         entity.setVictory(dto.isVictory());

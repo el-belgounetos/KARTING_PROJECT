@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { KarterDTO } from '../../dto/karterDTO';
 import { ConsoleDTO } from '../../dto/consoleDTO';
 import { CupsDTO } from '../../dto/cupsDTO';
-import { HistoriqueDTO } from '../../dto/historiqueDTO';
+import { HistoryDTO } from '../../dto/historyDTO';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -30,7 +30,7 @@ export class ScoreManagementComponent implements OnInit {
   ranks = signal<KarterDTO[]>([]);
   consoles = signal<ConsoleDTO[]>([]);
   cups = signal<CupsDTO[]>([]);
-  historique = signal<HistoriqueDTO[]>([]);
+  history = signal<HistoryDTO[]>([]);
 
   selectedRank: KarterDTO | null = null;
   selectedConsole: ConsoleDTO | null = null;
@@ -98,8 +98,8 @@ export class ScoreManagementComponent implements OnInit {
   private saveHistory() {
     const entry = this.createHistoryEntry();
     console.log('saveHistory: Creating entry:', entry);
-    console.log('saveHistory: Sending POST to /historique');
-    this.apiService.post('historique', entry).subscribe({
+    console.log('saveHistory: Sending POST to /history');
+    this.apiService.post('history', entry).subscribe({
       next: (response) => {
         console.log('saveHistory: Response received:', response);
         if (response) {
@@ -116,7 +116,7 @@ export class ScoreManagementComponent implements OnInit {
     });
   }
 
-  private createHistoryEntry(): HistoriqueDTO {
+  private createHistoryEntry(): HistoryDTO {
     return {
       player: this.selectedRank!,
       console: this.selectedConsole!,
@@ -148,24 +148,24 @@ export class ScoreManagementComponent implements OnInit {
   private loadHistoryForPlayer(playerName: string) {
     if (!playerName) {
       console.warn('loadHistoryForPlayer called with null/undefined playerName');
-      this.historique.set([]);
+      this.history.set([]);
       return;
     }
     console.log('loadHistoryForPlayer: Making API call for', playerName);
-    this.apiService.get<HistoriqueDTO[]>(`historique/${playerName}`).subscribe({
+    this.apiService.get<HistoryDTO[]>(`history/${playerName}`).subscribe({
       next: (history) => {
         console.log('loadHistoryForPlayer: Received response:', history);
         if (history) {
-          this.historique.set(history);
-          console.log('loadHistoryForPlayer: historique updated, length:', this.historique().length);
+          this.history.set(history);
+          console.log('loadHistoryForPlayer: history updated, length:', this.history().length);
         } else {
           console.warn('loadHistoryForPlayer: Response is null/undefined');
-          this.historique.set([]);
+          this.history.set([]);
         }
       },
       error: (err) => {
         console.error('loadHistoryForPlayer: API error:', err);
-        this.historique.set([]);
+        this.history.set([]);
       }
     });
   }
@@ -178,7 +178,7 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private getAvailableCups(allCups: CupsDTO[]): CupsDTO[] {
-    const currentHistory = this.historique();
+    const currentHistory = this.history();
     return allCups.filter(cup =>
       !currentHistory.some(entry => entry.cups.name === cup.name)
     );
@@ -201,8 +201,8 @@ export class ScoreManagementComponent implements OnInit {
     }
   }
 
-  deleteHistorique(entry: HistoriqueDTO) {
-    this.apiService.delete(`historique/${entry.id}`).subscribe(response => {
+  deleteHistory(entry: HistoryDTO) {
+    this.apiService.delete(`history/${entry.id}`).subscribe(response => {
       if (response !== null) {
         this.notificationService.info('Historique', 'Ligne supprimée');
       }

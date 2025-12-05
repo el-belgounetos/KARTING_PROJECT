@@ -21,8 +21,6 @@ export class ConsoleWheelComponent implements OnInit {
   allCupsImages = signal<string[]>([]);
   isSpinning = signal<boolean>(false);
 
-  isConsolesVisible = true;
-
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
 

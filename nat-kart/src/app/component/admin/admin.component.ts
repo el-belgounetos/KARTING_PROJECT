@@ -26,6 +26,7 @@ import { NotificationService } from '../../services/notification.service';
 export class AdminComponent {
     playerCount: number = 5;
     assignImage: boolean = true;
+    loading: boolean = false;
 
     constructor(
         private apiService: ApiService,
@@ -35,7 +36,7 @@ export class AdminComponent {
 
     generatePlayers() {
         console.log('generatePlayers called, count:', this.playerCount, 'assignImage:', this.assignImage);
-        this.loadingService.show();
+        this.loading = true;
         this.apiService.post(`admin/generate-players/${this.playerCount}?assignImage=${this.assignImage}`, {}).subscribe({
             next: () => {
                 console.log('generatePlayers: Success');
@@ -43,7 +44,7 @@ export class AdminComponent {
                     'Succès',
                     `${this.playerCount} joueurs ont été générés avec succès !`
                 );
-                this.loadingService.hide();
+                this.loading = false;
             },
             error: (err) => {
                 console.error('generatePlayers: Error', err);
@@ -51,7 +52,7 @@ export class AdminComponent {
                     'Erreur',
                     'Une erreur est survenue lors de la génération des joueurs.'
                 );
-                this.loadingService.hide();
+                this.loading = false;
             }
         });
     }
@@ -60,7 +61,7 @@ export class AdminComponent {
         console.log('resetParticipants called');
         if (confirm('Êtes-vous sûr de vouloir supprimer TOUS les participants ? Cette action est irréversible.')) {
             console.log('User confirmed reset');
-            this.loadingService.show();
+            this.loading = true;
             this.apiService.delete('players').subscribe({
                 next: () => {
                     console.log('resetParticipants: Success');
@@ -68,11 +69,11 @@ export class AdminComponent {
                         'Succès',
                         'Tous les participants ont été supprimés'
                     );
-                    this.loadingService.hide();
+                    this.loading = false;
                 },
                 error: (err) => {
                     console.error('resetParticipants: Error', err);
-                    this.loadingService.hide();
+                    this.loading = false;
                     this.notificationService.error(
                         'Erreur',
                         'Erreur lors de la réinitialisation'

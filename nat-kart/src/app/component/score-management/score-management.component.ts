@@ -57,6 +57,8 @@ export class ScoreManagementComponent implements OnInit {
         // Only reload if a player was already selected
         if (this.selectedRank && this.selectedRank.name) {
           this.selectKarterByName(this.selectedRank.name);
+        } else if (ranks.length > 0) {
+          this.selectNewRank(ranks[0]);
         }
       }
     });

@@ -41,21 +41,22 @@
       Modification des rangs
     </div>
 
+    @if (selectedRank) {
     <div class="bg-gray-700/90 rounded-2xl p-8 shadow-2xl border border-white/10 backdrop-blur-sm w-full max-w-[800px]">
       <div class="flex items-center gap-8">
-        @if (selectedRank?.picture) {
-        <img [src]="imageService.getPlayerImageUrl(selectedRank?.picture!)" [alt]="selectedRank?.name"
+        @if (selectedRank.picture) {
+        <img [src]="imageService.getPlayerImageUrl(selectedRank.picture)" [alt]="selectedRank.name"
           class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0" />
         } @else {
-        <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="selectedRank?.name"
+        <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="selectedRank.name"
           class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0 opacity-50" />
         }
         <div class="flex-1 min-w-0">
-          <div class="text-[clamp(1.25rem,3vw,2rem)] font-bold text-white mb-2">{{ selectedRank?.name }}</div>
+          <div class="text-[clamp(1.25rem,3vw,2rem)] font-bold text-white mb-2">{{ selectedRank.name }}</div>
           <div class="flex flex-wrap gap-4 text-white/80 text-[clamp(0.75rem,1.5vw,1rem)]">
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank?.points }}</span>
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank?.rank }}</span>
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank?.victory }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank.points }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank.rank }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank.victory }}</span>
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ history().length }}</span>
           </div>
         </div>
@@ -123,6 +124,7 @@
       <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loadingService.loading()"
         [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
     </div>
+    }
   </section>
 
   <!-- Right Sidebar: History (Collapsible) -->

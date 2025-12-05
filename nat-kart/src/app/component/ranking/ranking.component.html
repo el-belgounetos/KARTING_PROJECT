@@ -1,44 +1,65 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
   [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper3.jpg') + ')'"></div>
-<main class="h-[93vh] w-full relative">
-  <p-button class="absolute right-0 z-[999]" (click)="onExport()" label="Exporter" />
-  <p-table styleClass="rank-table mt-4 rounded" [value]="ranks()" [tableStyle]="{'min-width': '60rem'}">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Rank</th>
-        <th></th>
-        <th>Joueur</th>
-        <th>Catégorie</th>
-        <th>Points</th>
-        <th>Victoires</th>
-        <th>Parties</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-player>
-      <tr>
-        @if (isCups(player.rank)) {
-        <td>
-          <img [src]="getRankCup(player.rank)" width="25" class="shadow-lg" />
-        </td>
-        } @else {
-        <td>{{player.rank}}</td>
-        }
+<p-table #dt styleClass="rank-table mt-4 rounded backdrop-blur-sm bg-gray-900/60" [value]="ranks()"
+  [globalFilterFields]="['name', 'category', 'points', 'victory', 'totalGames', 'rank']"
+  [tableStyle]="{'min-width': '60rem'}">
 
-        <td>
-          @if (player.picture) {
-          <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.name" width="55"
-            class="shadow-lg" />
-          } @else {
-          <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="player.name" width="55"
-            class="shadow-lg opacity-50" />
-          }
-        </td>
-        <td>{{player.name}}</td>
-        <td>{{player.category || '-'}}</td>
-        <td>{{player.points}}</td>
-        <td>{{player.victory}}</td>
-        <td>{{player.totalGames}}</td>
-      </tr>
-    </ng-template>
-  </p-table>
-</main>
+  <ng-template pTemplate="caption">
+    <div class="flex justify-between items-center bg-transparent p-2">
+      <span class="text-2xl font-bold text-white drop-shadow-md">Classement Global</span>
+      <div class="flex gap-3">
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')"
+            placeholder="Rechercher..."
+            class="p-inputtext-sm rounded-lg border-white/20 bg-white/10 text-white focus:bg-white/20" />
+        </p-iconfield>
+        <p-button label="Exporter" icon="pi pi-file-excel" (onClick)="onExport()" severity="success" outlined="true"
+          rounded="true" />
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="rank" class="text-white bg-white/5">Rank <p-sortIcon field="rank"></p-sortIcon></th>
+      <th class="text-white bg-white/5 w-[80px]"></th>
+      <th pSortableColumn="name" class="text-white bg-white/5">Joueur <p-sortIcon field="name"></p-sortIcon></th>
+      <th pSortableColumn="category" class="text-white bg-white/5">Catégorie <p-sortIcon field="category"></p-sortIcon>
+      </th>
+      <th pSortableColumn="points" class="text-white bg-white/5">Points <p-sortIcon field="points"></p-sortIcon></th>
+      <th pSortableColumn="victory" class="text-white bg-white/5">Victoires <p-sortIcon field="victory"></p-sortIcon>
+      </th>
+      <th pSortableColumn="totalGames" class="text-white bg-white/5">Parties <p-sortIcon
+          field="totalGames"></p-sortIcon></th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-player>
+    <tr class="hover:bg-white/5 transition-colors text-white">
+      @if (isCups(player.rank)) {
+      <td>
+        <img [src]="getRankCup(player.rank)" width="25" class="shadow-lg" />
+      </td>
+      } @else {
+      <td class="font-bold text-lg">{{player.rank}}</td>
+      }
+
+      <td>
+        @if (player.picture) {
+        <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.name" width="55"
+          class="shadow-lg rounded-full border-2 border-white/20" />
+        } @else {
+        <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="player.name" width="55"
+          class="shadow-lg opacity-50 rounded-full border-2 border-white/10" />
+        }
+      </td>
+      <td class="font-semibold text-lg">{{player.name}}</td>
+      <td>
+        <span class="px-2 py-1 rounded bg-white/10 text-sm">{{player.category || 'Standard'}}</span>
+      </td>
+      <td class="font-bold text-primary-400 text-lg">{{player.points}}</td>
+      <td>{{player.victory}}</td>
+      <td>{{player.totalGames}}</td>
+    </tr>
+  </ng-template>
+</p-table>

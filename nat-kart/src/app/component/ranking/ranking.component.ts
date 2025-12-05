@@ -3,13 +3,16 @@ import { ImageModule } from 'primeng/image';
 import { TableModule } from 'primeng/table';
 import { RankingDTO } from '../../dto/rankingDTO';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { ApiService } from '../../services/api.service';
 import { RankingService } from '../../services/ranking.service';
 import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-ranking',
-  imports: [ImageModule, ButtonModule, TableModule],
+  imports: [ImageModule, ButtonModule, TableModule, InputTextModule, IconFieldModule, InputIconModule],
   templateUrl: './ranking.component.html',
   styleUrl: './ranking.component.scss'
 })

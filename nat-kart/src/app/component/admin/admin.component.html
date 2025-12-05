@@ -46,35 +46,21 @@
                     Générez automatiquement des joueurs pour tester l'application.
                     Les avatars seront attribués automatiquement s'ils sont disponibles.
                 </p>
-
-                <form class="flex flex-col gap-2" aria-label="Formulaire de génération de joueurs"
-                    onsubmit="return false;">
-                    <label for="count" class="text-white font-semibold">Nombre de joueurs à générer</label>
-                    <p-inputNumber inputId="count" [(ngModel)]="playerCount" name="playerCount" [min]="1" [max]="50"
-                        [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
-                        decrementButtonClass="p-button-danger" incrementButtonClass="p-button-success"
-                        incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" styleClass="w-full" />
-
-                    <div class="flex items-center gap-2 mt-2">
-                        <p-checkbox [(ngModel)]="assignImage" [binary]="true" inputId="assignImage"
-                            name="assignImage"></p-checkbox>
-                        <label for="assignImage" class="text-white font-semibold cursor-pointer">
-                            Attribuer des avatars
-                        </label>
-                    </div>
-
-                    <div class="flex justify-center mt-6 flex-col gap-4">
-                        <p-button label="Générer les joueurs" icon="pi pi-cog" [loading]="loading"
-                            (onClick)="generatePlayers()" styleClass="w-full md:w-auto px-8 py-3" severity="warn"
-                            aria-label="Générer automatiquement des joueurs" />
-
-                        <p-button label="Réinitialiser les participants" icon="pi pi-trash" severity="danger"
-                            [loading]="loading" (onClick)="resetParticipants()" styleClass="w-full md:w-auto px-8 py-3"
-                            aria-label="Réinitialiser tous les participants" />
-                    </div>
-                </form>
-            </section>
+                </label>
         </div>
+
+        <div class="flex justify-center mt-6 flex-col gap-4">
+            <p-button label="Générer les joueurs" icon="pi pi-cog" [loading]="loading" (onClick)="generatePlayers()"
+                styleClass="w-full md:w-auto px-8 py-3" severity="warn"
+                aria-label="Générer automatiquement des joueurs" />
+
+            <p-button label="Réinitialiser les participants" icon="pi pi-trash" severity="danger" [loading]="loading"
+                (onClick)="resetParticipants()" styleClass="w-full md:w-auto px-8 py-3"
+                aria-label="Réinitialiser tous les participants" />
+        </div>
+        </form>
+    </section>
+    </div>
     </section>
 </main>
 

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HistoryDTO {
     private int id;
-    private KarterDTO player;
+    private RankingDTO player;
     private ConsoleDTO console;
     private CupsDTO cups;
     private int points;

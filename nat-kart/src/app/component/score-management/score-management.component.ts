@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { KarterDTO } from '../../dto/karterDTO';
+import { RankingDTO } from '../../dto/rankingDTO';
 import { ConsoleDTO } from '../../dto/consoleDTO';
 import { CupsDTO } from '../../dto/cupsDTO';
 import { HistoryDTO } from '../../dto/historyDTO';
@@ -27,12 +27,12 @@ import { NotificationService } from '../../services/notification.service';
 })
 export class ScoreManagementComponent implements OnInit {
   // Signals for reactive state
-  ranks = signal<KarterDTO[]>([]);
+  ranks = signal<RankingDTO[]>([]);
   consoles = signal<ConsoleDTO[]>([]);
   cups = signal<CupsDTO[]>([]);
   history = signal<HistoryDTO[]>([]);
 
-  selectedRank: KarterDTO | null = null;
+  selectedRank: RankingDTO | null = null;
   selectedConsole: ConsoleDTO | null = null;
   selectedCups: CupsDTO | null = null;
   valueToAdd = 0;
@@ -49,7 +49,7 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private loadRanks() {
-    this.apiService.get<KarterDTO[]>('ranks').subscribe(ranks => {
+    this.apiService.get<RankingDTO[]>('ranks').subscribe(ranks => {
       if (ranks) {
         this.ranks.set(ranks);
         // Only reload if a player was already selected
@@ -66,7 +66,7 @@ export class ScoreManagementComponent implements OnInit {
     });
   }
 
-  selectNewRank(selectedRank: KarterDTO) {
+  selectNewRank(selectedRank: RankingDTO) {
     console.log('selectNewRank called with:', selectedRank.name);
     this.selectedRank = selectedRank;
     this.loadHistoryForPlayer(this.selectedRank.name);

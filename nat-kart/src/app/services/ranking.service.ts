@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { KarterDTO } from '../dto/karterDTO';
+import { RankingDTO } from '../dto/rankingDTO';
 
 @Injectable({
     providedIn: 'root'
@@ -8,7 +8,7 @@ export class RankingService {
 
     constructor() { }
 
-    sortByRanking(karters: KarterDTO[]): KarterDTO[] {
+    sortByRanking(karters: RankingDTO[]): RankingDTO[] {
         return [...karters].sort((a, b) => {
             if (b.points !== a.points) {
                 return b.points - a.points;

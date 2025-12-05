@@ -1,7 +1,7 @@
 package com.example.nat_kart_api.service;
 
 import com.example.nat_kart_api.dto.HistoryDTO;
-import com.example.nat_kart_api.dto.KarterDTO;
+import com.example.nat_kart_api.dto.RankingDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -29,7 +29,7 @@ public class ExcelService {
     }
 
     public void generateExcelForRanks(HttpServletResponse response) throws IOException {
-        List<KarterDTO> ranks = rankingService.getAllRanks();
+        List<RankingDTO> ranks = rankingService.getAllRanks();
         List<HistoryDTO> historique = historyService.getPlayerHistory();
 
         Workbook workbook = new XSSFWorkbook();
@@ -45,7 +45,7 @@ public class ExcelService {
         }
 
         int rowIdx = 1;
-        for (KarterDTO karter : ranks) {
+        for (RankingDTO karter : ranks) {
             Row row = classementSheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(karter.getRank());
             row.createCell(1).setCellValue(karter.getName());

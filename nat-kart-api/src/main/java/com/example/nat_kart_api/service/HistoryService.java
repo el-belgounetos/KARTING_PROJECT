@@ -3,7 +3,7 @@ package com.example.nat_kart_api.service;
 import com.example.nat_kart_api.dto.HistoryDTO;
 import com.example.nat_kart_api.dto.ConsoleDTO;
 import com.example.nat_kart_api.dto.CupsDTO;
-import com.example.nat_kart_api.dto.KarterDTO;
+import com.example.nat_kart_api.dto.RankingDTO;
 import com.example.nat_kart_api.entity.HistoryEntity;
 import com.example.nat_kart_api.entity.PlayerEntity;
 import com.example.nat_kart_api.repository.HistoryRepository;
@@ -137,15 +137,15 @@ public class HistoryService {
         dto.setPoints(entity.getPoints());
         dto.setVictory(entity.getVictory());
 
-        // Convert player to KarterDTO
+        // Convert player to RankingDTO
         if (entity.getPlayer() != null) {
-            KarterDTO karterDTO = new KarterDTO();
+            RankingDTO rankingDTO = new RankingDTO();
             PlayerEntity player = entity.getPlayer();
-            karterDTO.setPlayerId(player.getId());
-            karterDTO.setName(player.getName() + " " + player.getFirstname());
-            karterDTO.setPicture(player.getPicture());
-            karterDTO.setCategory(player.getCategory());
-            dto.setPlayer(karterDTO);
+            rankingDTO.setPlayerId(player.getId());
+            rankingDTO.setName(player.getName() + " " + player.getFirstname());
+            rankingDTO.setPicture(player.getPicture());
+            rankingDTO.setCategory(player.getCategory());
+            dto.setPlayer(rankingDTO);
         }
 
         // Convert console data

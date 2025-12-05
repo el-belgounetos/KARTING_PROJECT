@@ -1,6 +1,6 @@
 package com.example.nat_kart_api.service;
 
-import com.example.nat_kart_api.dto.KarterDTO;
+import com.example.nat_kart_api.dto.RankingDTO;
 import com.example.nat_kart_api.entity.PlayerEntity;
 import com.example.nat_kart_api.entity.RankingEntity;
 import com.example.nat_kart_api.repository.PlayerRepository;
@@ -28,7 +28,7 @@ public class RankingService {
      *
      * @return List of ranking DTOs
      */
-    public List<KarterDTO> getAllRanks() {
+    public List<RankingDTO> getAllRanks() {
         return rankingRepository.findAllByOrderByPointsDesc().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
@@ -168,13 +168,13 @@ public class RankingService {
      * @param entity The ranking entity
      * @return The DTO
      */
-    private KarterDTO toDTO(RankingEntity entity) {
+    private RankingDTO toDTO(RankingEntity entity) {
         PlayerEntity player = entity.getPlayer();
 
         // Combine player's name and firstname for display
         String displayName = player.getName() + " " + player.getFirstname();
 
-        KarterDTO dto = new KarterDTO();
+        RankingDTO dto = new RankingDTO();
         dto.setPlayerId(player.getId());
         dto.setName(displayName);
         dto.setPoints(entity.getPoints());

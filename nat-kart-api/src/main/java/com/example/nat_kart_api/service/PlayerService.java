@@ -154,6 +154,16 @@ public class PlayerService {
 
         if (playerOpt.isPresent()) {
             PlayerEntity player = playerOpt.get();
+
+            // Delete ranking first to avoid foreign key constraint violation
+            // We do this before deleting the player because RankingEntity has a foreign key
+            // to PlayerEntity
+            try {
+                this.rankingService.deleteRankingEntry(pseudo);
+            } catch (Exception e) {
+                log.warn("Could not delete ranking for player {}: {}", pseudo, e.getMessage());
+            }
+
             // Re-introduce picture to pool if it exists
             if (player.getPicture() != null && !player.getPicture().isEmpty()) {
                 this.characterService.introduceCaracter(player.getPicture().replace(".png", ""));
@@ -163,9 +173,14 @@ public class PlayerService {
 
             // Delete from database
             playerRepository.delete(player);
+        } else {
+            // If player not found, try to delete ranking anyway (cleanup)
+            try {
+                this.rankingService.deleteRankingEntry(pseudo);
+            } catch (Exception e) {
+                // Ignore if not found
+            }
         }
-
-        this.rankingService.deleteRankingEntry(pseudo);
     }
 
     /**

@@ -1,6 +1,6 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
   [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper3.jpg') + ')'"></div>
-<p-table #dt styleClass="rank-table mt-4 rounded backdrop-blur-sm bg-gray-900/60" [value]="ranks()"
+<p-table #dt styleClass="rank-table mt-4" [value]="ranks()"
   [globalFilterFields]="['name', 'category', 'points', 'victory', 'totalGames', 'rank']"
   [tableStyle]="{'min-width': '60rem'}">
 
@@ -14,52 +14,51 @@
             placeholder="Rechercher..."
             class="p-inputtext-sm rounded-lg border-white/20 bg-white/10 text-white focus:bg-white/20" />
         </p-iconfield>
-        <p-button label="Exporter" icon="pi pi-file-excel" (onClick)="onExport()" severity="success" outlined="true"
-          rounded="true" />
+        <p-button label="Exporter" icon="pi pi-file-excel" (onClick)="onExport()" severity="success" [rounded]="true" />
       </div>
     </div>
   </ng-template>
 
   <ng-template pTemplate="header">
-    <tr>
-      <th pSortableColumn="rank" class="text-white bg-white/5">Rank <p-sortIcon field="rank"></p-sortIcon></th>
-      <th class="text-white bg-white/5 w-[80px]"></th>
-      <th pSortableColumn="name" class="text-white bg-white/5">Joueur <p-sortIcon field="name"></p-sortIcon></th>
-      <th pSortableColumn="category" class="text-white bg-white/5">Catégorie <p-sortIcon field="category"></p-sortIcon>
+    <tr class="hover:bg-white/5 transition-colors">
+      <th pSortableColumn="rank" class="text-white pl-10">Rank <p-sortIcon field="rank"></p-sortIcon></th>
+      <th class="text-white w-[80px] text-center"></th>
+      <th pSortableColumn="name" class="text-white">Joueur <p-sortIcon field="name"></p-sortIcon></th>
+      <th pSortableColumn="category" class="text-white text-center">Catégorie <p-sortIcon field="category"></p-sortIcon>
       </th>
-      <th pSortableColumn="points" class="text-white bg-white/5">Points <p-sortIcon field="points"></p-sortIcon></th>
-      <th pSortableColumn="victory" class="text-white bg-white/5">Victoires <p-sortIcon field="victory"></p-sortIcon>
+      <th pSortableColumn="points" class="text-white text-center">Points <p-sortIcon field="points"></p-sortIcon></th>
+      <th pSortableColumn="victory" class="text-white text-center">Victoires <p-sortIcon field="victory"></p-sortIcon>
       </th>
-      <th pSortableColumn="totalGames" class="text-white bg-white/5">Parties <p-sortIcon
+      <th pSortableColumn="totalGames" class="text-white text-center">Parties <p-sortIcon
           field="totalGames"></p-sortIcon></th>
     </tr>
   </ng-template>
   <ng-template pTemplate="body" let-player>
     <tr class="hover:bg-white/5 transition-colors text-white">
       @if (isCups(player.rank)) {
-      <td>
+      <td class="pl-10">
         <img [src]="getRankCup(player.rank)" width="25" class="shadow-lg" />
       </td>
       } @else {
-      <td class="font-bold text-lg">{{player.rank}}</td>
+      <td class="font-bold text-lg pl-10">{{player.rank}}</td>
       }
 
-      <td>
+      <td class="text-center">
         @if (player.picture) {
         <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.name" width="55"
-          class="shadow-lg rounded-full border-2 border-white/20" />
+          class="shadow-lg rounded-md mx-auto block" />
         } @else {
         <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="player.name" width="55"
-          class="shadow-lg opacity-50 rounded-full border-2 border-white/10" />
+          class="shadow-lg opacity-50 rounded-md mx-auto block" />
         }
       </td>
       <td class="font-semibold text-lg">{{player.name}}</td>
-      <td>
+      <td class="text-center">
         <span class="px-2 py-1 rounded bg-white/10 text-sm">{{player.category || 'Standard'}}</span>
       </td>
-      <td class="font-bold text-primary-400 text-lg">{{player.points}}</td>
-      <td>{{player.victory}}</td>
-      <td>{{player.totalGames}}</td>
+      <td class="font-bold text-primary-400 text-lg text-center">{{player.points}}</td>
+      <td class="text-center">{{player.victory}}</td>
+      <td class="text-center">{{player.totalGames}}</td>
     </tr>
   </ng-template>
 </p-table>

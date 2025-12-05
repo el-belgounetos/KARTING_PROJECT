@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
     selector: 'app-admin',
@@ -28,11 +29,10 @@ export class AdminComponent {
     assignImage: boolean = true;
     loading: boolean = false;
 
-    constructor(
-        private apiService: ApiService,
-        private loadingService: LoadingService,
-        private notificationService: NotificationService
-    ) { }
+    private apiService = inject(ApiService);
+    private loadingService = inject(LoadingService);
+    private notificationService = inject(NotificationService);
+    private confirmationService = inject(ConfirmationService);
 
     generatePlayers() {
         console.log('generatePlayers called, count:', this.playerCount, 'assignImage:', this.assignImage);
@@ -59,29 +59,38 @@ export class AdminComponent {
 
     resetParticipants() {
         console.log('resetParticipants called');
-        if (confirm('Êtes-vous sûr de vouloir supprimer TOUS les participants ? Cette action est irréversible.')) {
-            console.log('User confirmed reset');
-            this.loading = true;
-            this.apiService.delete('players').subscribe({
-                next: () => {
-                    console.log('resetParticipants: Success');
-                    this.notificationService.success(
-                        'Succès',
-                        'Tous les participants ont été supprimés'
-                    );
-                    this.loading = false;
-                },
-                error: (err) => {
-                    console.error('resetParticipants: Error', err);
-                    this.loading = false;
-                    this.notificationService.error(
-                        'Erreur',
-                        'Erreur lors de la réinitialisation'
-                    );
-                }
-            });
-        } else {
-            console.log('User cancelled reset');
-        }
+        this.confirmationService.confirm({
+            message: 'Êtes-vous sûr de vouloir supprimer TOUS les participants ? Cette action est irréversible.',
+            header: 'Confirmation de réinitialisation',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Confirmer',
+            rejectLabel: 'Annuler',
+            acceptButtonStyleClass: 'p-button-danger',
+            accept: () => {
+                console.log('User confirmed reset');
+                this.loading = true;
+                this.apiService.delete('players').subscribe({
+                    next: () => {
+                        console.log('resetParticipants: Success');
+                        this.notificationService.success(
+                            'Succès',
+                            'Tous les participants ont été supprimés'
+                        );
+                        this.loading = false;
+                    },
+                    error: (err) => {
+                        console.error('resetParticipants: Error', err);
+                        this.loading = false;
+                        this.notificationService.error(
+                            'Erreur',
+                            'Erreur lors de la réinitialisation'
+                        );
+                    }
+                });
+            },
+            reject: () => {
+                console.log('User cancelled reset');
+            }
+        });
     }
 }

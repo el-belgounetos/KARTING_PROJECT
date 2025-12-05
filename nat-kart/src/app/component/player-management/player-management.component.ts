@@ -11,6 +11,7 @@ import { NotificationService } from '../../services/notification.service';
 import { PlayerDTO } from '../../dto/playerDTO';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-player-management',
@@ -50,6 +51,7 @@ export class PlayerManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
   private notificationService = inject(NotificationService);
+  private confirmationService = inject(ConfirmationService);
 
   ngOnInit() {
     this.loadImages();
@@ -162,19 +164,27 @@ export class PlayerManagementComponent implements OnInit {
   }
 
   deletePlayer(player: PlayerDTO) {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer ${player.pseudo} ?`)) {
-      this.apiService.delete(`players/${player.pseudo}`).subscribe({
-        next: () => {
-          this.notificationService.success('Succès', 'Joueur supprimé avec succès');
-          this.loadPlayers();
-          this.loadImages();
-        },
-        error: (err) => {
-          console.error('Error deleting player:', err);
-          this.notificationService.error('Erreur', 'Impossible de supprimer le joueur');
-        }
-      });
-    }
+    this.confirmationService.confirm({
+      message: `Êtes-vous sûr de vouloir supprimer ${player.pseudo} ?`,
+      header: 'Confirmation de suppression',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.apiService.delete(`players/${player.pseudo}`).subscribe({
+          next: () => {
+            this.notificationService.success('Succès', 'Joueur supprimé avec succès');
+            this.loadPlayers();
+            this.loadImages();
+          },
+          error: (err) => {
+            console.error('Error deleting player:', err);
+            this.notificationService.error('Erreur', 'Impossible de supprimer le joueur');
+          }
+        });
+      }
+    });
   }
 
   cancelEdit() {

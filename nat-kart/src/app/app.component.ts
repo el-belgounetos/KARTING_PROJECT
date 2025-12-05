@@ -1,8 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, ConfirmationService } from 'primeng/api';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { LoadingService } from './services/loading.service';
 import { LoaderComponent } from './component/loader/loader.component';
 import { filter } from 'rxjs/operators';
@@ -13,8 +14,10 @@ import { filter } from 'rxjs/operators';
         TabsModule,
         ButtonModule,
         RouterOutlet,
-        LoaderComponent
+        LoaderComponent,
+        ConfirmDialogModule
     ],
+    providers: [ConfirmationService],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

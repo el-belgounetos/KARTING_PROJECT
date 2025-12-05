@@ -19,6 +19,7 @@ export class ConsoleWheelComponent implements OnInit {
   consoles = signal<ConsoleDTO[]>([]);
   consolesDisplayed = signal<ConsoleDTO[]>([]);
   allCupsImages = signal<string[]>([]);
+  isSpinning = signal<boolean>(false);
 
   isConsolesVisible = true;
 
@@ -35,10 +36,13 @@ export class ConsoleWheelComponent implements OnInit {
       counters: this.apiService.get<CounterDTO[]>('counters')
     }).subscribe(({ consoles, counters }) => {
       if (consoles && counters) {
-        // Filter consoles that have a counter > 0
-        const availableConsoles = consoles.filter(console => {
+        // Create multiple instances of each console based on its counter
+        const availableConsoles = consoles.flatMap(console => {
           const counter = counters.find(c => c.name === console.name);
-          return counter && counter.counter > 0;
+          const count = counter?.counter ?? 0;
+
+          // Create an array with 'count' copies of this console
+          return Array.from({ length: count }, () => ({ ...console }));
         });
 
         this.consoles.set(availableConsoles);
@@ -56,18 +60,27 @@ export class ConsoleWheelComponent implements OnInit {
   onSpin() {
     if (this.consolesDisplayed().length === 0) return;
 
-    this.loadingService.show();
+    this.isSpinning.set(true);
     this.initializeCupsImages();
 
-    // Simulate spinning effect
+    // Simulate spinning effect on cup images
     let spinCount = 0;
     const maxSpins = 20;
     const interval = setInterval(() => {
-      this.consolesDisplayed.set(this.shuffleArray([...this.consoles()]));
+      // Shuffle cup images instead of consoles
+      const randomCupImages = this.consolesDisplayed().map(console => {
+        if (console.cups && console.cups.length > 0) {
+          const randomCupIndex = Math.floor(Math.random() * console.cups.length);
+          return 'http://localhost:8080/images/cups/' + console.name + '/' + console.cups[randomCupIndex].picture;
+        }
+        return 'http://localhost:8080/images/ui/intero.png';
+      });
+      this.allCupsImages.set(randomCupImages);
+
       spinCount++;
       if (spinCount >= maxSpins) {
         clearInterval(interval);
-        this.loadingService.hide();
+        this.isSpinning.set(false);
         this.revealCups();
       }
     }, 100);

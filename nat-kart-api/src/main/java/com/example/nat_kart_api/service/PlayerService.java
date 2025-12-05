@@ -245,4 +245,15 @@ public class PlayerService {
             }
         }
     }
+
+    /**
+     * Get player statistics.
+     * 
+     * @return PlayerStatsDTO
+     */
+    public com.example.nat_kart_api.dto.PlayerStatsDTO getPlayerStats() {
+        long total = playerRepository.count();
+        long withAvatar = playerRepository.countByPictureIsNotNullAndPictureNot("");
+        return new com.example.nat_kart_api.dto.PlayerStatsDTO(total, withAvatar, total - withAvatar);
+    }
 }

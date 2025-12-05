@@ -1,46 +1,81 @@
-<div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
-    style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper4.jpeg');"></div>
+<!-- Image de fond décorative, non interactive -->
+<div aria-hidden="true" class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
+    style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper4.jpeg');">
+</div>
 
-<main class="w-full h-[93vh] bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto"
-    style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;">
+<main class="w-full min-h-screen bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto pt-8"
+    style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;"
+    aria-label="Contenu principal">
 
     <section aria-label="Administration"
-        class="bg-gray-800/90 p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl backdrop-blur-sm">
-        <h2 class="text-3xl font-bold text-white text-center mb-8">Administration</h2>
+        class="bg-gray-800/90 p-4 sm:p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl sm:w-11/12 md:w-4/5 lg:w-2/3 xl:max-w-2xl backdrop-blur-sm mt-4">
 
-        <div class="flex flex-col gap-8">
-            <div class="bg-gray-700/50 p-6 rounded-xl border border-white/10">
-                <h3 class="text-xl font-bold text-white mb-4">Générateur de joueurs</h3>
+        <header>
+            <h2 class="text-3xl font-bold text-white text-center mb-8">Administration</h2>
+        </header>
+
+        <div class="flex flex-col gap-6">
+            <section aria-label="Statistiques" class="bg-gray-700/50 p-4 rounded-xl border border-white/10"
+                *ngIf="stats">
+                <header>
+                    <h3 class="text-xl font-bold text-white mb-4">Statistiques des joueurs</h3>
+                </header>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                        <div class="text-3xl font-bold text-blue-400">{{ stats.totalPlayers }}</div>
+                        <div class="text-gray-400 text-sm uppercase tracking-wider">Total</div>
+                    </div>
+                    <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                        <div class="text-3xl font-bold text-green-400">{{ stats.playersWithAvatar }}</div>
+                        <div class="text-gray-400 text-sm uppercase tracking-wider">Avec Avatar</div>
+                    </div>
+                    <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                        <div class="text-3xl font-bold text-yellow-400">{{ stats.playersWithoutAvatar }}</div>
+                        <div class="text-gray-400 text-sm uppercase tracking-wider">Sans Avatar</div>
+                    </div>
+                </div>
+            </section>
+
+            <section aria-label="Générateur de joueurs" class="bg-gray-700/50 p-6 rounded-xl border border-white/10">
+
+                <header>
+                    <h3 class="text-xl font-bold text-white mb-4">Générateur de joueurs</h3>
+                </header>
+
                 <p class="text-gray-300 mb-6">
                     Générez automatiquement des joueurs pour tester l'application.
                     Les avatars seront attribués automatiquement s'ils sont disponibles.
                 </p>
 
-                <div class="flex flex-col gap-4">
+                <form class="flex flex-col gap-2" aria-label="Formulaire de génération de joueurs"
+                    onsubmit="return false;">
                     <label for="count" class="text-white font-semibold">Nombre de joueurs à générer</label>
                     <p-inputNumber inputId="count" [(ngModel)]="playerCount" name="playerCount" [min]="1" [max]="50"
                         [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
                         decrementButtonClass="p-button-danger" incrementButtonClass="p-button-success"
                         incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" styleClass="w-full" />
-                </div>
 
-                <div class="flex items-center gap-4 mt-4">
-                    <p-checkbox [(ngModel)]="assignImage" [binary]="true" inputId="assignImage"
-                        name="assignImage"></p-checkbox>
-                    <label for="assignImage" class="text-white font-semibold cursor-pointer">Attribuer des
-                        avatars</label>
-                </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <p-checkbox [(ngModel)]="assignImage" [binary]="true" inputId="assignImage"
+                            name="assignImage"></p-checkbox>
+                        <label for="assignImage" class="text-white font-semibold cursor-pointer">
+                            Attribuer des avatars
+                        </label>
+                    </div>
 
-                <div class="flex justify-center mt-6 flex-col gap-4">
-                    <p-button label="Générer les joueurs" icon="pi pi-cog" [loading]="loading"
-                        (onClick)="generatePlayers()" styleClass="w-full md:w-auto px-8 py-3" severity="warn" />
+                    <div class="flex justify-center mt-6 flex-col gap-4">
+                        <p-button label="Générer les joueurs" icon="pi pi-cog" [loading]="loading"
+                            (onClick)="generatePlayers()" styleClass="w-full md:w-auto px-8 py-3" severity="warn"
+                            aria-label="Générer automatiquement des joueurs" />
 
-                    <p-button label="Réinitialiser les participants" icon="pi pi-trash" severity="danger"
-                        [loading]="loading" (onClick)="resetParticipants()" styleClass="w-full md:w-auto px-8 py-3" />
-                </div>
-            </div>
+                        <p-button label="Réinitialiser les participants" icon="pi pi-trash" severity="danger"
+                            [loading]="loading" (onClick)="resetParticipants()" styleClass="w-full md:w-auto px-8 py-3"
+                            aria-label="Réinitialiser tous les participants" />
+                    </div>
+                </form>
+            </section>
         </div>
     </section>
 </main>
 
-<p-toast />
+<p-toast></p-toast>

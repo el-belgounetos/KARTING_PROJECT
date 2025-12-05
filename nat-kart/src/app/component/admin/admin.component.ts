@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -9,6 +9,12 @@ import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
 import { ConfirmationService } from 'primeng/api';
+
+interface PlayerStats {
+    totalPlayers: number;
+    playersWithAvatar: number;
+    playersWithoutAvatar: number;
+}
 
 @Component({
     selector: 'app-admin',
@@ -24,15 +30,31 @@ import { ConfirmationService } from 'primeng/api';
     templateUrl: './admin.component.html',
     styleUrl: './admin.component.scss'
 })
-export class AdminComponent {
+export class AdminComponent implements OnInit {
     playerCount: number = 5;
     assignImage: boolean = true;
     loading: boolean = false;
+    stats: PlayerStats | null = null;
 
     private apiService = inject(ApiService);
     private loadingService = inject(LoadingService);
     private notificationService = inject(NotificationService);
     private confirmationService = inject(ConfirmationService);
+
+    ngOnInit() {
+        this.loadStats();
+    }
+
+    loadStats() {
+        this.apiService.get<PlayerStats>('admin/stats').subscribe({
+            next: (data) => {
+                this.stats = data;
+            },
+            error: (err) => {
+                console.error('Error loading stats:', err);
+            }
+        });
+    }
 
     generatePlayers() {
         console.log('generatePlayers called, count:', this.playerCount, 'assignImage:', this.assignImage);
@@ -45,6 +67,7 @@ export class AdminComponent {
                     `${this.playerCount} joueurs ont été générés avec succès !`
                 );
                 this.loading = false;
+                this.loadStats();
             },
             error: (err) => {
                 console.error('generatePlayers: Error', err);
@@ -77,6 +100,7 @@ export class AdminComponent {
                             'Tous les participants ont été supprimés'
                         );
                         this.loading = false;
+                        this.loadStats();
                     },
                     error: (err) => {
                         console.error('resetParticipants: Error', err);

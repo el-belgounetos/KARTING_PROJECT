@@ -25,4 +25,9 @@ public class AdminController {
     public void deleteAllPlayers() {
         playerService.deleteAllPlayers();
     }
+
+    @GetMapping("/stats")
+    public com.example.nat_kart_api.dto.PlayerStatsDTO getStats() {
+        return playerService.getPlayerStats();
+    }
 }

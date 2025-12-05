@@ -39,4 +39,6 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
      */
     @Query("SELECT DISTINCT p.picture FROM PlayerEntity p WHERE p.picture IS NOT NULL AND p.picture != ''")
     List<String> findAllAssignedPictures();
+
+    long countByPictureIsNotNullAndPictureNot(String empty);
 }

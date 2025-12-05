@@ -1,11 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
-import { Router } from '@angular/router';
 import { LoadingService } from './services/loading.service';
 import { LoaderComponent } from './component/loader/loader.component';
+import { filter } from 'rxjs/operators';
 
 @Component({
     selector: 'app-root',
@@ -21,7 +21,7 @@ import { LoaderComponent } from './component/loader/loader.component';
 export class AppComponent implements OnInit {
     title = 'nat-kart';
     items: MenuItem[] = [];
-    activeItem: number = 0;
+    activeItem = signal<number>(0);
     public logoPath: String = '';
     public loadingService = inject(LoadingService);
 
@@ -39,10 +39,21 @@ export class AppComponent implements OnInit {
             { label: 'Admin', route: 'admin' }
         ];
 
-        // Synchronize active tab with current route
-        const currentRoute = this.router.url.substring(1); // Remove leading slash
+        // Update active tab based on current route
+        this.updateActiveItem(this.router.url);
+
+        // Listen to navigation events to keep menu in sync
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe((event: NavigationEnd) => {
+            this.updateActiveItem(event.urlAfterRedirects);
+        });
+    }
+
+    private updateActiveItem(url: string) {
+        const currentRoute = url.substring(1); // Remove leading slash
         const foundIndex = this.items.findIndex(item => item['route'] === currentRoute);
-        this.activeItem = foundIndex !== -1 ? foundIndex : 0;
+        this.activeItem.set(foundIndex !== -1 ? foundIndex : 0);
     }
 
     onActiveItemChange(event: any) {
@@ -50,7 +61,7 @@ export class AppComponent implements OnInit {
         const index = event.index ?? event.value ?? event;
 
         if (typeof index === 'number' && this.items[index]) {
-            this.activeItem = index;
+            this.activeItem.set(index);
             this.router.navigate([this.items[index]['route']]);
         }
     }

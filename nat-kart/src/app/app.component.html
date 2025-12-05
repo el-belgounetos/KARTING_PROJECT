@@ -1,8 +1,8 @@
 @if (loadingService.loading()) {
-  <app-loader />
+<app-loader />
 }
 <div class="card h-[5vh]">
-  <p-tabs [value]="activeItem" (valueChange)="onActiveItemChange($event)">
+  <p-tabs [value]="activeItem()" (valueChange)="onActiveItemChange($event)">
     <p-tablist>
       @for (item of items; track item.label; let idx = $index) {
       <p-tab [value]="idx">{{ item.label }}</p-tab>

@@ -26,6 +26,7 @@ export class ChampionWheelComponent implements OnInit {
   excludeAvatars = signal<string[]>([]);
   drawnPlayers = signal<string[]>([]);
   players = signal<any[]>([]);
+  isSpinning = signal<boolean>(false);
 
   // Regular properties
   avatar: string = '';
@@ -114,7 +115,7 @@ export class ChampionWheelComponent implements OnInit {
       );
     }
 
-    this.loadingService.show();
+    this.isSpinning.set(true);
     this.isAnimating = true;
     this.drawnPlayers.set([]);
 
@@ -170,7 +171,7 @@ export class ChampionWheelComponent implements OnInit {
       this.checkPlayers();
     }, 500);
 
-    this.loadingService.hide();
+    this.isSpinning.set(false);
     this.isAnimating = false;
 
     // Update displayed avatar to first drawn if single player, or just stop animation

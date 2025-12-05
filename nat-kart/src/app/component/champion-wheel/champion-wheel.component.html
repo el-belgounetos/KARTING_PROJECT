@@ -61,8 +61,8 @@
       </div>
 
       <!-- Spin button -->
-      <p-button styleClass="tailwind-button w-11/12 max-w-xs" [disabled]="!canSpin()" label="Tourner la roue"
-        (click)="onSpin()">
+      <p-button styleClass="tailwind-button w-11/12 max-w-xs" [disabled]="!canSpin() || isSpinning()"
+        label="Tourner la roue" (click)="onSpin()">
       </p-button>
     </div>
   </div>

@@ -22,6 +22,7 @@ public class RankingController {
         return this.rankingService.getAllRanks();
     }
 
+    @SuppressWarnings("null")
     @PostMapping
     public void updateRank(@Valid @RequestBody RankingDTO player) {
         this.rankingService.updatePointsByPlayerId(

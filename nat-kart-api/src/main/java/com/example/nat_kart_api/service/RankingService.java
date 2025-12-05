@@ -8,6 +8,7 @@ import com.example.nat_kart_api.repository.PlayerRepository;
 import com.example.nat_kart_api.repository.RankingRepository;
 import com.example.nat_kart_api.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,7 @@ public class RankingService {
      * @param victory   New victory count
      */
     @Transactional
-    public void updatePointsByPlayerId(Long playerId, int newPoints, int victory) {
+    public void updatePointsByPlayerId(@NonNull Long playerId, int newPoints, int victory) {
         // Find player by ID
         PlayerEntity player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
@@ -75,7 +76,7 @@ public class RankingService {
      * @param playerId The player's ID
      */
     @Transactional
-    public void createRankingEntry(Long playerId) {
+    public void createRankingEntry(@NonNull Long playerId) {
         PlayerEntity player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
 
@@ -99,6 +100,7 @@ public class RankingService {
      *
      * @param playerPseudo The player's pseudo
      */
+    @SuppressWarnings("null")
     @Transactional
     public void deleteRankingEntry(String playerPseudo) {
         PlayerEntity player = playerRepository.findByPseudo(playerPseudo)
@@ -106,7 +108,6 @@ public class RankingService {
 
         RankingEntity ranking = rankingRepository.findByPlayer(player)
                 .orElseThrow(() -> new ResourceNotFoundException("Ranking not found for player: " + playerPseudo));
-
         rankingRepository.delete(ranking);
         this.rerankEveryone();
     }
@@ -123,6 +124,7 @@ public class RankingService {
      * Recalculate ranks for all players based on points.
      * Players with more points get better (lower) rank numbers.
      */
+    @SuppressWarnings("null")
     @Transactional
     public void rerankEveryone() {
         List<RankingEntity> rankings = rankingRepository.findAllByOrderByPointsDesc();
@@ -144,7 +146,7 @@ public class RankingService {
      * @param victoryDelta Victories to add (negative to subtract)
      */
     @Transactional
-    public void adjustPoints(Long playerId, int pointsDelta, int victoryDelta) {
+    public void adjustPoints(@NonNull Long playerId, int pointsDelta, int victoryDelta) {
         PlayerEntity player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
 

@@ -3,6 +3,8 @@ package com.example.nat_kart_api.service;
 import com.example.nat_kart_api.dto.PlayerDTO;
 import com.example.nat_kart_api.entity.PlayerEntity;
 import com.example.nat_kart_api.repository.PlayerRepository;
+
+import org.springframework.lang.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,7 +76,8 @@ public class PlayerService {
      *
      * @param player The player DTO to create
      */
-    public void createPlayer(PlayerDTO player) {
+    @SuppressWarnings("null")
+    public void createPlayer(@NonNull PlayerDTO player) {
         // Check for duplicates
         if (playerRepository.existsByPseudoIgnoreCase(player.getPseudo())) {
             return;
@@ -101,7 +104,7 @@ public class PlayerService {
      *
      * @param playerDTO The player DTO with updated information
      */
-    public void updatePlayer(PlayerDTO playerDTO) {
+    public void updatePlayer(@NonNull PlayerDTO playerDTO) {
         log.debug("updatePlayer called for ID: {}, Category: {}", playerDTO.getId(), playerDTO.getCategory());
 
         if (playerDTO.getId() == null) {
@@ -109,6 +112,7 @@ public class PlayerService {
             return;
         }
 
+        @SuppressWarnings("null")
         Optional<PlayerEntity> optionalPlayer = this.playerRepository.findById(playerDTO.getId());
         if (optionalPlayer.isPresent()) {
             PlayerEntity player = optionalPlayer.get();

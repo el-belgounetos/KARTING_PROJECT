@@ -92,6 +92,7 @@ public class HistoryService {
      * @param id The History entry ID to delete
      */
     @Transactional
+    @SuppressWarnings("null")
     public void deleteHistoryById(int id) {
         HistoryEntity history = historyRepository.findById((long) id)
                 .orElseThrow(() -> new ResourceNotFoundException("History entry not found: " + id));
@@ -100,8 +101,13 @@ public class HistoryService {
         int pointsDelta = -history.getPoints();
         int victoryDelta = history.getVictory() ? -1 : 0;
 
-        // Adjust player's ranking via RankingService
-        rankingService.adjustPoints(history.getPlayer().getId(), pointsDelta, victoryDelta);
+        // Adjust player's ranking via RankingService (only if player exists)
+        PlayerEntity player = history.getPlayer();
+        if (player != null) {
+            rankingService.adjustPoints(player.getId(), pointsDelta, victoryDelta);
+        } else {
+            log.warn("History entry #{} has no associated player, skipping ranking adjustment", id);
+        }
 
         // Delete the history entry
         historyRepository.deleteById((long) id);
@@ -171,6 +177,7 @@ public class HistoryService {
     /**
      * Convert HistoryDTO to HistoryEntity.
      */
+    @SuppressWarnings("null")
     private HistoryEntity toEntity(HistoryDTO dto) {
         HistoryEntity entity = new HistoryEntity();
         entity.setPoints(dto.getPoints());

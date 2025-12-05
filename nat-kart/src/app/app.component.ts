@@ -4,6 +4,7 @@ import { MenuItem, ConfirmationService } from 'primeng/api';
 import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
 import { LoadingService } from './services/loading.service';
 import { LoaderComponent } from './component/loader/loader.component';
 import { filter } from 'rxjs/operators';
@@ -15,7 +16,8 @@ import { filter } from 'rxjs/operators';
         ButtonModule,
         RouterOutlet,
         LoaderComponent,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        ToastModule
     ],
     providers: [ConfirmationService],
     templateUrl: './app.component.html',

@@ -43,10 +43,14 @@ export class ConsoleManagementComponent implements OnInit {
       counter: this.consolesValues[index]
     }));
 
-    this.apiService.post('counters', updatedCounters).subscribe(response => {
-      if (response) {
+    this.apiService.post('counters', updatedCounters).subscribe({
+      next: () => {
         this.notificationService.success('Succès', 'Les compteurs ont été mis à jour');
         this.counters.set(updatedCounters);
+      },
+      error: (err) => {
+        console.error('Error saving counters:', err);
+        this.notificationService.error('Erreur', 'Impossible de sauvegarder les compteurs');
       }
     });
   }

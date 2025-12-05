@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
@@ -25,8 +24,7 @@ interface PlayerStats {
         FormsModule,
         InputNumberModule,
         CheckboxModule,
-        ButtonModule,
-        ToastModule
+        ButtonModule
     ],
     templateUrl: './admin.component.html',
     styleUrl: './admin.component.scss'

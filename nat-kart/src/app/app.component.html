@@ -2,7 +2,7 @@
 <app-loader />
 }
 <p-confirmDialog />
-<nav class="card h-[5vh]" aria-label="Navigation principale">
+<nav class="card h-[5vh] sticky top-0 z-50" aria-label="Navigation principale">
   <p-tabs [value]="activeItem()" (valueChange)="onActiveItemChange($event)">
     <p-tablist>
       @for (item of items; track item.label; let idx = $index) {

@@ -69,7 +69,7 @@ export class AdminComponent {
             accept: () => {
                 console.log('User confirmed reset');
                 this.loading = true;
-                this.apiService.delete('players').subscribe({
+                this.apiService.delete('admin/players').subscribe({
                     next: () => {
                         console.log('resetParticipants: Success');
                         this.notificationService.success(

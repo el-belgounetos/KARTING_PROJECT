@@ -59,9 +59,23 @@ export class AppComponent implements OnInit {
         this.activeItem.set(foundIndex !== -1 ? foundIndex : 0);
     }
 
-    onActiveItemChange(event: any) {
+    onActiveItemChange(event: number | string | undefined | { index: number } | { value: number }) {
         // Handle different event structures: { index: ... }, { value: ... }, or direct value
-        const index = event.index ?? event.value ?? event;
+        let index: number;
+
+        if (event === undefined || event === null) {
+            return;
+        }
+
+        if (typeof event === 'number') {
+            index = event;
+        } else if (typeof event === 'string') {
+            index = parseInt(event, 10);
+        } else if ('index' in event) {
+            index = event.index;
+        } else {
+            index = event.value;
+        }
 
         if (typeof index === 'number' && this.items[index]) {
             this.activeItem.set(index);

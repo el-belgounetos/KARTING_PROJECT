@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { NotificationService } from './notification.service';
 
@@ -23,11 +23,11 @@ export class ApiService {
         );
     }
 
-    post<T>(endpoint: string, body: any): Observable<T> {
+    post<T>(endpoint: string, body: unknown): Observable<T> {
         return this.http.post<T>(`${this.baseUrl}/${endpoint}`, body);
     }
 
-    put<T>(endpoint: string, body: any): Observable<T> {
+    put<T>(endpoint: string, body: unknown): Observable<T> {
         return this.http.put<T>(`${this.baseUrl}/${endpoint}`, body);
     }
 
@@ -49,7 +49,7 @@ export class ApiService {
         );
     }
 
-    private handleError(error: any) {
+    private handleError(error: HttpErrorResponse) {
         console.error('API Error:', error);
 
         // Handle validation errors (400 with field-specific errors)

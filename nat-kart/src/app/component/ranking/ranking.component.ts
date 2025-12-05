@@ -16,7 +16,7 @@ export class RankingComponent implements OnInit, OnDestroy {
   // Signal for reactive state
   ranks = signal<KarterDTO[]>([]);
 
-  private pollingInterval: any;
+  private pollingInterval: ReturnType<typeof setInterval> | undefined;
   private apiService = inject(ApiService);
   private rankingService = inject(RankingService);
 

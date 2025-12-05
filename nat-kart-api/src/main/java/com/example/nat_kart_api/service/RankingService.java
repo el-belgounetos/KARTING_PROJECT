@@ -184,7 +184,10 @@ public class RankingService {
         dto.setPicture(player.getPicture());
         dto.setCategory(player.getCategory());
         dto.setRank(entity.getRank());
-        dto.setTotalGames((int) historyRepository.countByPlayer(player));
+        // Check if historyRepository result is null (though count usually returns
+        // primitive long or 0L)
+        Long count = historyRepository.countByPlayer(player);
+        dto.setTotalGames(count != null ? count.intValue() : 0);
 
         return dto;
     }

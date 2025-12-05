@@ -34,8 +34,9 @@
           class="text-base lg:text-lg font-black text-white text-center uppercase tracking-wider shadow-md">Nombre de
           joueurs :</label>
         <p-inputNumber inputId="playerCount" [(ngModel)]="playerCount" [min]="1" [max]="getMaxAssignable()"
-          [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
-          decrementButtonIcon="pi pi-minus" styleClass="tailwind-input"
+          [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus font-bold"
+          decrementButtonIcon="pi pi-minus font-bold" styleClass="tailwind-input" decrementButtonClass="btn-soft-red"
+          incrementButtonClass="btn-soft-green"
           inputStyleClass="text-center font-bold text-base p-1 rounded-md border-2 border-white/50 bg-white/90 text-gray-800" />
       </div>
 

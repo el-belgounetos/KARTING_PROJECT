@@ -2,12 +2,12 @@
   style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper4.jpeg');"></div>
 
 <!-- Poolup Layout: Flex column on mobile, Grid on desktop (like Kart) -->
-<div
+<main
   class="flex flex-col lg:grid lg:grid-cols-[minmax(250px,20%)_1fr_minmax(350px,30%)] h-screen w-full overflow-x-hidden overflow-y-auto lg:overflow-hidden relative bg-[rgba(45,45,45,0.7)]"
   style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;">
 
   <!-- Left Sidebar: Avatar List -->
-  <div
+  <aside aria-label="Liste des joueurs"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/60 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden shrink-0">
     <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="ranks-scroll">
       <div class="flex flex-col gap-2">
@@ -33,10 +33,10 @@
         }
       </div>
     </p-scrollPanel>
-  </div>
+  </aside>
 
   <!-- Main Content: Details & Controls -->
-  <div class="p-8 flex flex-col items-center gap-8 overflow-y-auto">
+  <section aria-label="Modification des scores" class="p-8 flex flex-col items-center gap-8 overflow-y-auto">
     <div class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-white drop-shadow-md text-center mb-4">
       Modification des rangs
     </div>
@@ -123,10 +123,10 @@
       <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loadingService.loading()"
         [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
     </div>
-  </div>
+  </section>
 
   <!-- Right Sidebar: History (Collapsible) -->
-  <div
+  <aside aria-label="Historique des scores"
     class="w-full lg:h-full p-4 bg-gray-900/60 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col overflow-hidden shrink-0"
     [ngClass]="{'h-16': !isHistoryVisible, 'h-64': isHistoryVisible}">
     @if (selectedRank != null && selectedRank.name != '') {
@@ -170,6 +170,6 @@
       }
     </div>
     }
-  </div>
+  </aside>
 
-</div>
+</main>

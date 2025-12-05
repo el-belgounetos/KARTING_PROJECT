@@ -1,15 +1,15 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
   style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper5.jpg');"></div>
-<div class="h-[95vh] w-full flex flex-col overflow-hidden pt-[5vh]">
+<main class="h-[95vh] w-full flex flex-col overflow-hidden pt-[5vh]">
 
   <!-- Button -->
-  <div class="w-full flex justify-center items-center py-4">
+  <header class="w-full flex justify-center items-center py-4">
     <p-button styleClass="consoling-button" [disabled]="isSpinning()" label="Tourner la roue" (click)="onSpin()">
     </p-button>
-  </div>
+  </header>
 
   <!-- Consoles List - Vertical on mobile, Grid on desktop -->
-  <div class="flex flex-col lg:grid gap-4 overflow-y-auto flex-1 px-4 pb-4"
+  <section aria-label="Consoles disponibles" class="flex flex-col lg:grid gap-4 overflow-y-auto flex-1 px-4 pb-4"
     [ngStyle]="{'grid-template-columns': calculateConsolesPerLine() > 0 ? 'repeat(' + calculateConsolesPerLine() + ', 1fr)' : '1fr'}">
     @for (console of consolesDisplayed(); track console; let index = $index) {
     <div
@@ -24,5 +24,5 @@
       </div>
     </div>
     }
-  </div>
-</div>
+  </section>
+</main>

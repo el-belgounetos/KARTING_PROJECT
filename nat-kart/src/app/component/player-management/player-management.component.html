@@ -1,10 +1,11 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
     style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper4.jpeg');"></div>
 
-<div class="w-full h-[93vh] bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto"
+<main class="w-full h-[93vh] bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto"
     style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;">
 
-    <div class="bg-gray-800/90 p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-6xl backdrop-blur-sm">
+    <section aria-label="Gestion des joueurs"
+        class="bg-gray-800/90 p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-6xl backdrop-blur-sm">
         <p-tabs [(value)]="selectedTabIndex">
             <p-tablist>
                 <p-tab value="0">Liste des joueurs</p-tab>
@@ -73,10 +74,12 @@
 
                 <!-- TAB 2: Création/Modification -->
                 <p-tabpanel value="1">
-                    <h2 class="text-3xl font-bold text-white text-center mb-8">
-                        {{ isEditMode ? 'Modification d\'un joueur' : 'Création d\'un joueur' }}
-                    </h2>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <header>
+                        <h2 class="text-3xl font-bold text-white text-center mb-8">
+                            {{ isEditMode ? 'Modification d\'un joueur' : 'Création d\'un joueur' }}
+                        </h2>
+                    </header>
+                    <form class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- Form Fields -->
                         <div class="flex flex-col gap-4">
                             @if (isEditMode && player.id) {
@@ -166,7 +169,7 @@
                             </div>
                             }
                         </div>
-                    </div>
+                    </form>
 
                     <div class="flex justify-center gap-4 mt-8">
                         @if (isEditMode) {
@@ -180,6 +183,5 @@
                 </p-tabpanel>
             </p-tabpanels>
         </p-tabs>
-    </div>
-</div>
-
+    </section>
+</main>

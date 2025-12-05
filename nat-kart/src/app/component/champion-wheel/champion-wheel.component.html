@@ -1,11 +1,11 @@
-<div class="flex flex-col lg:grid lg:grid-cols-[20%_1fr_20%] h-screen w-full overflow-hidden relative">
+<main class="flex flex-col lg:grid lg:grid-cols-[20%_1fr_20%] h-screen w-full overflow-hidden relative">
 
   <!-- Background -->
   <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10"
     style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper2.jpeg'); filter: blur(3px);"></div>
 
   <!-- Left Column: Available Pool -->
-  <div
+  <aside aria-label="Pool de joueurs disponibles"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/70 border-b lg:border-b-0 lg:border-r border-white/20 flex flex-col overflow-hidden shrink-0">
     @if (avatars().length > 0) {
     <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
@@ -20,10 +20,11 @@
       </div>
     </p-scrollPanel>
     }
-  </div>
+  </aside>
 
   <!-- Center Column: Main Content -->
-  <div class="flex flex-col justify-start lg:justify-center items-center p-2 lg:p-4 grow w-full overflow-y-auto">
+  <section aria-label="Roue de sélection"
+    class="flex flex-col justify-start lg:justify-center items-center p-2 lg:p-4 grow w-full overflow-y-auto">
     <div class="flex flex-col items-center gap-2 lg:gap-4 w-full max-w-md">
 
       <!-- Player count input -->
@@ -64,10 +65,10 @@
         label="Tourner la roue" (click)="onSpin()">
       </p-button>
     </div>
-  </div>
+  </section>
 
   <!-- Right Column: Excluded Players -->
-  <div
+  <aside aria-label="Joueurs déjà passés"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/70 border-b lg:border-b-0 lg:border-l border-white/20 flex flex-col overflow-hidden shrink-0">
     @if (excludeAvatars().length > 0) {
     <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
@@ -87,7 +88,7 @@
       </div>
     </p-scrollPanel>
     }
-  </div>
+  </aside>
 
   <!-- Reset button (star) -->
   <img
@@ -100,4 +101,4 @@
     styleClass="fixed right-24 bottom-4 lg:right-32 lg:bottom-8 z-50 shadow-lg w-12 h-12 lg:w-16 lg:h-16"
     pTooltip="Actualiser les données" tooltipPosition="top" (onClick)="reloadPool()" />
 
-</div>
+</main>

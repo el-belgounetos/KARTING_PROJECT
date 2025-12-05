@@ -2,7 +2,7 @@
 <app-loader />
 }
 <p-confirmDialog />
-<div class="card h-[5vh]">
+<nav class="card h-[5vh]" aria-label="Navigation principale">
   <p-tabs [value]="activeItem()" (valueChange)="onActiveItemChange($event)">
     <p-tablist>
       @for (item of items; track item.label; let idx = $index) {
@@ -10,5 +10,5 @@
       }
     </p-tablist>
   </p-tabs>
-</div>
+</nav>
 <router-outlet></router-outlet>

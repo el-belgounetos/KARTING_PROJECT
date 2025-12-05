@@ -5,5 +5,6 @@ export interface RankingDTO {
     points: number;
     rank: number;
     victory: number;
+    totalGames?: number; // Added optional to match backend changes
     category?: string;
 }

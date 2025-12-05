@@ -11,6 +11,7 @@
         <th>Catégorie</th>
         <th>Points</th>
         <th>Victoires</th>
+        <th>Parties</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-player>
@@ -36,6 +37,7 @@
         <td>{{player.category || '-'}}</td>
         <td>{{player.points}}</td>
         <td>{{player.victory}}</td>
+        <td>{{player.totalGames}}</td>
       </tr>
     </ng-template>
   </p-table>

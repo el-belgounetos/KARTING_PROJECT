@@ -26,4 +26,6 @@ public class RankingDTO {
 
     @Min(value = 1, message = "Le rang doit être au minimum 1")
     private int rank; // Position dans le classement
+
+    private int totalGames;
 }

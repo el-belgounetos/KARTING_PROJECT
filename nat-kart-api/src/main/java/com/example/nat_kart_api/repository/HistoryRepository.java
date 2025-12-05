@@ -28,4 +28,12 @@ public interface HistoryRepository extends JpaRepository<HistoryEntity, Long> {
      * @param player The player entity
      */
     void deleteByPlayer(PlayerEntity player);
+
+    /**
+     * Count history entries for a specific player.
+     *
+     * @param player The player entity
+     * @return Number of games played
+     */
+    long countByPlayer(PlayerEntity player);
 }

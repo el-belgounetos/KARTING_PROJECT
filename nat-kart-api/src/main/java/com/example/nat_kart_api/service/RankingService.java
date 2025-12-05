@@ -3,6 +3,7 @@ package com.example.nat_kart_api.service;
 import com.example.nat_kart_api.dto.RankingDTO;
 import com.example.nat_kart_api.entity.PlayerEntity;
 import com.example.nat_kart_api.entity.RankingEntity;
+import com.example.nat_kart_api.repository.HistoryRepository;
 import com.example.nat_kart_api.repository.PlayerRepository;
 import com.example.nat_kart_api.repository.RankingRepository;
 import com.example.nat_kart_api.exception.ResourceNotFoundException;
@@ -22,6 +23,7 @@ public class RankingService {
 
     private final RankingRepository rankingRepository;
     private final PlayerRepository playerRepository;
+    private final HistoryRepository historyRepository;
 
     /**
      * Get all rankings sorted by points (highest first).
@@ -161,7 +163,7 @@ public class RankingService {
     }
 
     /**
-     * Convert RankingEntity to KarterDTO.
+     * Convert RankingEntity to RankingDTO.
      * Player information (name, picture, category) is retrieved from the player
      * relationship.
      *
@@ -182,6 +184,7 @@ public class RankingService {
         dto.setPicture(player.getPicture());
         dto.setCategory(player.getCategory());
         dto.setRank(entity.getRank());
+        dto.setTotalGames((int) historyRepository.countByPlayer(player));
 
         return dto;
     }

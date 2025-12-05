@@ -5,6 +5,7 @@ import { RankingDTO } from '../../dto/rankingDTO';
 import { ButtonModule } from 'primeng/button';
 import { ApiService } from '../../services/api.service';
 import { RankingService } from '../../services/ranking.service';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-ranking',
@@ -19,6 +20,7 @@ export class RankingComponent implements OnInit, OnDestroy {
   private pollingInterval: ReturnType<typeof setInterval> | undefined;
   private apiService = inject(ApiService);
   private rankingService = inject(RankingService);
+  public imageService = inject(ImageService);
 
   ngOnInit() {
     this.getAllRanks();

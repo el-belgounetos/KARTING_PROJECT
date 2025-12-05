@@ -1,11 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { RankingDTO } from '../dto/rankingDTO';
+import { ImageService } from './image.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RankingService {
 
+    private imageService = inject(ImageService);
     constructor() { }
 
     sortByRanking(karters: RankingDTO[]): RankingDTO[] {
@@ -18,11 +20,10 @@ export class RankingService {
     }
 
     getCupImage(rank: number): string {
-        const path = 'http://localhost:8080/images/ranks/';
         switch (rank) {
-            case 1: return path + 'golden-cup.png';
-            case 2: return path + 'silver-cup.png';
-            case 3: return path + 'bronze-cup.png';
+            case 1: return this.imageService.getRankImageUrl('golden-cup.png');
+            case 2: return this.imageService.getRankImageUrl('silver-cup.png');
+            case 3: return this.imageService.getRankImageUrl('bronze-cup.png');
             default: return '';
         }
     }

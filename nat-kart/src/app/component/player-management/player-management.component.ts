@@ -12,6 +12,7 @@ import { PlayerDTO } from '../../dto/playerDTO';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ConfirmationService } from 'primeng/api';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-player-management',
@@ -52,6 +53,7 @@ export class PlayerManagementComponent implements OnInit {
   public loadingService = inject(LoadingService);
   private notificationService = inject(NotificationService);
   private confirmationService = inject(ConfirmationService);
+  public imageService = inject(ImageService);
 
   ngOnInit() {
     this.loadImages();

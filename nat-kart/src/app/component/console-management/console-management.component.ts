@@ -7,6 +7,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ApiService } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-console-management',
@@ -21,6 +22,7 @@ export class ConsoleManagementComponent implements OnInit {
 
   private apiService = inject(ApiService);
   private notificationService = inject(NotificationService);
+  public imageService = inject(ImageService);
 
   ngOnInit() {
     this.loadCounters();

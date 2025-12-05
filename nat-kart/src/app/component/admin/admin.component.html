@@ -1,6 +1,6 @@
 <!-- Image de fond décorative, non interactive -->
 <div aria-hidden="true" class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
-    style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper4.jpeg');">
+    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'">
 </div>
 
 <main class="w-full min-h-screen bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto pt-8"

@@ -10,6 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-champion-wheel',
@@ -37,6 +38,7 @@ export class ChampionWheelComponent implements OnInit {
   private apiService = inject(ApiService);
   private notificationService = inject(NotificationService);
   public loadingService = inject(LoadingService);
+  public imageService = inject(ImageService);
 
   ngOnInit() {
     this.reloadPool();

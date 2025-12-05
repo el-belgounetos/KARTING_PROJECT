@@ -1,5 +1,5 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
-  style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper3.jpg');"></div>
+  [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper3.jpg') + ')'"></div>
 <main class="h-[93vh] w-full relative">
   <p-button class="absolute right-0 z-[999]" (click)="onExport()" label="Exporter" />
   <p-table styleClass="rank-table mt-4 rounded" [value]="ranks()" [tableStyle]="{'min-width': '60rem'}">
@@ -25,10 +25,10 @@
 
         <td>
           @if (player.picture) {
-          <img [src]="'http://localhost:8080/images/players/' + player.picture" [alt]="player.name" width="55"
+          <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.name" width="55"
             class="shadow-lg" />
           } @else {
-          <img src="http://localhost:8080/images/players/unknown.png" [alt]="player.name" width="55"
+          <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="player.name" width="55"
             class="shadow-lg opacity-50" />
           }
         </td>

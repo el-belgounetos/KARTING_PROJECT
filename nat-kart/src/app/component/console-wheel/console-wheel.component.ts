@@ -7,6 +7,7 @@ import { CounterDTO } from '../../dto/counterDTO';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { forkJoin } from 'rxjs';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-console-wheel',
@@ -23,6 +24,7 @@ export class ConsoleWheelComponent implements OnInit {
 
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
+  public imageService = inject(ImageService);
 
   ngOnInit() {
     this.loadConsoles();
@@ -51,7 +53,7 @@ export class ConsoleWheelComponent implements OnInit {
   }
 
   initializeCupsImages() {
-    const placeholders = this.consolesDisplayed().map(() => 'http://localhost:8080/images/ui/intero.png');
+    const placeholders = this.consolesDisplayed().map(() => this.imageService.getImageUrl('ui/intero.png'));
     this.allCupsImages.set(placeholders);
   }
 
@@ -69,9 +71,9 @@ export class ConsoleWheelComponent implements OnInit {
       const randomCupImages = this.consolesDisplayed().map(console => {
         if (console.cups && console.cups.length > 0) {
           const randomCupIndex = Math.floor(Math.random() * console.cups.length);
-          return 'http://localhost:8080/images/cups/' + console.name + '/' + console.cups[randomCupIndex].picture;
+          return this.imageService.getCupImageUrl(console.name + '/' + console.cups[randomCupIndex].picture);
         }
-        return 'http://localhost:8080/images/ui/intero.png';
+        return this.imageService.getImageUrl('ui/intero.png');
       });
       this.allCupsImages.set(randomCupImages);
 
@@ -91,7 +93,7 @@ export class ConsoleWheelComponent implements OnInit {
         if (console.cups && console.cups.length > 0) {
           const randomCupIndex = Math.floor(Math.random() * console.cups.length);
           const newImages = [...this.allCupsImages()];
-          newImages[index] = 'http://localhost:8080/images/cups/' + console.name + '/' + console.cups[randomCupIndex].picture;
+          newImages[index] = this.imageService.getCupImageUrl(console.name + '/' + console.cups[randomCupIndex].picture);
           this.allCupsImages.set(newImages);
         }
       }, index * 500);

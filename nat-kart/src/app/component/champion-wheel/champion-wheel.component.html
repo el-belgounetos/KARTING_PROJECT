@@ -2,7 +2,8 @@
 
   <!-- Background -->
   <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10"
-    style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper2.jpeg'); filter: blur(3px);"></div>
+    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper2.jpeg') + ')'"
+    style="filter: blur(3px);"></div>
 
   <!-- Left Column: Available Pool -->
   <aside aria-label="Pool de joueurs disponibles"
@@ -14,7 +15,7 @@
         Pool</p>
       <div class="grid grid-cols-[repeat(auto-fill,60px)] gap-4 p-4">
         @for (avatar of avatars(); track avatar) {
-        <p-image [src]="'http://localhost:8080/images/players/' + avatar" alt="pool" width="70"
+        <p-image [src]="imageService.getPlayerImageUrl(avatar)" alt="pool" width="70"
           styleClass="w-full h-auto block" />
         }
       </div>
@@ -45,14 +46,14 @@
         <!-- Single player animation -->
         @if (avatar) {
         <img class="shadow-lg max-w-full max-h-[140px] lg:max-h-[230px] w-auto h-auto object-contain block"
-          [src]="'http://localhost:8080/images/players/' + avatar" alt="personnage" />
+          [src]="imageService.getPlayerImageUrl(avatar)" alt="personnage" />
         }
         } @else {
         <!-- Multi-player grid -->
         <div class="flex flex-wrap justify-center items-center gap-2 lg:gap-3 w-full">
           @for (player of drawnPlayers(); track player) {
           <div class="flex flex-col items-center">
-            <p-image [src]="'http://localhost:8080/images/players/' + player" alt="personnage"
+            <p-image [src]="imageService.getPlayerImageUrl(player)" alt="personnage"
               [width]="drawnPlayers().length > 3 ? '60' : '80'" styleClass="shadow-lg max-w-full h-auto" />
           </div>
           }
@@ -81,8 +82,8 @@
           <p-badge [value]="'X'" severity="danger"
             class="absolute -top-2 -left-2 z-20 cursor-pointer transition-transform hover:scale-125"
             (click)="introduceAvatarByName(avatar)" />
-          <p-image styleClass="w-full h-auto block grayscale" [src]="'http://localhost:8080/images/players/' + avatar"
-            alt="pool" width="70" />
+          <p-image styleClass="w-full h-auto block grayscale" [src]="imageService.getPlayerImageUrl(avatar)" alt="pool"
+            width="70" />
         </div>
         }
       </div>
@@ -93,7 +94,7 @@
   <!-- Reset button (star) -->
   <img
     class="fixed right-4 bottom-4 lg:right-8 lg:bottom-8 z-50 cursor-pointer shadow-lg transition-transform w-16 lg:w-20 h-auto hover:scale-110"
-    pTooltip="Reset la pool" tooltipPosition="top" src="http://localhost:8080/images/ui/star.png" alt="reset"
+    pTooltip="Reset la pool" tooltipPosition="top" [src]="imageService.getImageUrl('ui/star.png')" alt="reset"
     (click)="resetExcludeAvatars()" />
 
   <!-- Refresh button -->

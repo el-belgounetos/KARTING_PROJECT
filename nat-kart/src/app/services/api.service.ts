@@ -3,11 +3,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { NotificationService } from './notification.service';
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
     providedIn: 'root'
 })
 export class ApiService {
-    private baseUrl = 'http://localhost:8080/api';
+    private baseUrl = environment.apiUrl;
 
     constructor(
         private http: HttpClient,

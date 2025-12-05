@@ -9,6 +9,7 @@ import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
 import { ConfirmationService } from 'primeng/api';
+import { ImageService } from '../../services/image.service';
 
 interface PlayerStats {
     totalPlayers: number;
@@ -40,6 +41,7 @@ export class AdminComponent implements OnInit {
     private loadingService = inject(LoadingService);
     private notificationService = inject(NotificationService);
     private confirmationService = inject(ConfirmationService);
+    public imageService = inject(ImageService);
 
     ngOnInit() {
         this.loadStats();

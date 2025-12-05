@@ -104,7 +104,12 @@ public class PlayerService {
     public void updatePlayer(PlayerDTO playerDTO) {
         log.debug("updatePlayer called for ID: {}, Category: {}", playerDTO.getId(), playerDTO.getCategory());
 
-        Optional<PlayerEntity> optionalPlayer = playerRepository.findById(playerDTO.getId());
+        if (playerDTO.getId() == null) {
+            log.error("Cannot update player with null ID");
+            return;
+        }
+
+        Optional<PlayerEntity> optionalPlayer = this.playerRepository.findById(playerDTO.getId());
         if (optionalPlayer.isPresent()) {
             PlayerEntity player = optionalPlayer.get();
             log.debug("Found player to update: {}", player.getName());

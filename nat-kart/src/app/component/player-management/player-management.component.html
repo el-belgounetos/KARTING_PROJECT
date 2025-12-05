@@ -1,5 +1,5 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
-    style="background-image: url('http://localhost:8080/images/wallpapers/wallpaper4.jpeg');"></div>
+    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'"></div>
 
 <main class="w-full h-[93vh] bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto"
     style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;">
@@ -44,8 +44,8 @@
                                 <td>{{ player.id }}</td>
                                 <td>
                                     @if (player.picture) {
-                                    <img [src]="'http://localhost:8080/images/players/' + player.picture"
-                                        [alt]="player.pseudo" width="50" class="shadow-4" />
+                                    <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.pseudo"
+                                        width="50" class="shadow-4" />
                                     } @else {
                                     <span class="text-gray-400 italic">Aucun</span>
                                     }
@@ -157,7 +157,7 @@
                                     <div class="cursor-pointer rounded-lg p-2 transition-all hover:bg-white/10 border-2"
                                         [class.border-primary]="player.picture === img"
                                         [class.border-transparent]="player.picture !== img" (click)="selectImage(img)">
-                                        <img [src]="'http://localhost:8080/images/players/' + img"
+                                        <img [src]="imageService.getPlayerImageUrl(img)"
                                             class="w-full h-auto object-contain" />
                                     </div>
                                     }

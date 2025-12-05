@@ -15,6 +15,7 @@ import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-score-management',
@@ -42,6 +43,7 @@ export class ScoreManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
   private notificationService = inject(NotificationService);
+  public imageService = inject(ImageService);
 
   ngOnInit() {
     this.loadRanks();

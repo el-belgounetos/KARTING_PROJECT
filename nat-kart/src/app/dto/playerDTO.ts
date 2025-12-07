@@ -7,4 +7,6 @@ export interface PlayerDTO {
     pseudo: string;
     picture: string;
     category?: string;
+    teamName?: string;
+    teamId?: number;
 }

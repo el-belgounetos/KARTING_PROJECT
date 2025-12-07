@@ -40,4 +40,8 @@ public class PlayerEntity {
 
     @Column(length = 50)
     private String category;
+
+    @ManyToOne
+    @JoinColumn(name = "team_id", referencedColumnName = "id")
+    private TeamEntity team;
 }

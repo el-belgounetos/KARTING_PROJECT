@@ -27,6 +27,8 @@ public class PlayerService {
     private final RankingService rankingService;
     private final HistoryService historyService;
     private final PlayerRepository playerRepository;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.example.nat_kart_api.repository.TeamRepository teamRepository;
 
     /**
      * Converts PlayerEntity to PlayerDTO.
@@ -41,6 +43,10 @@ public class PlayerService {
         dto.setPseudo(entity.getPseudo());
         dto.setPicture(entity.getPicture());
         dto.setCategory(entity.getCategory());
+        if (entity.getTeam() != null) {
+            dto.setTeamName(entity.getTeam().getName());
+            dto.setTeamId(entity.getTeam().getId());
+        }
         return dto;
     }
 
@@ -57,6 +63,9 @@ public class PlayerService {
         entity.setPseudo(dto.getPseudo());
         entity.setPicture(dto.getPicture());
         entity.setCategory(dto.getCategory());
+        if (dto.getTeamId() != null) {
+             entity.setTeam(teamRepository.findById(dto.getTeamId()).orElse(null));
+        }
         return entity;
     }
 
@@ -141,6 +150,12 @@ public class PlayerService {
             player.setEmail(playerDTO.getEmail());
             player.setCategory(playerDTO.getCategory());
             player.setPicture(newPicture);
+            
+            if (playerDTO.getTeamId() != null) {
+                player.setTeam(teamRepository.findById(playerDTO.getTeamId()).orElse(null));
+            } else {
+                player.setTeam(null);
+            }
 
             // Save updated entity to database
             playerRepository.save(player);

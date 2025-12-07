@@ -41,4 +41,8 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
     List<String> findAllAssignedPictures();
 
     long countByPictureIsNotNullAndPictureNot(String empty);
+
+    List<PlayerEntity> findByTeamId(Long teamId);
+
+    long countByTeamId(Long teamId);
 }

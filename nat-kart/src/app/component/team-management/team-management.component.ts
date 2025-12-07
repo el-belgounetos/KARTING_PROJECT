@@ -2,52 +2,40 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
-import { PlayerDTO } from '../../dto/playerDTO';
 import { TeamDTO } from '../../dto/teamDTO';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ConfirmationService } from 'primeng/api';
 import { ImageService } from '../../services/image.service';
-import { Select } from 'primeng/select';
 
 @Component({
-  selector: 'app-player-management',
-  standalone: true,
+  selector: 'app-team-management',
   imports: [
     CommonModule,
     FormsModule,
     InputTextModule,
-    InputNumberModule,
     ButtonModule,
     ImageModule,
     TableModule,
-    TabsModule,
-    Select
+    TabsModule
   ],
-  templateUrl: './player-management.component.html',
-  styleUrl: './player-management.component.scss'
+  templateUrl: './team-management.component.html',
+  styleUrl: './team-management.component.scss'
 })
-export class PlayerManagementComponent implements OnInit {
-  player: PlayerDTO = {
+export class TeamManagementComponent implements OnInit {
+  team: TeamDTO = {
     name: '',
-    firstname: '',
-    age: 0,
-    email: '',
-    pseudo: '',
-    picture: '',
-    category: ''
+    logo: ''
   };
 
   // Signals for reactive state
-  availableImages = signal<string[]>([]);
-  players = signal<PlayerDTO[]>([]);
   teams = signal<TeamDTO[]>([]);
+  availableLogos = signal<string[]>([]);
 
   isEditMode: boolean = false;
   selectedTabIndex: string = "0"; // "0" = List, "1" = Create/Edit
@@ -60,24 +48,23 @@ export class PlayerManagementComponent implements OnInit {
   public imageService = inject(ImageService);
 
   ngOnInit() {
-    this.loadImages();
-    this.loadPlayers();
     this.loadTeams();
+    this.loadAvailableLogos();
   }
 
-  loadPlayers() {
-    this.apiService.get<PlayerDTO[]>('players').subscribe({
+  loadTeams() {
+    this.apiService.get<TeamDTO[]>('teams').subscribe({
       next: (data) => {
-        console.log('Players loaded:', data);
+        console.log('Teams loaded:', data);
         if (data) {
-          this.players.set(data);
+          this.teams.set(data);
           if (!this.isEditMode) {
-            this.selectedTabIndex = this.players().length === 0 ? "1" : "0";
+            this.selectedTabIndex = this.teams().length === 0 ? "1" : "0";
           }
         }
       },
       error: (err) => {
-        console.error('Error loading players:', err);
+        console.error('Error loading teams:', err);
         if (!this.isEditMode) {
           this.selectedTabIndex = "1";
         }
@@ -85,29 +72,14 @@ export class PlayerManagementComponent implements OnInit {
     });
   }
 
-  loadImages() {
-    this.apiService.get<string[]>('characters').subscribe(images => {
-      if (images) {
-        this.availableImages.set(images);
-      }
-    });
+  loadAvailableLogos() {
+    // TODO: Load from images/team directory
+    // For now, use a static list
+    this.availableLogos.set(['team1.png', 'team2.png', 'team3.png']);
   }
 
-  loadTeams() {
-    this.apiService.get<TeamDTO[]>('teams').subscribe({
-      next: (data) => {
-        if (data) {
-          this.teams.set(data);
-        }
-      },
-      error: (err) => {
-        console.error('Error loading teams:', err);
-      }
-    });
-  }
-
-  selectImage(image: string) {
-    this.player.picture = image;
+  selectLogo(logo: string) {
+    this.team.logo = logo;
   }
 
   onSubmit() {
@@ -121,18 +93,17 @@ export class PlayerManagementComponent implements OnInit {
     this.loadingService.show();
 
     const apiCall = this.isEditMode
-      ? this.apiService.put('players', this.player)
-      : this.apiService.post('players', this.player);
+      ? this.apiService.put(`teams/${this.team.id}`, this.team)
+      : this.apiService.post('teams', this.team);
 
     apiCall.subscribe({
       next: (response) => {
         this.notificationService.success(
           'Succès',
-          this.isEditMode ? 'Joueur modifié avec succès!' : 'Joueur créé avec succès!'
+          this.isEditMode ? 'Équipe modifiée avec succès!' : 'Équipe créée avec succès!'
         );
         this.resetForm();
-        this.loadImages();
-        this.loadPlayers();
+        this.loadTeams();
         this.selectedTabIndex = "0";
         this.loadingService.hide();
       },
@@ -154,53 +125,43 @@ export class PlayerManagementComponent implements OnInit {
   }
 
   isValid(): boolean {
-    return !!(
-      this.player.name &&
-      this.player.firstname &&
-      this.player.email &&
-      this.player.pseudo
-    );
+    return !!(this.team.name && this.team.name.length >= 2);
   }
 
   resetForm() {
-    this.player = {
+    this.team = {
       name: '',
-      firstname: '',
-      age: 0,
-      email: '',
-      pseudo: '',
-      picture: '',
-      category: ''
+      logo: ''
     };
     this.validationErrors = {};
     this.isEditMode = false;
   }
 
-  editPlayer(player: PlayerDTO) {
-    this.player = { ...player };
+  editTeam(team: TeamDTO) {
+    this.team = { ...team };
     this.validationErrors = {};
     this.isEditMode = true;
     this.selectedTabIndex = "1";
   }
 
-  deletePlayer(player: PlayerDTO) {
+  deleteTeam(team: TeamDTO) {
     this.confirmationService.confirm({
-      message: `Êtes-vous sûr de vouloir supprimer ${player.pseudo} ?`,
+      message: `Êtes-vous sûr de vouloir supprimer l'équipe "${team.name}" ?`,
       header: 'Confirmation de suppression',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Confirmer',
       rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.apiService.delete(`players/${player.pseudo}`).subscribe({
+        this.apiService.delete(`teams/${team.id}`).subscribe({
           next: () => {
-            this.notificationService.success('Succès', 'Joueur supprimé avec succès');
-            this.loadPlayers();
-            this.loadImages();
+            this.notificationService.success('Succès', 'Équipe supprimée avec succès');
+            this.loadTeams();
           },
           error: (err) => {
-            console.error('Error deleting player:', err);
-            this.notificationService.error('Erreur', 'Impossible de supprimer le joueur');
+            console.error('Error deleting team:', err);
+            const errorMessage = err.error?.message || 'Impossible de supprimer l\'équipe';
+            this.notificationService.error('Erreur', errorMessage);
           }
         });
       }
@@ -210,5 +171,10 @@ export class PlayerManagementComponent implements OnInit {
   cancelEdit() {
     this.resetForm();
     this.selectedTabIndex = "0";
+  }
+
+  getLogoUrl(logo: string | undefined): string {
+    if (!logo) return '';
+    return this.imageService.getTeamLogoUrl(logo);
   }
 }

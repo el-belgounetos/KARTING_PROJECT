@@ -41,6 +41,7 @@ export class AppComponent implements OnInit {
             { label: 'Score Management', route: 'score-management' },
             { label: 'Console Management', route: 'console-management' },
             { label: 'Player Management', route: 'player-management' },
+            { label: 'Team Management', route: 'team-management' },
             { label: 'Admin', route: 'admin' }
         ];
 

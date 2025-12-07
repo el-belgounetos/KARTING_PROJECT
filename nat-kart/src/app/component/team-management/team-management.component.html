@@ -1,0 +1,148 @@
+<div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
+    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'"></div>
+
+<main class="w-full h-[93vh] bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto"
+    style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;">
+
+    <section aria-label="Gestion des équipes"
+        class="bg-gray-800/90 p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-6xl backdrop-blur-sm">
+        <p-tabs [(value)]="selectedTabIndex">
+            <p-tablist>
+                <p-tab value="0">Liste des équipes</p-tab>
+                <p-tab value="1">{{ isEditMode ? 'Modification' : 'Création' }}</p-tab>
+            </p-tablist>
+            <p-tabpanels>
+                <!-- TAB 1: Liste des équipes -->
+                <p-tabpanel value="0">
+                    <p-table [value]="teams()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
+                        [rowsPerPageOptions]="[10, 25, 50]" [tableStyle]="{ 'min-width': '50rem' }"
+                        [globalFilterFields]="['name']" #dt>
+                        <ng-template pTemplate="caption">
+                            <div class="flex">
+                                <span class="p-input-icon-left ml-auto">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text"
+                                        (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                                        placeholder="Rechercher..." />
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
+                                <th>Logo</th>
+                                <th pSortableColumn="name">Nom<p-sortIcon field="name" /></th>
+                                <th pSortableColumn="playerCount">Nombre de joueurs <p-sortIcon field="playerCount" />
+                                </th>
+                                <th>Modifier</th>
+                                <th>Suppression</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-team>
+                            <tr>
+                                <td>{{ team.id }}</td>
+                                <td>
+                                    @if (team.logo) {
+                                    <img [src]="getLogoUrl(team.logo)" [alt]="team.name" width="50" class="shadow-4" />
+                                    } @else {
+                                    <span class="text-gray-400 italic">Aucun</span>
+                                    }
+                                </td>
+                                <td>{{ team.name }}</td>
+                                <td>{{ team.playerCount }}</td>
+                                <td>
+                                    <p-button icon="pi pi-pencil" severity="info" [rounded]="true"
+                                        (onClick)="editTeam(team)" size="small" />
+                                </td>
+                                <td>
+                                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true"
+                                        (onClick)="deleteTeam(team)" size="small" />
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="6" class="text-center p-4">Aucune équipe trouvée.</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-tabpanel>
+
+                <!-- TAB 2: Création/Modification -->
+                <p-tabpanel value="1">
+                    <header>
+                        <h2 class="text-3xl font-bold text-white text-center mb-8">
+                            {{ isEditMode ? 'Modification d\'une équipe' : 'Création d\'une équipe' }}
+                        </h2>
+                    </header>
+                    <form class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Form Fields -->
+                        <div class="flex flex-col gap-4">
+                            @if (isEditMode && team.id) {
+                            <div class="flex flex-col gap-2">
+                                <label for="id" class="text-white font-semibold">ID</label>
+                                <input pInputText id="id" name="id" [ngModel]="team.id" [disabled]="true"
+                                    class="opacity-60 cursor-not-allowed" />
+                            </div>
+                            }
+
+                            <div class="flex flex-col gap-2">
+                                <label for="name" class="text-white font-semibold">Nom de l'équipe *</label>
+                                <input pInputText id="name" name="name" [(ngModel)]="team.name"
+                                    placeholder="Nom de l'équipe (2-40 caractères)"
+                                    [class.border-red-500]="validationErrors['name']" />
+                                @if (validationErrors['name']) {
+                                <small class="text-red-400">{{ validationErrors['name'] }}</small>
+                                }
+                                <small class="text-gray-400">Min 2 caractères, Max 40 caractères. Les caractères
+                                    spéciaux sont autorisés.</small>
+                            </div>
+
+                            @if (isEditMode && team.normalizedName) {
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Nom normalisé (pour import)</label>
+                                <input pInputText [ngModel]="team.normalizedName" [disabled]="true"
+                                    class="opacity-60 cursor-not-allowed text-xs" />
+                                <small class="text-gray-400 text-xs">Version sans accents ni espaces, utilisée pour
+                                    l'import de joueurs</small>
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Logo Selection -->
+                        <div class="flex flex-col gap-4">
+                            <label class="text-white font-semibold">Choisir un logo (Optionnel)</label>
+                            <div
+                                class="bg-gray-700/50 p-4 rounded-xl border border-white/10 h-[400px] overflow-y-auto custom-scroll">
+                                <div class="grid grid-cols-4 gap-4">
+                                    @for (logo of availableLogos(); track logo) {
+                                    <div class="cursor-pointer rounded-lg p-2 transition-all hover:bg-white/10 border-2"
+                                        [class.border-primary]="team.logo === logo"
+                                        [class.border-transparent]="team.logo !== logo" (click)="selectLogo(logo)">
+                                        <img [src]="getLogoUrl(logo)" class="w-full h-auto object-contain" />
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                            @if (team.logo) {
+                            <div class="text-white text-center mt-2">
+                                Logo sélectionné : <span class="font-bold text-primary">{{ team.logo }}</span>
+                            </div>
+                            }
+                        </div>
+                    </form>
+
+                    <div class="flex justify-center gap-4 mt-8">
+                        @if (isEditMode) {
+                        <p-button label="Annuler" icon="pi pi-times" severity="secondary" (onClick)="cancelEdit()"
+                            styleClass="px-8 py-3 text-lg" />
+                        }
+                        <p-button [label]="isEditMode ? 'Modifier l\'équipe' : 'Créer l\'équipe'" icon="pi pi-check"
+                            [loading]="loadingService.loading()" (onClick)="onSubmit()"
+                            styleClass="px-8 py-3 text-lg" />
+                    </div>
+                </p-tabpanel>
+            </p-tabpanels>
+        </p-tabs>
+    </section>
+</main>

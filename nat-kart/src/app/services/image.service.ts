@@ -34,6 +34,11 @@ export class ImageService {
         return `${this.baseUrl}/cups/${filename}`;
     }
 
+    getTeamLogoUrl(filename: string): string {
+        if (!filename) return '';
+        return `${this.baseUrl}/team/${filename}`;
+    }
+
     getImageUrl(path: string): string {
         if (!path) return '';
         return `${this.baseUrl}/${path}`;

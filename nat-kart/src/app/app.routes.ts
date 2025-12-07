@@ -12,6 +12,7 @@ export const routes: Routes = [
   { path: 'console-wheel', component: ConsoleWheelComponent },
   { path: 'console-management', component: ConsoleManagementComponent },
   { path: 'player-management', loadComponent: () => import('./component/player-management/player-management.component').then(m => m.PlayerManagementComponent) },
+  { path: 'team-management', loadComponent: () => import('./component/team-management/team-management.component').then(m => m.TeamManagementComponent) },
   { path: 'admin', loadComponent: () => import('./component/admin/admin.component').then(m => m.AdminComponent) },
   { path: '', redirectTo: 'ranking', pathMatch: 'full' },
   { path: '**', redirectTo: 'ranking' }

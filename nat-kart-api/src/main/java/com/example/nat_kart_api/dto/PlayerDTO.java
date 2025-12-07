@@ -32,4 +32,6 @@ public class PlayerDTO {
 
     private String picture;
     private String category;
+    private String teamName;
+    private Long teamId;
 }

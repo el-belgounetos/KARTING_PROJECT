@@ -16,7 +16,7 @@
           class="flex items-center gap-4 p-3 rounded-lg bg-gray-700/80 cursor-pointer transition-all hover:bg-gray-600/90 hover:translate-x-1"
           [class.!bg-primary]="selectedRank()?.name === rank.name" (click)="selectNewRank(rank)">
           @if (rank.picture) {
-          <img [src]="imageService.getPlayerImageUrl(rank.picture)"
+          <img [src]="imageService.getPlayerImageUrl(rank.picture!)"
             class="w-[clamp(40px,5vw,60px)] h-[clamp(40px,5vw,60px)] object-cover rounded-full shrink-0"
             [alt]="rank.name" />
           } @else {
@@ -45,7 +45,7 @@
     <div class="bg-gray-700/90 rounded-2xl p-8 shadow-2xl border border-white/10 backdrop-blur-sm w-full max-w-[800px]">
       <div class="flex items-center gap-8">
         @if (selectedRank()!.picture) {
-        <img [src]="imageService.getPlayerImageUrl(selectedRank()!.picture)" [alt]="selectedRank()!.name"
+        <img [src]="imageService.getPlayerImageUrl(selectedRank()!.picture!)" [alt]="selectedRank()!.name"
           class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0" />
         } @else {
         <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="selectedRank()!.name"
@@ -79,8 +79,8 @@
       </div>
 
       <div class="grid grid-cols-2 max-lg:grid-cols-1 gap-8 items-start">
-        <p-select (click)="onConsoleSelected()" styleClass="w-full" [options]="consoles()" [ngModel]="selectedConsole()"
-          (ngModelChange)="selectedConsole.set($event)" optionLabel="name" [showClear]="true"
+        <p-select styleClass="w-full" [options]="consoles()" [ngModel]="selectedConsole()"
+          (ngModelChange)="onConsoleChange($event)" optionLabel="name" [showClear]="true"
           placeholder="Choisir une console">
           <ng-template pTemplate="selectedConsole">
             @if (selectedConsole()) {

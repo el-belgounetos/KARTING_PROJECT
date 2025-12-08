@@ -32,7 +32,6 @@ export class ScoreManagementComponent implements OnInit {
   // Signals for reactive state
   ranks = signal<RankingDTO[]>([]);
   consoles = signal<ConsoleDTO[]>([]);
-  cups = signal<CupsDTO[]>([]);
   history = signal<HistoryDTO[]>([]);
 
   selectedRank = signal<RankingDTO | null>(null);
@@ -43,12 +42,14 @@ export class ScoreManagementComponent implements OnInit {
   isHistoryVisible = signal<boolean>(true);
 
   // Computed signals for button state
-  isUpdateButtonDisabled = computed(() =>
-    this.valueToAdd() === 0 ||
-    !this.selectedRank()?.name ||
-    !this.selectedConsole()?.name ||
-    !this.selectedCups()?.name
-  );
+  isUpdateButtonDisabled = computed(() => {
+    const val = this.valueToAdd();
+    const rank = this.selectedRank()?.name;
+    const consoleName = this.selectedConsole()?.name;
+    const cup = this.selectedCups()?.name;
+
+    return val === 0 || !rank || !consoleName || !cup;
+  });
 
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
@@ -177,20 +178,25 @@ export class ScoreManagementComponent implements OnInit {
       });
   }
 
-  onConsoleSelected() {
-    this.loadConsoles();
+  // Computed signals
+  cups = computed(() => {
     const currentConsole = this.selectedConsole();
-    this.cups.set(currentConsole?.cups
-      ? this.getAvailableCups(currentConsole.cups)
-      : []);
-  }
-
-  private getAvailableCups(allCups: CupsDTO[]): CupsDTO[] {
     const currentHistory = this.history();
-    return allCups.filter(cup =>
+    if (!currentConsole || !currentConsole.cups) return [];
+
+    return currentConsole.cups.filter(cup =>
       !currentHistory.some(entry => entry.cups.name === cup.name)
     );
+  });
+
+  // ... (existing code)
+
+  onConsoleChange(val: ConsoleDTO | null) {
+    this.selectedConsole.set(val);
+    this.selectedCups.set(null);
   }
+
+  // Removed old onConsoleSelected and getAvailableCups as they are replaced by the computed signal logic
 
   private resetForm() {
     this.loadRanks();

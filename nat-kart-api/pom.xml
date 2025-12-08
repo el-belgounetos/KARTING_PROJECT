@@ -8,11 +8,11 @@
 		<version>3.5.8</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>nat-kart-api</artifactId>
+	<groupId>fr.eb</groupId>
+	<artifactId>tournament-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>nat-kart-api</name>
-	<description>Tournament project</description>
+	<name>tournament-api</name>
+	<description>Tournament Management System</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -30,6 +30,12 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
+		<!-- MapStruct for DTO mapping -->
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>1.6.3</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
@@ -99,10 +105,23 @@
 					<source>21</source>
 					<target>21</target>
 					<annotationProcessorPaths>
+						<!-- Lombok must be first -->
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 							<version>1.18.42</version>
+						</path>
+						<!-- MapStruct processor -->
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>1.6.3</version>
+						</path>
+						<!-- Lombok-MapStruct binding for compatibility -->
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>

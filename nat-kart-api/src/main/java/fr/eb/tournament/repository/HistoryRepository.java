@@ -45,4 +45,12 @@ public interface HistoryRepository extends JpaRepository<HistoryEntity, Long> {
      * @return List of matching history entries
      */
     List<HistoryEntity> findByPlayer_NameContainingIgnoreCase(String name);
+
+    /**
+     * Find history entries by player ID.
+     * 
+     * @param playerId The player ID
+     * @return List of matching history entries
+     */
+    List<HistoryEntity> findByPlayer_Id(Long playerId);
 }

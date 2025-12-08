@@ -37,11 +37,20 @@ public class ConsoleService {
         List<ConsoleDTO> result = new ArrayList<>();
         List<String> consolesPictures = imageService.extractPicturesFromFolder("images/consoles", List.of());
 
+        // Fetch all counters to populate count field
+        List<ConsoleCounterEntity> counters = consoleCounterRepository.findAll();
+
         for (String picture : consolesPictures) {
             ConsoleDTO console = new ConsoleDTO();
             console.setPicture(picture);
             console.setName(imageService.formatPictureName(picture, "/images/consoles/"));
             console.setCups(new ArrayList<>());
+
+            // Set count from counters
+            counters.stream()
+                    .filter(c -> c.getConsoleName().equals(console.getName()))
+                    .findFirst()
+                    .ifPresent(c -> console.setCount(c.getSelectionCount()));
 
             List<String> consoleCups = imageService.extractPicturesFromFolder(
                     "images/cups/" + console.getName(),

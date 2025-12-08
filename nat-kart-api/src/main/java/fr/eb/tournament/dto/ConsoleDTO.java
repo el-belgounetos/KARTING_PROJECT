@@ -13,4 +13,5 @@ public class ConsoleDTO {
     private String name;
     private String picture;
     private List<CupsDTO> cups;
+    private int count;
 }

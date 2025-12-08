@@ -23,6 +23,11 @@ public class HistoryController {
         return this.historyService.getPlayerHistoryByPlayerName(playerName);
     }
 
+    @GetMapping("/player/{playerId}")
+    public List<HistoryDTO> getPlayerHistoryByPlayerId(@PathVariable Long playerId) {
+        return this.historyService.getPlayerHistoryByPlayerId(playerId);
+    }
+
     @PostMapping
     public void updatePlayerHistory(@Valid @RequestBody HistoryDTO history) {
         this.historyService.updatePlayerHistory(history);

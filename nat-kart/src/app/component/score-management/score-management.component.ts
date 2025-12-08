@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RankingDTO } from '../../dto/rankingDTO';
@@ -82,13 +83,18 @@ export class ScoreManagementComponent implements OnInit {
     this.apiService.get<ConsoleDTO[]>('consoles')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(consoles => {
-        if (consoles) this.consoles.set(consoles);
+        if (consoles) {
+          const availableConsoles = consoles.filter(c => c.count > 0);
+          this.consoles.set(availableConsoles);
+        }
       });
   }
 
   selectNewRank(selectedRank: RankingDTO) {
     this.selectedRank.set(selectedRank);
-    this.loadHistoryForPlayer(selectedRank.name);
+    if (selectedRank.playerId) {
+      this.loadHistoryForPlayer(selectedRank.playerId);
+    }
   }
 
   updatePlayer() {
@@ -102,41 +108,32 @@ export class ScoreManagementComponent implements OnInit {
     updatedRank.points += this.valueToAdd();
     if (this.victory()) updatedRank.victory++;
 
+    // Chain operations: Update Rank -> Save History -> Reset
     this.apiService.post('ranks', updatedRank)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(() => {
+          const entry = this.createHistoryEntry();
+          return this.apiService.post<HistoryDTO>('history', entry);
+        })
+      )
       .subscribe({
         next: (response) => {
           this.notificationService.success('Mise à jour réussie', 'Les points ont bien été mis à jour');
-          this.saveHistory();
+          this.notificationService.info('Historique', 'Historique mis à jour');
           this.resetForm();
         },
         error: () => {
+          this.loadingService.hide();
           this.resetForm();
-        }
-      });
-  }
-
-  private saveHistory() {
-    const entry = this.createHistoryEntry();
-    this.apiService.post('history', entry)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => {
-          if (response) {
-            this.notificationService.info('Historique', 'Historique mis à jour');
-            if (entry.player && entry.player.name) {
-              this.loadHistoryForPlayer(entry.player.name);
-            }
-          }
-        },
-        error: () => {
-          // Error handled by ApiService
         }
       });
   }
 
   private createHistoryEntry(): HistoryDTO {
     return {
+      // id is auto-generated
+      id: 0,
       player: this.selectedRank()!,
       console: this.selectedConsole()!,
       cups: this.selectedCups()!,
@@ -151,18 +148,18 @@ export class ScoreManagementComponent implements OnInit {
 
   private selectKarterByName(name: string) {
     const karter = this.ranks().find(rank => rank.name === name);
-    if (karter) {
+    if (karter && karter.playerId) {
       this.selectedRank.set(karter);
-      this.loadHistoryForPlayer(karter.name);
+      this.loadHistoryForPlayer(karter.playerId);
     }
   }
 
-  private loadHistoryForPlayer(playerName: string) {
-    if (!playerName) {
+  private loadHistoryForPlayer(playerId: number) {
+    if (!playerId) {
       this.history.set([]);
       return;
     }
-    this.apiService.get<HistoryDTO[]>(`history/${playerName}`)
+    this.apiService.get<HistoryDTO[]>(`history/player/${playerId}`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (history) => {
@@ -206,8 +203,8 @@ export class ScoreManagementComponent implements OnInit {
     this.selectedCups.set(null);
     this.selectedConsole.set(null);
     const currentRank = this.selectedRank();
-    if (currentRank && currentRank.name) {
-      this.loadHistoryForPlayer(currentRank.name);
+    if (currentRank && currentRank.playerId) {
+      this.loadHistoryForPlayer(currentRank.playerId);
     }
   }
 

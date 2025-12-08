@@ -64,6 +64,28 @@ public class HistoryService {
     }
 
     /**
+     * Gets history entries for a specific player by ID.
+     *
+     * @param playerId The player's ID
+     * @return List of History DTOs for the specified player
+     */
+    public List<HistoryDTO> getPlayerHistoryByPlayerId(Long playerId) {
+        log.debug("Getting history for player ID: {}", playerId);
+
+        if (playerId == null) {
+            return List.of();
+        }
+
+        List<HistoryDTO> result = historyRepository.findByPlayer_Id(playerId)
+                .stream()
+                .map(historyMapper::toDTO)
+                .toList();
+
+        log.debug("Found {} entries for player ID {}", result.size(), playerId);
+        return result;
+    }
+
+    /**
      * Adds a new history entry.
      *
      * @param HistoryDTO The history entry to add

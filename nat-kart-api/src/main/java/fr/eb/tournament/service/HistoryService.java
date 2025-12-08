@@ -36,7 +36,7 @@ public class HistoryService {
      */
     public List<HistoryDTO> getPlayerHistory() {
         return historyRepository.findAll().stream()
-                .map(this::toDTO)
+                .map(historyMapper::toDTO)
                 .toList();
     }
 
@@ -51,7 +51,7 @@ public class HistoryService {
 
         // Find all players and filter by name (since name could be "Name Firstname")
         List<HistoryDTO> result = historyRepository.findAll().stream()
-                .map(this::toDTO)
+                .map(historyMapper::toDTO)
                 .filter(dto -> {
                     if (dto.getPlayer() == null) {
                         return false;
@@ -132,13 +132,6 @@ public class HistoryService {
     public void deleteHistoryByPlayer(PlayerEntity player) {
         historyRepository.deleteByPlayer(player);
         log.debug("Deleted all history entries for player: {}", player.getName());
-    }
-
-    /**
-     * Convert HistoryEntity to HistoryDTO using HistoryMapper.
-     */
-    private HistoryDTO toDTO(HistoryEntity entity) {
-        return historyMapper.toDTO(entity);
     }
 
     /**

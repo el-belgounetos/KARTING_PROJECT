@@ -35,7 +35,11 @@ public class TeamService {
 
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(entity -> {
+                    TeamDTO dto = teamMapper.toDTO(entity);
+                    dto.setPlayerCount(playerRepository.countByTeamId(entity.getId()));
+                    return dto;
+                })
                 .toList();
     }
 
@@ -50,7 +54,9 @@ public class TeamService {
         teamEntity.setLogo(teamDTO.getLogo());
 
         TeamEntity savedTeam = teamRepository.save(teamEntity);
-        return convertToDTO(savedTeam);
+        TeamDTO dto = teamMapper.toDTO(savedTeam);
+        dto.setPlayerCount(playerRepository.countByTeamId(savedTeam.getId()));
+        return dto;
     }
 
     public TeamDTO updateTeam(Long id, TeamDTO teamDTO) {
@@ -70,7 +76,9 @@ public class TeamService {
         teamEntity.setLogo(teamDTO.getLogo());
 
         TeamEntity updatedTeam = teamRepository.save(teamEntity);
-        return convertToDTO(updatedTeam);
+        TeamDTO dto = teamMapper.toDTO(updatedTeam);
+        dto.setPlayerCount(playerRepository.countByTeamId(updatedTeam.getId()));
+        return dto;
     }
 
     public void deleteTeam(Long id) {
@@ -106,7 +114,9 @@ public class TeamService {
                 teamRepository.findById(id),
                 "Team",
                 id);
-        return convertToDTO(teamEntity);
+        TeamDTO dto = teamMapper.toDTO(teamEntity);
+        dto.setPlayerCount(playerRepository.countByTeamId(teamEntity.getId()));
+        return dto;
     }
 
     /**
@@ -121,10 +131,4 @@ public class TeamService {
                 });
     }
 
-    private TeamDTO convertToDTO(TeamEntity teamEntity) {
-        TeamDTO dto = teamMapper.toDTO(teamEntity);
-        // Set player count (not handled by mapper to avoid repository dependency)
-        dto.setPlayerCount(playerRepository.countByTeamId(teamEntity.getId()));
-        return dto;
-    }
 }

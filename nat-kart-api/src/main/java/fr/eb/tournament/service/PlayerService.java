@@ -32,13 +32,6 @@ public class PlayerService {
     private fr.eb.tournament.repository.TeamRepository teamRepository;
 
     /**
-     * Converts PlayerEntity to PlayerDTO using PlayerMapper.
-     */
-    private PlayerDTO toDTO(PlayerEntity entity) {
-        return playerMapper.toDTO(entity);
-    }
-
-    /**
      * Converts PlayerDTO to PlayerEntity using PlayerMapper.
      * Team relationship is set separately as mapper ignores it.
      */
@@ -58,7 +51,7 @@ public class PlayerService {
      */
     public List<PlayerDTO> getAllPlayers() {
         return playerRepository.findAll().stream()
-                .map(this::toDTO)
+                .map(playerMapper::toDTO)
                 .toList();
     }
 

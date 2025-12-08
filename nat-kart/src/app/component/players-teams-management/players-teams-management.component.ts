@@ -283,15 +283,8 @@ export class PlayersTeamsManagementComponent implements OnInit {
     );
   }
 
-  isLogoTaken(logo: string): boolean {
-    return this.teams().some(t => t.logo === logo && t.id !== this.team.id);
-  }
-
   selectLogo(logo: string) {
-    if (this.isLogoTaken(logo)) {
-      this.notificationService.warn('Attention', 'Ce logo est déjà utilisé par une autre équipe.');
-      return;
-    }
+    // Backend automatically excludes assigned logos from the available list
     this.team.logo = logo;
   }
 
@@ -320,6 +313,7 @@ export class PlayersTeamsManagementComponent implements OnInit {
           this.isTeamEditMode ? 'Équipe modifiée avec succès!' : 'Équipe créée avec succès!'
         );
         this.resetTeamForm();
+        this.loadAvailableLogos();  // Reload logos after create/update
         this.loadTeams();
         this.selectedTabIndex = "2";
         this.loadingService.hide();
@@ -371,6 +365,7 @@ export class PlayersTeamsManagementComponent implements OnInit {
           .subscribe({
             next: () => {
               this.notificationService.success('Succès', 'Équipe supprimée avec succès');
+              this.loadAvailableLogos();  // Reload logos after delete
               this.loadTeams();
             },
             error: (err) => {

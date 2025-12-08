@@ -1,48 +1,48 @@
 package fr.eb.tournament.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Service responsible for managing the pool of available character avatars.
  * Handles exclusion and inclusion of characters from the selection pool.
  */
 @Service
-@RequiredArgsConstructor
-public class CharacterService {
+@Slf4j
+public class CharacterService extends ExclusionService<fr.eb.tournament.repository.PlayerRepository> {
 
-    private final ImageService imageService;
     private final fr.eb.tournament.repository.PlayerRepository playerRepository;
 
-    private final List<String> excludeList = new CopyOnWriteArrayList<>();
-    private final List<String> excludeCaracters = new CopyOnWriteArrayList<>();
+    public CharacterService(
+            ImageService imageService,
+            fr.eb.tournament.repository.PlayerRepository playerRepository) {
+        super(imageService, playerRepository);
+        this.playerRepository = playerRepository;
+    }
 
     @jakarta.annotation.PostConstruct
     public void init() {
-        this.resetExcludeList();
-        this.rebuildExcludedAvatarsFromDatabase();
+        this.initialize();
     }
 
-    /**
-     * Rebuild the excluded avatars list from database on startup.
-     * Queries all assigned player pictures and adds them to exclusion lists.
-     */
-    private void rebuildExcludedAvatarsFromDatabase() {
-        List<String> assignedPictures = playerRepository.findAllAssignedPictures();
-
-        for (String picture : assignedPictures) {
-            // Remove .png extension if present
-            String pictureWithoutExtension = picture.replace(".png", "");
-
-            if (!excludeList.contains(pictureWithoutExtension)) {
-                excludeList.add(pictureWithoutExtension);
-                excludeCaracters.add(pictureWithoutExtension);
-            }
-        }
+    @Override
+    protected String getImageFolder() {
+        return "images/players";
     }
+
+    @Override
+    protected String getDefaultExclusion() {
+        return "unknown";
+    }
+
+    @Override
+    protected List<String> fetchAssignedItemsFromDatabase() {
+        return playerRepository.findAllAssignedPictures();
+    }
+
+    // ========== Public API methods (for backward compatibility) ==========
 
     /**
      * Gets all available character avatars (not excluded).
@@ -50,7 +50,7 @@ public class CharacterService {
      * @return List of available character image filenames
      */
     public List<String> getAllCaracters() {
-        return imageService.extractPicturesFromFolder("images/players", excludeList);
+        return getAllItems();
     }
 
     /**
@@ -60,20 +60,7 @@ public class CharacterService {
      * @return Updated list of excluded characters
      */
     public List<String> removeCaracter(String caracterName) {
-        this.excludeList.add(caracterName);
-        this.excludeCaracters.add(caracterName);
-        return this.getExcludePool();
-    }
-
-    /**
-     * Gets the list of excluded characters with .png extension.
-     *
-     * @return List of excluded character filenames
-     */
-    public List<String> getExcludePool() {
-        return excludeCaracters.stream()
-                .map(name -> name + ".png")
-                .toList();
+        return removeItem(caracterName);
     }
 
     /**
@@ -83,20 +70,8 @@ public class CharacterService {
      * @return Updated list of excluded characters
      */
     public List<String> introduceCaracter(String name) {
-        excludeList.removeIf(item -> item.equals(name));
-        excludeCaracters.removeIf(item -> item.equals(name));
-        return excludeCaracters;
+        return introduceItem(name);
     }
 
-    /**
-     * Resets the exclusion list to default (only 'unknown' excluded).
-     *
-     * @return List of all available characters
-     */
-    public List<String> resetExcludeList() {
-        excludeList.clear();
-        excludeList.add("unknown");
-        excludeCaracters.clear();
-        return getAllCaracters();
-    }
+    // getExcludePool() and resetExcludeList() are inherited from ExclusionService
 }

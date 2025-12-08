@@ -76,4 +76,28 @@ public class TeamController {
     public ResponseEntity<?> deleteTeamLogo(@PathVariable String filename) {
         return imageService.handleImageDelete(filename, "images/team", teamLogoService::getAllTeamLogos, null);
     }
+
+    @GetMapping("/logos/excluded")
+    public ResponseEntity<List<String>> getAllExcludedLogos() {
+        return ResponseEntity.ok(teamLogoService.getExcludePool());
+    }
+
+    @PostMapping("/logos/exclude/{logoName}")
+    public ResponseEntity<List<String>> excludeLogoByName(@PathVariable String logoName) {
+        // Remove the logo from any teams using it
+        teamService.removeLogoFromTeams(logoName);
+        // Then exclude it from the pool
+        return ResponseEntity.ok(teamLogoService.removeLogo(logoName));
+    }
+
+    @PostMapping("/logos/exclude/clear")
+    public ResponseEntity<List<String>> clearExcludedLogos() {
+        return ResponseEntity.ok(teamLogoService.resetExcludeList());
+    }
+
+    @PostMapping("/logos/include/{logoName}")
+    public ResponseEntity<List<String>> includeLogo(@PathVariable String logoName) {
+        teamLogoService.introduceLogo(logoName);
+        return ResponseEntity.ok(teamLogoService.getExcludePool());
+    }
 }

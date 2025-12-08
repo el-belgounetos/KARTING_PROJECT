@@ -338,13 +338,9 @@
                                 <div
                                     class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2 bg-gray-900/50 rounded-lg">
                                     @for (logo of availableLogos(); track logo) {
-                                    <div class="relative group cursor-pointer" (click)="selectLogo(logo)"
-                                        [class.opacity-50]="isLogoTaken(logo)"
-                                        [class.cursor-not-allowed]="isLogoTaken(logo)"
-                                        [class.grayscale]="isLogoTaken(logo)">
+                                    <div class="relative group cursor-pointer" (click)="selectLogo(logo)">
                                         <img [src]="getLogoUrl(logo)" [alt]="logo"
-                                            class="w-full h-20 object-contain rounded-lg shadow-md transition-transform"
-                                            [class.group-hover:scale-105]="!isLogoTaken(logo)"
+                                            class="w-full h-20 object-contain rounded-lg shadow-md transition-transform group-hover:scale-105"
                                             [class.ring-4]="team.logo === logo"
                                             [class.ring-blue-500]="team.logo === logo" />
 
@@ -352,13 +348,6 @@
                                         <div
                                             class="absolute inset-0 flex items-center justify-center bg-blue-500/20 rounded-lg">
                                             <i class="pi pi-check text-white text-2xl"></i>
-                                        </div>
-                                        }
-
-                                        @if (isLogoTaken(logo)) {
-                                        <div class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg"
-                                            title="Logo déjà utilisé">
-                                            <i class="pi pi-lock text-white text-xl"></i>
                                         </div>
                                         }
                                     </div>

@@ -24,6 +24,7 @@ public class TeamService {
     private final PlayerRepository playerRepository;
     private final TeamMapper teamMapper;
     private final PlayerMapper playerMapper;
+    private final TeamLogoService teamLogoService;
 
     public static String normalizeTeamName(String name) {
         return TextNormalizationUtil.normalize(name);
@@ -50,6 +51,12 @@ public class TeamService {
         teamEntity.setLogo(teamDTO.getLogo());
 
         TeamEntity savedTeam = teamRepository.save(teamEntity);
+
+        // Remove logo from pool if selected (same as PlayerService pattern)
+        if (savedTeam.getLogo() != null && !savedTeam.getLogo().isEmpty()) {
+            teamLogoService.removeLogo(savedTeam.getLogo().replace(".png", ""));
+        }
+
         return mapToDtoWithCount(savedTeam);
     }
 
@@ -61,6 +68,20 @@ public class TeamService {
                     throw new IllegalArgumentException("Une autre équipe avec ce nom existe déjà");
                 }
             });
+
+            // Handle logo change (same as PlayerService pattern)
+            String oldLogo = teamEntity.getLogo();
+            String newLogo = teamDTO.getLogo();
+
+            if (oldLogo != null && !oldLogo.equals(newLogo)) {
+                // Release old logo back to pool
+                teamLogoService.introduceLogo(oldLogo.replace(".png", ""));
+            }
+
+            if (newLogo != null && !newLogo.isEmpty() && !newLogo.equals(oldLogo)) {
+                // Reserve new logo
+                teamLogoService.removeLogo(newLogo.replace(".png", ""));
+            }
 
             teamEntity.setName(teamDTO.getName());
             teamEntity.setLogo(teamDTO.getLogo());
@@ -87,6 +108,11 @@ public class TeamService {
                     .collect(Collectors.joining(", "));
             throw new IllegalStateException("Impossible de supprimer l'équipe car elle contient encore " +
                     players.size() + " joueur(s): " + playerNames);
+        }
+
+        // Re-introduce logo to pool if it exists (same as PlayerService pattern)
+        if (teamEntity.getLogo() != null && !teamEntity.getLogo().isEmpty()) {
+            teamLogoService.introduceLogo(teamEntity.getLogo().replace(".png", ""));
         }
 
         teamRepository.delete(teamEntity);
@@ -116,6 +142,23 @@ public class TeamService {
                     newTeam.setName(name);
                     return teamRepository.save(newTeam);
                 });
+    }
+
+    /**
+     * Removes a logo from all teams that are using it.
+     * Used when a logo is excluded from the pool.
+     * (Same pattern as PlayerService.removePictureFromPlayers)
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public void removeLogoFromTeams(String logoName) {
+        if (logoName == null || logoName.isEmpty()) {
+            return;
+        }
+
+        String logoWithExtension = logoName.endsWith(".png") ? logoName : logoName + ".png";
+        String logoWithoutExtension = logoName.replace(".png", "");
+
+        teamRepository.removeLogoFromAll(logoWithoutExtension, logoWithExtension);
     }
 
 }

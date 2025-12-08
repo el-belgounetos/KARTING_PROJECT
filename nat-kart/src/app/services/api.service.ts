@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { NotificationService } from './notification.service';
@@ -10,11 +10,8 @@ import { environment } from '../../environments/environment';
 })
 export class ApiService {
     private baseUrl = environment.apiUrl;
-
-    constructor(
-        private http: HttpClient,
-        private notificationService: NotificationService
-    ) { }
+    private http = inject(HttpClient);
+    private notificationService = inject(NotificationService);
 
     get<T>(endpoint: string): Observable<T | null> {
         return this.http.get<T>(`${this.baseUrl}/${endpoint}`).pipe(

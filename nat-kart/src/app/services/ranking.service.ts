@@ -8,7 +8,6 @@ import { ImageService } from './image.service';
 export class RankingService {
 
     private imageService = inject(ImageService);
-    constructor() { }
 
     sortByRanking(karters: RankingDTO[]): RankingDTO[] {
         return [...karters].sort((a, b) => {

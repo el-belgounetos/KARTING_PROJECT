@@ -7,8 +7,6 @@ import { environment } from '../../environments/environment';
 export class ImageService {
     private baseUrl = environment.imageBaseUrl;
 
-    constructor() { }
-
     getPlayerImageUrl(filename: string): string {
         if (!filename) return '';
         return `${this.baseUrl}/players/${filename}`;

@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -39,7 +38,7 @@ public class ImageService {
             List<String> images = paths.filter(Files::isRegularFile)
                     .filter(path -> !shouldExclude(path.getFileName().toString(), excludeList))
                     .map(path -> path.getFileName().toString())
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.debug("Found {} images in {}", images.size(), pathFile);
             return images;

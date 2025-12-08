@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service responsible for managing game history (History).
@@ -39,7 +38,7 @@ public class HistoryService {
     public List<HistoryDTO> getPlayerHistory() {
         return historyRepository.findAll().stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -55,12 +54,13 @@ public class HistoryService {
         List<HistoryDTO> result = historyRepository.findAll().stream()
                 .map(this::toDTO)
                 .filter(dto -> {
-                    if (dto.getPlayer() == null)
+                    if (dto.getPlayer() == null) {
                         return false;
+                    }
                     String fullName = dto.getPlayer().getName();
                     return fullName != null && fullName.contains(playerName);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         log.debug("Found {} entries for {}", result.size(), playerName);
         return result;

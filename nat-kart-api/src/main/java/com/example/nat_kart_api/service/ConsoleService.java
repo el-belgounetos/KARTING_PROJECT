@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service responsible for managing game consoles, cups, and counters.
@@ -68,7 +67,7 @@ public class ConsoleService {
     public List<CounterDTO> getAllCounters() {
         return consoleCounterRepository.findAll().stream()
                 .map(entity -> new CounterDTO(entity.getSelectionCount(), entity.getConsoleName()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -82,7 +81,7 @@ public class ConsoleService {
         // Get list of console names from the DTO
         List<String> consoleNamesInDto = dto.stream()
                 .map(CounterDTO::getName)
-                .collect(Collectors.toList());
+                .toList();
 
         // Delete counters that are no longer in the list (orphaned consoles)
         List<ConsoleCounterEntity> allCounters = consoleCounterRepository.findAll();
@@ -119,7 +118,7 @@ public class ConsoleService {
         // Get all existing counter names
         List<String> existingCounterNames = consoleCounterRepository.findAll().stream()
                 .map(ConsoleCounterEntity::getConsoleName)
-                .collect(Collectors.toList());
+                .toList();
 
         // Only create counters for consoles that don't have one yet
         for (ConsoleDTO console : consoles) {

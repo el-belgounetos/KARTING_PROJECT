@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service responsible for player management (CRUD operations).
@@ -64,7 +63,7 @@ public class PlayerService {
         entity.setPicture(dto.getPicture());
         entity.setCategory(dto.getCategory());
         if (dto.getTeamId() != null) {
-             entity.setTeam(teamRepository.findById(dto.getTeamId()).orElse(null));
+            entity.setTeam(teamRepository.findById(dto.getTeamId()).orElse(null));
         }
         return entity;
     }
@@ -77,7 +76,7 @@ public class PlayerService {
     public List<PlayerDTO> getAllPlayers() {
         return playerRepository.findAll().stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -150,7 +149,7 @@ public class PlayerService {
             player.setEmail(playerDTO.getEmail());
             player.setCategory(playerDTO.getCategory());
             player.setPicture(newPicture);
-            
+
             if (playerDTO.getTeamId() != null) {
                 player.setTeam(teamRepository.findById(playerDTO.getTeamId()).orElse(null));
             } else {

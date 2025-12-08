@@ -7,7 +7,7 @@ import com.example.nat_kart_api.entity.TeamEntity;
 import com.example.nat_kart_api.repository.PlayerRepository;
 import com.example.nat_kart_api.repository.TeamRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -15,21 +15,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TeamService {
 
-    @Autowired
-    private TeamRepository teamRepository;
-
-    @Autowired
-    private PlayerRepository playerRepository;
+    private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
 
     /**
      * Normalize team name for import matching.
      * Removes accents and spaces, converts to lowercase.
      */
     public static String normalizeTeamName(String name) {
-        if (name == null)
+        if (name == null) {
             return null;
+        }
 
         // Remove accents
         String normalized = Normalizer.normalize(name, Normalizer.Form.NFD);
@@ -44,7 +43,7 @@ public class TeamService {
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream()
                 .map(this::convertToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public TeamDTO createTeam(TeamDTO teamDTO) {
@@ -87,7 +86,7 @@ public class TeamService {
         List<PlayerEntity> players = playerRepository.findByTeamId(id);
         if (!players.isEmpty()) {
             String playerNames = players.stream()
-                    .map(p -> p.getPseudo())
+                    .map(PlayerEntity::getPseudo)
                     .collect(Collectors.joining(", "));
             throw new IllegalStateException("Impossible de supprimer l'équipe car elle contient encore " +
                     players.size() + " joueur(s): " + playerNames);
@@ -102,7 +101,7 @@ public class TeamService {
         }
         return playerRepository.findByTeamId(teamId).stream()
                 .map(this::convertPlayerToDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public TeamDTO getTeamById(Long id) {

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service for managing player rankings and scores.
@@ -34,7 +33,7 @@ public class RankingService {
     public List<RankingDTO> getAllRanks() {
         return rankingRepository.findAllByOrderByPointsDesc().stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

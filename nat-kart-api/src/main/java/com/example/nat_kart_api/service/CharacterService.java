@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 /**
  * Service responsible for managing the pool of available character avatars.
@@ -74,7 +73,7 @@ public class CharacterService {
     public List<String> getExcludePool() {
         return excludeCaracters.stream()
                 .map(name -> name + ".png")
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

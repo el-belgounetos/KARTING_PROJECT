@@ -49,7 +49,7 @@ export class ScoreManagementComponent implements OnInit {
     const consoleName = this.selectedConsole()?.name;
     const cup = this.selectedCups()?.name;
 
-    return val === 0 || !rank || !consoleName || !cup;
+    return !rank || !consoleName || !cup;
   });
 
   private apiService = inject(ApiService);

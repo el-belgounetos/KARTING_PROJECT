@@ -39,18 +39,12 @@ public class PlayerService {
     }
 
     /**
-     * Converts PlayerDTO to PlayerEntity.
+     * Converts PlayerDTO to PlayerEntity using PlayerMapper.
+     * Team relationship is set separately as mapper ignores it.
      */
     private PlayerEntity toEntity(PlayerDTO dto) {
-        PlayerEntity entity = new PlayerEntity();
-        entity.setId(dto.getId());
-        entity.setName(dto.getName());
-        entity.setFirstname(dto.getFirstname());
-        entity.setAge(dto.getAge());
-        entity.setEmail(dto.getEmail());
-        entity.setPseudo(dto.getPseudo());
-        entity.setPicture(dto.getPicture());
-        entity.setCategory(dto.getCategory());
+        PlayerEntity entity = playerMapper.toEntity(dto);
+        // Set team relationship (mapper ignores this field)
         if (dto.getTeamId() != null) {
             entity.setTeam(teamRepository.findById(dto.getTeamId()).orElse(null));
         }

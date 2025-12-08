@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class NatKartApiApplication {
+public class TournamentApiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(NatKartApiApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(TournamentApiApplication.class, args);
+    }
 
 }

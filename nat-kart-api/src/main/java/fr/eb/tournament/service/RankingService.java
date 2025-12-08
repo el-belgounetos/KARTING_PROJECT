@@ -34,7 +34,13 @@ public class RankingService {
      */
     public List<RankingDTO> getAllRanks() {
         return rankingRepository.findAllByOrderByPointsDesc().stream()
-                .map(rankingMapper::toDTO)
+                .map(entity -> {
+                    RankingDTO dto = rankingMapper.toDTO(entity);
+                    // Set total games (not handled by mapper to avoid repository dependency)
+                    Long count = historyRepository.countByPlayer(entity.getPlayer());
+                    dto.setTotalGames(count != null ? count.intValue() : 0);
+                    return dto;
+                })
                 .toList();
     }
 

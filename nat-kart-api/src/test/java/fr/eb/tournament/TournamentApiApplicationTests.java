@@ -1,13 +1,13 @@
-package com.example.nat_kart_api;
+package fr.eb.tournament;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class NatKartApiApplicationTests {
+class TournamentApiApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }

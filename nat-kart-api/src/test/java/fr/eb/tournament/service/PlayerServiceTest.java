@@ -1,8 +1,8 @@
-package com.example.nat_kart_api.service;
+package fr.eb.tournament.service;
 
-import com.example.nat_kart_api.dto.PlayerDTO;
-import com.example.nat_kart_api.entity.PlayerEntity;
-import com.example.nat_kart_api.repository.PlayerRepository;
+import fr.eb.tournament.dto.PlayerDTO;
+import fr.eb.tournament.entity.PlayerEntity;
+import fr.eb.tournament.repository.PlayerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +30,9 @@ class PlayerServiceTest {
 
     @Mock
     private RankingService rankingService;
+
+    @Mock
+    private HistoryService historyService;
 
     @InjectMocks
     private PlayerService playerService;
@@ -111,8 +114,9 @@ class PlayerServiceTest {
         playerService.deleteAllPlayers();
 
         // Then
-        verify(playerRepository).deleteAll();
         verify(rankingService).clearRanking();
+        verify(historyService).deleteAllHistory();
+        verify(playerRepository).deleteAll();
         verify(characterService).resetExcludeList();
     }
 }

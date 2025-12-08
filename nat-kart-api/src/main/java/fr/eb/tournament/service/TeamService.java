@@ -122,6 +122,9 @@ public class TeamService {
     }
 
     private TeamDTO convertToDTO(TeamEntity teamEntity) {
-        return teamMapper.toDTO(teamEntity);
+        TeamDTO dto = teamMapper.toDTO(teamEntity);
+        // Set player count (not handled by mapper to avoid repository dependency)
+        dto.setPlayerCount(playerRepository.countByTeamId(teamEntity.getId()));
+        return dto;
     }
 }

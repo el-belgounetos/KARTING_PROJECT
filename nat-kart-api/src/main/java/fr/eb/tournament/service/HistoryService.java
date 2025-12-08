@@ -1,14 +1,12 @@
 package fr.eb.tournament.service;
 
 import fr.eb.tournament.dto.HistoryDTO;
-import fr.eb.tournament.dto.ConsoleDTO;
-import fr.eb.tournament.dto.CupsDTO;
-import fr.eb.tournament.dto.RankingDTO;
 import fr.eb.tournament.entity.HistoryEntity;
 import fr.eb.tournament.entity.PlayerEntity;
 import fr.eb.tournament.repository.HistoryRepository;
 import fr.eb.tournament.repository.PlayerRepository;
 import fr.eb.tournament.exception.ResourceNotFoundException;
+import fr.eb.tournament.mapper.HistoryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,7 @@ public class HistoryService {
     private final HistoryRepository historyRepository;
     private final PlayerRepository playerRepository;
     private final RankingService rankingService;
+    private final HistoryMapper historyMapper;
 
     /**
      * Gets all history entries.
@@ -136,42 +135,10 @@ public class HistoryService {
     }
 
     /**
-     * Convert HistoryEntity to HistoryDTO.
+     * Convert HistoryEntity to HistoryDTO using HistoryMapper.
      */
     private HistoryDTO toDTO(HistoryEntity entity) {
-        HistoryDTO dto = new HistoryDTO();
-        dto.setId(entity.getId().intValue());
-        dto.setPoints(entity.getPoints());
-        dto.setVictory(entity.getVictory());
-
-        // Convert player to RankingDTO
-        if (entity.getPlayer() != null) {
-            RankingDTO rankingDTO = new RankingDTO();
-            PlayerEntity player = entity.getPlayer();
-            rankingDTO.setPlayerId(player.getId());
-            rankingDTO.setName(player.getName() + " " + player.getFirstname());
-            rankingDTO.setPicture(player.getPicture());
-            rankingDTO.setCategory(player.getCategory());
-            dto.setPlayer(rankingDTO);
-        }
-
-        // Convert console data
-        if (entity.getConsoleName() != null) {
-            ConsoleDTO consoleDTO = new ConsoleDTO();
-            consoleDTO.setName(entity.getConsoleName());
-            consoleDTO.setPicture(entity.getConsolePicture());
-            dto.setConsole(consoleDTO);
-        }
-
-        // Convert cups data
-        if (entity.getCupName() != null) {
-            CupsDTO cupsDTO = new CupsDTO();
-            cupsDTO.setName(entity.getCupName());
-            cupsDTO.setPicture(entity.getCupPicture());
-            dto.setCups(cupsDTO);
-        }
-
-        return dto;
+        return historyMapper.toDTO(entity);
     }
 
     /**

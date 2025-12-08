@@ -35,11 +35,7 @@ public class TeamService {
 
     public List<TeamDTO> getAllTeams() {
         return teamRepository.findAll().stream()
-                .map(entity -> {
-                    TeamDTO dto = teamMapper.toDTO(entity);
-                    dto.setPlayerCount(playerRepository.countByTeamId(entity.getId()));
-                    return dto;
-                })
+                .map(this::mapToDtoWithCount)
                 .toList();
     }
 
@@ -54,27 +50,29 @@ public class TeamService {
         teamEntity.setLogo(teamDTO.getLogo());
 
         TeamEntity savedTeam = teamRepository.save(teamEntity);
-        TeamDTO dto = teamMapper.toDTO(savedTeam);
-        dto.setPlayerCount(playerRepository.countByTeamId(savedTeam.getId()));
-        return dto;
+        return mapToDtoWithCount(savedTeam);
     }
 
-    public TeamDTO updateTeam(Long id, TeamDTO teamDTO) {
-        TeamEntity teamEntity = findTeamById(id);
+    public java.util.Optional<TeamDTO> updateTeam(Long id, TeamDTO teamDTO) {
+        return teamRepository.findById(id).map(teamEntity -> {
+            // Check if another team has the same name
+            teamRepository.findByName(teamDTO.getName()).ifPresent(existingTeam -> {
+                if (!existingTeam.getId().equals(id)) {
+                    throw new IllegalArgumentException("Une autre équipe avec ce nom existe déjà");
+                }
+            });
 
-        // Check if another team has the same name
-        teamRepository.findByName(teamDTO.getName()).ifPresent(existingTeam -> {
-            if (!existingTeam.getId().equals(id)) {
-                throw new IllegalArgumentException("Une autre équipe avec ce nom existe déjà");
-            }
+            teamEntity.setName(teamDTO.getName());
+            teamEntity.setLogo(teamDTO.getLogo());
+
+            TeamEntity updatedTeam = teamRepository.save(teamEntity);
+            return mapToDtoWithCount(updatedTeam);
         });
+    }
 
-        teamEntity.setName(teamDTO.getName());
-        teamEntity.setLogo(teamDTO.getLogo());
-
-        TeamEntity updatedTeam = teamRepository.save(teamEntity);
-        TeamDTO dto = teamMapper.toDTO(updatedTeam);
-        dto.setPlayerCount(playerRepository.countByTeamId(updatedTeam.getId()));
+    private TeamDTO mapToDtoWithCount(TeamEntity entity) {
+        TeamDTO dto = teamMapper.toDTO(entity);
+        dto.setPlayerCount(playerRepository.countByTeamId(entity.getId()));
         return dto;
     }
 
@@ -103,11 +101,9 @@ public class TeamService {
                 .toList();
     }
 
-    public TeamDTO getTeamById(Long id) {
-        TeamEntity teamEntity = findTeamById(id);
-        TeamDTO dto = teamMapper.toDTO(teamEntity);
-        dto.setPlayerCount(playerRepository.countByTeamId(teamEntity.getId()));
-        return dto;
+    public java.util.Optional<TeamDTO> getTeamById(Long id) {
+        return teamRepository.findById(id)
+                .map(this::mapToDtoWithCount);
     }
 
     /**

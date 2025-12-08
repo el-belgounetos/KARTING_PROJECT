@@ -49,16 +49,14 @@ public class HistoryService {
     public List<HistoryDTO> getPlayerHistoryByPlayerName(String playerName) {
         log.debug("Getting history for player: {}", playerName);
 
-        // Find all players and filter by name (since name could be "Name Firstname")
-        List<HistoryDTO> result = historyRepository.findAll().stream()
+        if (playerName == null || playerName.trim().isEmpty()) {
+            return List.of();
+        }
+
+        // Optimized: Uses database query instead of in-memory filtering
+        List<HistoryDTO> result = historyRepository.findByPlayer_NameContainingIgnoreCase(playerName)
+                .stream()
                 .map(historyMapper::toDTO)
-                .filter(dto -> {
-                    if (dto.getPlayer() == null) {
-                        return false;
-                    }
-                    String fullName = dto.getPlayer().getName();
-                    return fullName != null && fullName.contains(playerName);
-                })
                 .toList();
 
         log.debug("Found {} entries for {}", result.size(), playerName);

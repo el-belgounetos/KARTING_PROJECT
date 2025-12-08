@@ -45,4 +45,15 @@ public interface PlayerRepository extends JpaRepository<PlayerEntity, Long> {
     List<PlayerEntity> findByTeamId(Long teamId);
 
     long countByTeamId(Long teamId);
+
+    /**
+     * Removes a picture from all players efficiently using a direct DB update.
+     * 
+     * @param picture        The picture filename
+     * @param pictureWithPng The picture filename with extension
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE PlayerEntity p SET p.picture = null WHERE p.picture = :picture OR p.picture = :pictureWithPng")
+    void removePictureFromAll(@org.springframework.data.repository.query.Param("picture") String picture,
+            @org.springframework.data.repository.query.Param("pictureWithPng") String pictureWithPng);
 }

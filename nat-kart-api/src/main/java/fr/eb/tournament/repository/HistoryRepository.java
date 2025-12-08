@@ -36,4 +36,13 @@ public interface HistoryRepository extends JpaRepository<HistoryEntity, Long> {
      * @return Number of games played
      */
     long countByPlayer(PlayerEntity player);
+
+    /**
+     * Find history entries where player name contains the given string (case
+     * insensitive).
+     * 
+     * @param name The name to search for
+     * @return List of matching history entries
+     */
+    List<HistoryEntity> findByPlayer_NameContainingIgnoreCase(String name);
 }

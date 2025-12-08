@@ -25,7 +25,9 @@ public class TeamController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TeamDTO> getTeamById(@PathVariable Long id) {
-        return ResponseEntity.ok(teamService.getTeamById(id));
+        return teamService.getTeamById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -35,7 +37,9 @@ public class TeamController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TeamDTO> updateTeam(@PathVariable Long id, @Valid @RequestBody TeamDTO teamDTO) {
-        return ResponseEntity.ok(teamService.updateTeam(id, teamDTO));
+        return teamService.updateTeam(id, teamDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")

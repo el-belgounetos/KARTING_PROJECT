@@ -230,19 +230,13 @@ public class PlayerService {
      *
      * @param picture The picture filename to remove (with or without .png)
      */
+    @org.springframework.transaction.annotation.Transactional
     public void removePictureFromPlayers(String picture) {
         String pictureWithPng = picture.endsWith(".png") ? picture : picture + ".png";
         String pictureWithoutPng = picture.replace(".png", "");
 
-        List<PlayerEntity> players = playerRepository.findAll();
-        for (PlayerEntity player : players) {
-            if (player.getPicture() != null &&
-                    (player.getPicture().equals(pictureWithPng) || player.getPicture().equals(pictureWithoutPng))) {
-                log.debug("Removing picture {} from player {}", picture, player.getName());
-                player.setPicture(null);
-                playerRepository.save(player);
-            }
-        }
+        log.debug("Removing picture {} from all players (Optimized)", picture);
+        playerRepository.removePictureFromAll(pictureWithoutPng, pictureWithPng);
     }
 
     /**

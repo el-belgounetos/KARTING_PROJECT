@@ -1,3 +1,8 @@
+/* Tailwind CSS imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* You can add global styles to this file, and also import other style files */
 
 html,
@@ -55,13 +60,7 @@ body {
     }
 }
 
-/* Custom class for soft-styled p-inputnumber buttons */
-/* We target the buttons via the class we'll pass to those components or by wrapping */
-.p-inputnumber-custom-soft-buttons .p-inputnumber-button-group .p-inputnumber-button {
-    /* This approach might be tricky with PrimeNG structure, simpler to use @apply classes if Tailwind is configured, 
-      or just use the exact classes in the HTML. 
-      But the user asked to "centralize". The clean way in Angular + Tailwind is often creating a CSS component class. */
-}
+
 
 /* Let's define utility classes that we can use in the HTML "decrementButtonClass" / "incrementButtonClass" attributes */
 /* Actually, since those attributes take STRING of classes, we can't just put ONE class unless we use @apply in SCSS. */

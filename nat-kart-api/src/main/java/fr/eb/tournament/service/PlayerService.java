@@ -121,6 +121,7 @@ public class PlayerService {
             // Update player fields
             player.setName(playerDTO.getName());
             player.setFirstname(playerDTO.getFirstname());
+            player.setPseudo(playerDTO.getPseudo());
             player.setAge(playerDTO.getAge());
             player.setEmail(playerDTO.getEmail());
             player.setCategory(playerDTO.getCategory());

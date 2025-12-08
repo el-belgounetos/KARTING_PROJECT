@@ -35,19 +35,19 @@ export class ScoreManagementComponent implements OnInit {
   cups = signal<CupsDTO[]>([]);
   history = signal<HistoryDTO[]>([]);
 
-  selectedRank: RankingDTO | null = null;
-  selectedConsole: ConsoleDTO | null = null;
-  selectedCups: CupsDTO | null = null;
-  valueToAdd = 0;
-  victory = false;
-  isHistoryVisible = true;
+  selectedRank = signal<RankingDTO | null>(null);
+  selectedConsole = signal<ConsoleDTO | null>(null);
+  selectedCups = signal<CupsDTO | null>(null);
+  valueToAdd = signal<number>(0);
+  victory = signal<boolean>(false);
+  isHistoryVisible = signal<boolean>(true);
 
   // Computed signals for button state
   isUpdateButtonDisabled = computed(() =>
-    this.valueToAdd === 0 ||
-    !this.selectedRank?.name ||
-    !this.selectedConsole?.name ||
-    !this.selectedCups?.name
+    this.valueToAdd() === 0 ||
+    !this.selectedRank()?.name ||
+    !this.selectedConsole()?.name ||
+    !this.selectedCups()?.name
   );
 
   private apiService = inject(ApiService);
@@ -67,8 +67,9 @@ export class ScoreManagementComponent implements OnInit {
       .subscribe(ranks => {
         if (ranks) {
           this.ranks.set(ranks);
-          if (this.selectedRank && this.selectedRank.name) {
-            this.selectKarterByName(this.selectedRank.name);
+          const currentRank = this.selectedRank();
+          if (currentRank && currentRank.name) {
+            this.selectKarterByName(currentRank.name);
           } else if (ranks.length > 0) {
             this.selectNewRank(ranks[0]);
           }
@@ -85,18 +86,22 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   selectNewRank(selectedRank: RankingDTO) {
-    this.selectedRank = selectedRank;
-    this.loadHistoryForPlayer(this.selectedRank.name);
+    this.selectedRank.set(selectedRank);
+    this.loadHistoryForPlayer(selectedRank.name);
   }
 
   updatePlayer() {
-    if (!this.canUpdate() || !this.selectedRank) return;
+    const rank = this.selectedRank();
+    if (!this.canUpdate() || !rank) return;
 
     this.loadingService.show();
-    this.selectedRank.points += this.valueToAdd;
-    if (this.victory) this.selectedRank.victory++;
 
-    this.apiService.post('ranks', this.selectedRank)
+    // Create a copy to update
+    const updatedRank = { ...rank };
+    updatedRank.points += this.valueToAdd();
+    if (this.victory()) updatedRank.victory++;
+
+    this.apiService.post('ranks', updatedRank)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
@@ -131,11 +136,11 @@ export class ScoreManagementComponent implements OnInit {
 
   private createHistoryEntry(): HistoryDTO {
     return {
-      player: this.selectedRank!,
-      console: this.selectedConsole!,
-      cups: this.selectedCups!,
-      points: this.valueToAdd,
-      victory: this.victory
+      player: this.selectedRank()!,
+      console: this.selectedConsole()!,
+      cups: this.selectedCups()!,
+      points: this.valueToAdd(),
+      victory: this.victory()
     };
   }
 
@@ -146,7 +151,7 @@ export class ScoreManagementComponent implements OnInit {
   private selectKarterByName(name: string) {
     const karter = this.ranks().find(rank => rank.name === name);
     if (karter) {
-      this.selectedRank = karter;
+      this.selectedRank.set(karter);
       this.loadHistoryForPlayer(karter.name);
     }
   }
@@ -174,8 +179,9 @@ export class ScoreManagementComponent implements OnInit {
 
   onConsoleSelected() {
     this.loadConsoles();
-    this.cups.set(this.selectedConsole?.cups
-      ? this.getAvailableCups(this.selectedConsole.cups)
+    const currentConsole = this.selectedConsole();
+    this.cups.set(currentConsole?.cups
+      ? this.getAvailableCups(currentConsole.cups)
       : []);
   }
 
@@ -188,13 +194,14 @@ export class ScoreManagementComponent implements OnInit {
 
   private resetForm() {
     this.loadRanks();
-    this.valueToAdd = 0;
+    this.valueToAdd.set(0);
     this.loadingService.hide();
-    this.victory = false;
-    this.selectedCups = null;
-    this.selectedConsole = null;
-    if (this.selectedRank && this.selectedRank.name) {
-      this.loadHistoryForPlayer(this.selectedRank.name);
+    this.victory.set(false);
+    this.selectedCups.set(null);
+    this.selectedConsole.set(null);
+    const currentRank = this.selectedRank();
+    if (currentRank && currentRank.name) {
+      this.loadHistoryForPlayer(currentRank.name);
     }
   }
 
@@ -207,5 +214,9 @@ export class ScoreManagementComponent implements OnInit {
         }
         this.resetForm();
       });
+  }
+
+  toggleHistory() {
+    this.isHistoryVisible.update(v => !v);
   }
 }

@@ -93,7 +93,7 @@
                             <div class="flex flex-col gap-2">
                                 <label for="pseudo" class="text-white font-semibold">Pseudo *</label>
                                 <input pInputText id="pseudo" name="pseudo" autocomplete="username"
-                                    [(ngModel)]="player.pseudo" placeholder="Pseudo" [disabled]="isEditMode"
+                                    [(ngModel)]="player.pseudo" placeholder="Pseudo"
                                     [class.border-red-500]="validationErrors['pseudo']" />
                                 @if (validationErrors['pseudo']) {
                                 <small class="text-red-400">{{ validationErrors['pseudo'] }}</small>

@@ -18,9 +18,17 @@ public class TeamController {
     @Autowired
     private TeamService teamService;
 
+    @Autowired
+    private fr.eb.tournament.service.TeamLogoService teamLogoService;
+
     @GetMapping
     public ResponseEntity<List<TeamDTO>> getAllTeams() {
         return ResponseEntity.ok(teamService.getAllTeams());
+    }
+
+    @GetMapping("/logos")
+    public ResponseEntity<List<String>> getAllTeamLogos() {
+        return ResponseEntity.ok(teamLogoService.getAllTeamLogos());
     }
 
     @GetMapping("/{id}")

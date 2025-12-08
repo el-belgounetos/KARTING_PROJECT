@@ -79,9 +79,20 @@ export class TeamManagementComponent implements OnInit {
   }
 
   loadAvailableLogos() {
-    // TODO: Load from images/team directory
-    // For now, use a static list
-    this.availableLogos.set(['team1.png', 'team2.png', 'team3.png']);
+    this.apiService.get<string[]>('teams/logos')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (logos) => {
+          if (logos) {
+            this.availableLogos.set(logos);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading team logos:', err);
+          // Fallback to empty array on error
+          this.availableLogos.set([]);
+        }
+      });
   }
 
   selectLogo(logo: string) {

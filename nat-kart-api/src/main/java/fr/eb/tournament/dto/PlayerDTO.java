@@ -19,9 +19,9 @@ public class PlayerDTO {
     @Size(min = 2, max = 50, message = "Le prénom doit contenir entre 2 et 50 caractères")
     private String firstname;
 
-    @Min(value = 1, message = "L'âge doit être au minimum 1")
+    @Min(value = 0, message = "L'âge doit être au minimum 0")
     @Max(value = 150, message = "L'âge doit être au maximum 150")
-    private int age;
+    private Integer age;
 
     @Email(message = "Email invalide")
     private String email;

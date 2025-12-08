@@ -32,7 +32,8 @@ export class ImageUploadService {
         listSignal: WritableSignal<string[]>,
         successMessage: string,
         errorMessage: string,
-        destroyRef: any
+        destroyRef: any,
+        onSuccess?: (uploadedFilename: string) => void
     ): void {
         const file = event.files[0];
         const formData = new FormData();
@@ -46,6 +47,9 @@ export class ImageUploadService {
                     if (items) {
                         listSignal.set(items);
                         this.notificationService.success('Succès', successMessage);
+                        if (onSuccess) {
+                            onSuccess(file.name);
+                        }
                     }
                     this.loadingService.hide();
                 },

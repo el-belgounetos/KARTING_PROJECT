@@ -20,7 +20,7 @@ import { Select } from 'primeng/select';
 import { FileUpload } from 'primeng/fileupload';
 
 @Component({
-  selector: 'app-player-management',
+  selector: 'app-players-teams-management',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -35,10 +35,11 @@ import { FileUpload } from 'primeng/fileupload';
     Select,
     FileUpload
   ],
-  templateUrl: './player-management.component.html',
-  styleUrl: './player-management.component.scss'
+  templateUrl: './players-teams-management.component.html',
+  styleUrl: './players-teams-management.component.scss'
 })
-export class PlayerManagementComponent implements OnInit {
+export class PlayersTeamsManagementComponent implements OnInit {
+  // Player state
   player: PlayerDTO = {
     name: '',
     firstname: '',
@@ -49,22 +50,32 @@ export class PlayerManagementComponent implements OnInit {
     category: ''
   };
 
+  // Team state
+  team: TeamDTO = {
+    name: '',
+    logo: ''
+  };
+
   // Signals for reactive state
   availableImages = signal<string[]>([]);
+  availableLogos = signal<string[]>([]);
   players = signal<PlayerDTO[]>([]);
   teams = signal<TeamDTO[]>([]);
 
   isEditMode: boolean = false;
+  isTeamEditMode: boolean = false;
   selectedTabIndex: string = "0";
   validationErrors: { [key: string]: string } = {};
+  teamValidationErrors: { [key: string]: string } = {};
 
-  // Computed signal for form validation
-  isValid = computed(() => !!(
-    this.player.name &&
-    this.player.firstname &&
-    this.player.email &&
-    this.player.pseudo
-  ));
+  // Getter functions for form validation (not computed)
+  isValid(): boolean {
+    return !!(this.player.name && this.player.firstname && this.player.email && this.player.pseudo);
+  }
+
+  isTeamValid(): boolean {
+    return !!(this.team.name && this.team.name.length >= 2);
+  }
 
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
@@ -78,6 +89,7 @@ export class PlayerManagementComponent implements OnInit {
     this.loadImages();
     this.loadPlayers();
     this.loadTeams();
+    this.loadAvailableLogos();
   }
 
   loadPlayers() {
@@ -144,7 +156,13 @@ export class PlayerManagementComponent implements OnInit {
     this.validationErrors = {};
 
     if (!this.isValid()) {
-      this.notificationService.warn('Attention', 'Veuillez remplir tous les champs obligatoires.');
+      // Identity specific missing fields
+      if (!this.player.pseudo) this.validationErrors['pseudo'] = 'Le pseudo est obligatoire';
+      if (!this.player.name) this.validationErrors['name'] = 'Le nom est obligatoire';
+      if (!this.player.firstname) this.validationErrors['firstname'] = 'Le prénom est obligatoire';
+      if (!this.player.email) this.validationErrors['email'] = "L'email est obligatoire";
+
+      this.notificationService.warn('Attention', 'Veuillez corriger les erreurs avant de valider.');
       return;
     }
 
@@ -233,5 +251,143 @@ export class PlayerManagementComponent implements OnInit {
   cancelEdit() {
     this.resetForm();
     this.selectedTabIndex = "0";
+  }
+
+  // ==================== TEAM MANAGEMENT METHODS ====================
+
+  loadAvailableLogos() {
+    this.apiService.get<string[]>('teams/logos')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (logos) => {
+          if (logos) {
+            this.availableLogos.set(logos);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading team logos:', err);
+          this.availableLogos.set([]);
+        }
+      });
+  }
+
+  onLogoUpload(event: any) {
+    this.imageUploadService.handleUpload(
+      event,
+      'teams/logos/upload',
+      this.availableLogos,
+      'Logo uploadé avec succès',
+      "Erreur lors de l'upload du logo",
+      this.destroyRef,
+      (logoName) => this.team.logo = logoName
+    );
+  }
+
+  isLogoTaken(logo: string): boolean {
+    return this.teams().some(t => t.logo === logo && t.id !== this.team.id);
+  }
+
+  selectLogo(logo: string) {
+    if (this.isLogoTaken(logo)) {
+      this.notificationService.warn('Attention', 'Ce logo est déjà utilisé par une autre équipe.');
+      return;
+    }
+    this.team.logo = logo;
+  }
+
+  onTeamSubmit() {
+    this.teamValidationErrors = {};
+
+    if (!this.isTeamValid()) {
+      // Identity specific missing fields
+      if (!this.team.name) this.teamValidationErrors['name'] = "Le nom de l'équipe est obligatoire";
+      else if (this.team.name.length < 2) this.teamValidationErrors['name'] = "Le nom doit faire au moins 2 caractères";
+
+      this.notificationService.warn('Attention', 'Veuillez corriger les erreurs avant de valider.');
+      return;
+    }
+
+    this.loadingService.show();
+
+    const apiCall = this.isTeamEditMode
+      ? this.apiService.put(`teams/${this.team.id}`, this.team)
+      : this.apiService.post('teams', this.team);
+
+    apiCall.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => {
+        this.notificationService.success(
+          'Succès',
+          this.isTeamEditMode ? 'Équipe modifiée avec succès!' : 'Équipe créée avec succès!'
+        );
+        this.resetTeamForm();
+        this.loadTeams();
+        this.selectedTabIndex = "2";
+        this.loadingService.hide();
+      },
+      error: (err) => {
+        if (err?.error?.errors) {
+          this.teamValidationErrors = err.error.errors;
+          const errorCount = Object.keys(err.error.errors).length;
+          this.notificationService.error(
+            'Erreurs de validation',
+            `${errorCount} champ(s) invalide(s). Veuillez corriger les erreurs.`
+          );
+        } else {
+          const errorMessage = err.error?.message || 'Une erreur est survenue';
+          this.notificationService.error('Erreur', errorMessage);
+        }
+        this.loadingService.hide();
+      }
+    });
+  }
+
+  resetTeamForm() {
+    this.team = {
+      name: '',
+      logo: ''
+    };
+    this.teamValidationErrors = {};
+    this.isTeamEditMode = false;
+  }
+
+  editTeam(team: TeamDTO) {
+    this.team = { ...team };
+    this.teamValidationErrors = {};
+    this.isTeamEditMode = true;
+    this.selectedTabIndex = "3";
+  }
+
+  deleteTeam(team: TeamDTO) {
+    this.confirmationService.confirm({
+      message: `Êtes-vous sûr de vouloir supprimer l'équipe ${team.name} ?`,
+      header: 'Confirmation de suppression',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.apiService.delete(`teams/${team.id}`)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.notificationService.success('Succès', 'Équipe supprimée avec succès');
+              this.loadTeams();
+            },
+            error: (err) => {
+              console.error('Error deleting team:', err);
+              this.notificationService.error('Erreur', 'Impossible de supprimer l\'équipe');
+            }
+          });
+      }
+    });
+  }
+
+  cancelTeamEdit() {
+    this.resetTeamForm();
+    this.selectedTabIndex = "2";
+  }
+
+  getLogoUrl(filename: string): string {
+    return `http://localhost:8080/images/team/${filename}`;
   }
 }

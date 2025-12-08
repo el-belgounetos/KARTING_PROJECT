@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -26,6 +26,7 @@ export class ConsoleWheelComponent implements OnInit {
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.loadConsoles();
@@ -36,7 +37,7 @@ export class ConsoleWheelComponent implements OnInit {
       consoles: this.apiService.get<ConsoleDTO[]>('consoles'),
       counters: this.apiService.get<CounterDTO[]>('counters')
     })
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ consoles, counters }) => {
         if (consoles && counters) {
           const availableConsoles = consoles.flatMap(console => {

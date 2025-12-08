@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -54,6 +54,7 @@ export class ScoreManagementComponent implements OnInit {
   public loadingService = inject(LoadingService);
   private notificationService = inject(NotificationService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.loadRanks();
@@ -62,7 +63,7 @@ export class ScoreManagementComponent implements OnInit {
 
   private loadRanks() {
     this.apiService.get<RankingDTO[]>('ranks')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(ranks => {
         if (ranks) {
           this.ranks.set(ranks);
@@ -77,7 +78,7 @@ export class ScoreManagementComponent implements OnInit {
 
   private loadConsoles() {
     this.apiService.get<ConsoleDTO[]>('consoles')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(consoles => {
         if (consoles) this.consoles.set(consoles);
       });
@@ -96,7 +97,7 @@ export class ScoreManagementComponent implements OnInit {
     if (this.victory) this.selectedRank.victory++;
 
     this.apiService.post('ranks', this.selectedRank)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           this.notificationService.success('Mise à jour réussie', 'Les points ont bien été mis à jour');
@@ -112,7 +113,7 @@ export class ScoreManagementComponent implements OnInit {
   private saveHistory() {
     const entry = this.createHistoryEntry();
     this.apiService.post('history', entry)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           if (response) {
@@ -156,7 +157,7 @@ export class ScoreManagementComponent implements OnInit {
       return;
     }
     this.apiService.get<HistoryDTO[]>(`history/${playerName}`)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (history) => {
           if (history) {
@@ -199,7 +200,7 @@ export class ScoreManagementComponent implements OnInit {
 
   deleteHistory(entry: HistoryDTO) {
     this.apiService.delete(`history/${entry.id}`)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(response => {
         if (response !== null) {
           this.notificationService.info('Historique', 'Ligne supprimée');

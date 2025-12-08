@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,6 +24,7 @@ export class ConsoleManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   private notificationService = inject(NotificationService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.loadCounters();
@@ -31,7 +32,7 @@ export class ConsoleManagementComponent implements OnInit {
 
   loadCounters() {
     this.apiService.get<CounterDTO[]>('counters')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(counters => {
         if (counters) {
           this.counters.set(counters);
@@ -47,7 +48,7 @@ export class ConsoleManagementComponent implements OnInit {
     }));
 
     this.apiService.post('counters', updatedCounters)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.notificationService.success('Succès', 'Les compteurs ont été mis à jour');

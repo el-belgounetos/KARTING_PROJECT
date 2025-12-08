@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -41,6 +41,7 @@ export class AdminComponent implements OnInit {
     private notificationService = inject(NotificationService);
     private confirmationService = inject(ConfirmationService);
     public imageService = inject(ImageService);
+    private destroyRef = inject(DestroyRef);
 
     ngOnInit() {
         this.loadStats();
@@ -48,7 +49,7 @@ export class AdminComponent implements OnInit {
 
     loadStats() {
         this.apiService.get<PlayerStats>('admin/stats')
-            .pipe(takeUntilDestroyed())
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (data) => {
                     this.stats = data;
@@ -62,7 +63,7 @@ export class AdminComponent implements OnInit {
     generatePlayers() {
         this.loading = true;
         this.apiService.post(`admin/generate-players/${this.playerCount}?assignImage=${this.assignImage}`, {})
-            .pipe(takeUntilDestroyed())
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
                     this.notificationService.success(
@@ -93,7 +94,7 @@ export class AdminComponent implements OnInit {
             accept: () => {
                 this.loading = true;
                 this.apiService.delete('admin/players')
-                    .pipe(takeUntilDestroyed())
+                    .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe({
                         next: () => {
                             this.notificationService.success(

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -32,16 +32,19 @@ export class ChampionWheelComponent implements OnInit {
   players = signal<any[]>([]);
   isSpinning = signal<boolean>(false);
 
+  // Animation signals
+  avatar = signal<string>('');
+  isAnimating = signal<boolean>(false);
+
   // Regular properties
-  avatar: string = '';
   playerCount: number = 1;
-  isAnimating = false;
   hasPlayers: boolean = false;
 
   private apiService = inject(ApiService);
   private notificationService = inject(NotificationService);
   public loadingService = inject(LoadingService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.reloadPool();
@@ -49,7 +52,7 @@ export class ChampionWheelComponent implements OnInit {
 
   checkPlayers() {
     this.apiService.get<any[]>('players')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(players => {
         const playerList = players || [];
         this.players.set(playerList);
@@ -64,14 +67,14 @@ export class ChampionWheelComponent implements OnInit {
 
   loadCharacters() {
     this.apiService.get<string[]>('characters')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(data => {
         if (data) {
           this.avatars.set(data);
 
           const currentAvatars = this.avatars();
-          if (currentAvatars.length > 0 && (!this.avatar || !currentAvatars.includes(this.avatar))) {
-            this.avatar = currentAvatars[0];
+          if (currentAvatars.length > 0 && (!this.avatar() || !currentAvatars.includes(this.avatar()))) {
+            this.avatar.set(currentAvatars[0]);
           }
         }
       });
@@ -79,7 +82,7 @@ export class ChampionWheelComponent implements OnInit {
 
   loadExcludedCharacters() {
     this.apiService.get<string[]>('characters/exclude')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(data => {
         if (data) {
           this.excludeAvatars.set(data);
@@ -121,7 +124,7 @@ export class ChampionWheelComponent implements OnInit {
     }
 
     this.isSpinning.set(true);
-    this.isAnimating = true;
+    this.isAnimating.set(true);
     this.drawnPlayers.set([]);
 
     // Animation loop
@@ -130,7 +133,7 @@ export class ChampionWheelComponent implements OnInit {
     const interval = setInterval(() => {
       const currentAvatars = this.avatars();
       const randomIndex = Math.floor(Math.random() * currentAvatars.length);
-      this.avatar = currentAvatars[randomIndex];
+      this.avatar.set(currentAvatars[randomIndex]);
       counter++;
 
       if (counter >= maxSpins) {
@@ -177,18 +180,18 @@ export class ChampionWheelComponent implements OnInit {
     }, 500);
 
     this.isSpinning.set(false);
-    this.isAnimating = false;
+    this.isAnimating.set(false);
 
     // Update displayed avatar to first drawn if single player, or just stop animation
     const drawnList = this.drawnPlayers();
     if (drawnList.length === 1) {
-      this.avatar = drawnList[0];
+      this.avatar.set(drawnList[0]);
     }
   }
 
   updatePlayer(player: PlayerDTO) {
     this.apiService.put('players', player)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         error: () => {
           this.notificationService.error(
@@ -201,7 +204,7 @@ export class ChampionWheelComponent implements OnInit {
 
   resetExcludeAvatars() {
     this.apiService.post('characters/exclude/clear', {})
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           const playerList = this.players();
@@ -240,7 +243,7 @@ export class ChampionWheelComponent implements OnInit {
 
   introduceAvatarByName(name: string) {
     this.apiService.post(`characters/include/${name.replace('.png', '')}`, {})
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           const playerList = this.players();

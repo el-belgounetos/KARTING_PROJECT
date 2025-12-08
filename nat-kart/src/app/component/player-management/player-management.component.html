@@ -148,7 +148,7 @@
 
                             <div class="flex flex-col gap-2">
                                 <label for="team" class="text-white font-semibold">Équipe</label>
-                                <p-select inputId="team" [options]="teams()" [(ngModel)]="player.teamId"
+                                <p-select inputId="team" name="team" [options]="teams()" [(ngModel)]="player.teamId"
                                     optionLabel="name" optionValue="id" placeholder="Sélectionner une équipe"
                                     [showClear]="true" styleClass="w-full" />
                                 <small class="text-gray-400">Optionnel : Assignez le joueur à une équipe</small>

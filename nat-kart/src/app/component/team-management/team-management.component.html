@@ -101,8 +101,8 @@
                             @if (isEditMode && team.normalizedName) {
                             <div class="flex flex-col gap-2">
                                 <label class="text-white font-semibold">Nom normalisé (pour import)</label>
-                                <input pInputText [ngModel]="team.normalizedName" [disabled]="true"
-                                    class="opacity-60 cursor-not-allowed text-xs" />
+                                <input pInputText name="normalizedName" [ngModel]="team.normalizedName"
+                                    [disabled]="true" class="opacity-60 cursor-not-allowed text-xs" />
                                 <small class="text-gray-400 text-xs">Version sans accents ni espaces, utilisée pour
                                     l'import de joueurs</small>
                             </div>

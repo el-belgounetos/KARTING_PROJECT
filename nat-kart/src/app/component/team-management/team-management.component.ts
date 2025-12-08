@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -51,6 +51,7 @@ export class TeamManagementComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private confirmationService = inject(ConfirmationService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.loadTeams();
@@ -59,7 +60,7 @@ export class TeamManagementComponent implements OnInit {
 
   loadTeams() {
     this.apiService.get<TeamDTO[]>('teams')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           if (data) {
@@ -101,7 +102,7 @@ export class TeamManagementComponent implements OnInit {
       ? this.apiService.put(`teams/${this.team.id}`, this.team)
       : this.apiService.post('teams', this.team);
 
-    apiCall.pipe(takeUntilDestroyed()).subscribe({
+    apiCall.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.notificationService.success(
           'Succès',
@@ -155,7 +156,7 @@ export class TeamManagementComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.apiService.delete(`teams/${team.id}`)
-          .pipe(takeUntilDestroyed())
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {
               this.notificationService.success('Succès', 'Équipe supprimée avec succès');

@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
@@ -45,41 +46,43 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   checkPlayers() {
-    this.apiService.get<any[]>('players').subscribe(players => {
-      const playerList = players || [];
-      this.players.set(playerList);
-      this.hasPlayers = playerList.length > 0;
+    this.apiService.get<any[]>('players')
+      .pipe(takeUntilDestroyed())
+      .subscribe(players => {
+        const playerList = players || [];
+        this.players.set(playerList);
+        this.hasPlayers = playerList.length > 0;
 
-      // Ensure playerCount doesn't exceed max assignable
-      const maxAssignable = this.getMaxAssignable();
-      if (this.playerCount > maxAssignable) {
-        this.playerCount = Math.max(1, maxAssignable);
-      }
-    });
+        const maxAssignable = this.getMaxAssignable();
+        if (this.playerCount > maxAssignable) {
+          this.playerCount = Math.max(1, maxAssignable);
+        }
+      });
   }
 
   loadCharacters() {
-    // Load available avatars from backend (already filtered by backend)
-    this.apiService.get<string[]>('characters').subscribe(data => {
-      if (data) {
-        this.avatars.set(data);
+    this.apiService.get<string[]>('characters')
+      .pipe(takeUntilDestroyed())
+      .subscribe(data => {
+        if (data) {
+          this.avatars.set(data);
 
-        // Update displayed avatar if not set
-        const currentAvatars = this.avatars();
-        if (currentAvatars.length > 0 && (!this.avatar || !currentAvatars.includes(this.avatar))) {
-          this.avatar = currentAvatars[0];
+          const currentAvatars = this.avatars();
+          if (currentAvatars.length > 0 && (!this.avatar || !currentAvatars.includes(this.avatar))) {
+            this.avatar = currentAvatars[0];
+          }
         }
-      }
-    });
+      });
   }
 
   loadExcludedCharacters() {
-    // Load excluded avatars from backend
-    this.apiService.get<string[]>('characters/exclude').subscribe(data => {
-      if (data) {
-        this.excludeAvatars.set(data);
-      }
-    });
+    this.apiService.get<string[]>('characters/exclude')
+      .pipe(takeUntilDestroyed())
+      .subscribe(data => {
+        if (data) {
+          this.excludeAvatars.set(data);
+        }
+      });
   }
 
   canSpin(): boolean {
@@ -182,46 +185,45 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   updatePlayer(player: any) {
-    this.apiService.put('players', player).subscribe({
-      error: (err: any) => {
-        console.error('Error updating player:', err);
-        this.notificationService.error(
-          'Erreur',
-          `Impossible de mettre à jour l'avatar pour ${player.pseudo}`
-        );
-      }
-    });
+    this.apiService.put('players', player)
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        error: () => {
+          this.notificationService.error(
+            'Erreur',
+            `Impossible de mettre à jour l'avatar pour ${player.pseudo}`
+          );
+        }
+      });
   }
 
   resetExcludeAvatars() {
-    // Call backend to clear exclusions and unassign player images
-    this.apiService.post('characters/exclude/clear', {}).subscribe({
-      next: () => {
-        // Unassign images from all players
-        const playerList = this.players();
-        playerList.forEach(player => {
-          if (player.picture) {
-            player.picture = '';
-            this.updatePlayer(player);
-          }
-        });
+    this.apiService.post('characters/exclude/clear', {})
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: () => {
+          const playerList = this.players();
+          playerList.forEach(player => {
+            if (player.picture) {
+              player.picture = '';
+              this.updatePlayer(player);
+            }
+          });
 
-        this.notificationService.info(
-          'Reset',
-          'La pool a été réinitialisée et les images désassignées'
-        );
+          this.notificationService.info(
+            'Reset',
+            'La pool a été réinitialisée et les images désassignées'
+          );
 
-        // Reload to refresh everything
-        setTimeout(() => this.reloadPool(), 500);
-      },
-      error: (err) => {
-        console.error('Error resetting pool:', err);
-        this.notificationService.error(
-          'Erreur',
-          'Impossible de réinitialiser la pool'
-        );
-      }
-    });
+          setTimeout(() => this.reloadPool(), 500);
+        },
+        error: () => {
+          this.notificationService.error(
+            'Erreur',
+            'Impossible de réinitialiser la pool'
+          );
+        }
+      });
   }
 
   reloadPool() {
@@ -235,28 +237,26 @@ export class ChampionWheelComponent implements OnInit {
   }
 
   introduceAvatarByName(name: string) {
-    // Call backend to re-introduce avatar
-    this.apiService.post(`characters/include/${name.replace('.png', '')}`, {}).subscribe({
-      next: () => {
-        // Find player with this picture and remove it
-        const playerList = this.players();
-        const playerWithPicture = playerList.find(p => p.picture === name);
-        if (playerWithPicture) {
-          playerWithPicture.picture = '';
-          this.updatePlayer(playerWithPicture);
-        }
+    this.apiService.post(`characters/include/${name.replace('.png', '')}`, {})
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: () => {
+          const playerList = this.players();
+          const playerWithPicture = playerList.find(p => p.picture === name);
+          if (playerWithPicture) {
+            playerWithPicture.picture = '';
+            this.updatePlayer(playerWithPicture);
+          }
 
-        // Reload to refresh the pools
-        setTimeout(() => this.reloadPool(), 300);
-      },
-      error: (err) => {
-        console.error('Error introducing avatar:', err);
-        this.notificationService.error(
-          'Erreur',
-          'Impossible de réintroduire l\'avatar'
-        );
-      }
-    });
+          setTimeout(() => this.reloadPool(), 300);
+        },
+        error: () => {
+          this.notificationService.error(
+            'Erreur',
+            'Impossible de réintroduire l\'avatar'
+          );
+        }
+      });
   }
 
   getPlayersWithoutImages(): number {

@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -53,23 +54,23 @@ export class TeamManagementComponent implements OnInit {
   }
 
   loadTeams() {
-    this.apiService.get<TeamDTO[]>('teams').subscribe({
-      next: (data) => {
-        console.log('Teams loaded:', data);
-        if (data) {
-          this.teams.set(data);
+    this.apiService.get<TeamDTO[]>('teams')
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (data) => {
+          if (data) {
+            this.teams.set(data);
+            if (!this.isEditMode) {
+              this.selectedTabIndex = this.teams().length === 0 ? "1" : "0";
+            }
+          }
+        },
+        error: () => {
           if (!this.isEditMode) {
-            this.selectedTabIndex = this.teams().length === 0 ? "1" : "0";
+            this.selectedTabIndex = "1";
           }
         }
-      },
-      error: (err) => {
-        console.error('Error loading teams:', err);
-        if (!this.isEditMode) {
-          this.selectedTabIndex = "1";
-        }
-      }
-    });
+      });
   }
 
   loadAvailableLogos() {
@@ -96,7 +97,7 @@ export class TeamManagementComponent implements OnInit {
       ? this.apiService.put(`teams/${this.team.id}`, this.team)
       : this.apiService.post('teams', this.team);
 
-    apiCall.subscribe({
+    apiCall.pipe(takeUntilDestroyed()).subscribe({
       next: (response) => {
         this.notificationService.success(
           'Succès',
@@ -153,17 +154,18 @@ export class TeamManagementComponent implements OnInit {
       rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.apiService.delete(`teams/${team.id}`).subscribe({
-          next: () => {
-            this.notificationService.success('Succès', 'Équipe supprimée avec succès');
-            this.loadTeams();
-          },
-          error: (err) => {
-            console.error('Error deleting team:', err);
-            const errorMessage = err.error?.message || 'Impossible de supprimer l\'équipe';
-            this.notificationService.error('Erreur', errorMessage);
-          }
-        });
+        this.apiService.delete(`teams/${team.id}`)
+          .pipe(takeUntilDestroyed())
+          .subscribe({
+            next: () => {
+              this.notificationService.success('Succès', 'Équipe supprimée avec succès');
+              this.loadTeams();
+            },
+            error: (err) => {
+              const errorMessage = err.error?.message || 'Impossible de supprimer l\'équipe';
+              this.notificationService.error('Erreur', errorMessage);
+            }
+          });
       }
     });
   }

@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RankingDTO } from '../../dto/rankingDTO';
@@ -51,27 +52,29 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private loadRanks() {
-    this.apiService.get<RankingDTO[]>('ranks').subscribe(ranks => {
-      if (ranks) {
-        this.ranks.set(ranks);
-        // Only reload if a player was already selected
-        if (this.selectedRank && this.selectedRank.name) {
-          this.selectKarterByName(this.selectedRank.name);
-        } else if (ranks.length > 0) {
-          this.selectNewRank(ranks[0]);
+    this.apiService.get<RankingDTO[]>('ranks')
+      .pipe(takeUntilDestroyed())
+      .subscribe(ranks => {
+        if (ranks) {
+          this.ranks.set(ranks);
+          if (this.selectedRank && this.selectedRank.name) {
+            this.selectKarterByName(this.selectedRank.name);
+          } else if (ranks.length > 0) {
+            this.selectNewRank(ranks[0]);
+          }
         }
-      }
-    });
+      });
   }
 
   private loadConsoles() {
-    this.apiService.get<ConsoleDTO[]>('consoles').subscribe(consoles => {
-      if (consoles) this.consoles.set(consoles);
-    });
+    this.apiService.get<ConsoleDTO[]>('consoles')
+      .pipe(takeUntilDestroyed())
+      .subscribe(consoles => {
+        if (consoles) this.consoles.set(consoles);
+      });
   }
 
   selectNewRank(selectedRank: RankingDTO) {
-    console.log('selectNewRank called with:', selectedRank.name);
     this.selectedRank = selectedRank;
     this.loadHistoryForPlayer(this.selectedRank.name);
   }
@@ -79,45 +82,41 @@ export class ScoreManagementComponent implements OnInit {
   updatePlayer() {
     if (!this.canUpdate() || !this.selectedRank) return;
 
-    console.log('updatePlayer: Starting update for', this.selectedRank.name);
     this.loadingService.show();
     this.selectedRank.points += this.valueToAdd;
     if (this.victory) this.selectedRank.victory++;
 
-    this.apiService.post('ranks', this.selectedRank).subscribe({
-      next: (response) => {
-        console.log('updatePlayer: POST /ranks response:', response);
-        this.notificationService.success('Mise à jour réussie', 'Les points ont bien été mis à jour');
-        console.log('updatePlayer: Calling saveHistory()');
-        this.saveHistory();
-        this.resetForm();
-      },
-      error: (err) => {
-        console.error('updatePlayer: API error:', err);
-        this.resetForm();
-      }
-    });
+    this.apiService.post('ranks', this.selectedRank)
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (response) => {
+          this.notificationService.success('Mise à jour réussie', 'Les points ont bien été mis à jour');
+          this.saveHistory();
+          this.resetForm();
+        },
+        error: () => {
+          this.resetForm();
+        }
+      });
   }
 
   private saveHistory() {
     const entry = this.createHistoryEntry();
-    console.log('saveHistory: Creating entry:', entry);
-    console.log('saveHistory: Sending POST to /history');
-    this.apiService.post('history', entry).subscribe({
-      next: (response) => {
-        console.log('saveHistory: Response received:', response);
-        if (response) {
-          this.notificationService.info('Historique', 'Historique mis à jour');
-          // Only load history if player name exists
-          if (entry.player && entry.player.name) {
-            this.loadHistoryForPlayer(entry.player.name);
+    this.apiService.post('history', entry)
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (response) => {
+          if (response) {
+            this.notificationService.info('Historique', 'Historique mis à jour');
+            if (entry.player && entry.player.name) {
+              this.loadHistoryForPlayer(entry.player.name);
+            }
           }
+        },
+        error: () => {
+          // Error handled by ApiService
         }
-      },
-      error: (err) => {
-        console.error('saveHistory: API error:', err);
-      }
-    });
+      });
   }
 
   private createHistoryEntry(): HistoryDTO {
@@ -151,27 +150,23 @@ export class ScoreManagementComponent implements OnInit {
 
   private loadHistoryForPlayer(playerName: string) {
     if (!playerName) {
-      console.warn('loadHistoryForPlayer called with null/undefined playerName');
       this.history.set([]);
       return;
     }
-    console.log('loadHistoryForPlayer: Making API call for', playerName);
-    this.apiService.get<HistoryDTO[]>(`history/${playerName}`).subscribe({
-      next: (history) => {
-        console.log('loadHistoryForPlayer: Received response:', history);
-        if (history) {
-          this.history.set(history);
-          console.log('loadHistoryForPlayer: history updated, length:', this.history().length);
-        } else {
-          console.warn('loadHistoryForPlayer: Response is null/undefined');
+    this.apiService.get<HistoryDTO[]>(`history/${playerName}`)
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (history) => {
+          if (history) {
+            this.history.set(history);
+          } else {
+            this.history.set([]);
+          }
+        },
+        error: () => {
           this.history.set([]);
         }
-      },
-      error: (err) => {
-        console.error('loadHistoryForPlayer: API error:', err);
-        this.history.set([]);
-      }
-    });
+      });
   }
 
   onConsoleSelected() {
@@ -189,28 +184,25 @@ export class ScoreManagementComponent implements OnInit {
   }
 
   private resetForm() {
-    console.log('resetForm called, selectedRank:', this.selectedRank);
     this.loadRanks();
     this.valueToAdd = 0;
     this.loadingService.hide();
     this.victory = false;
     this.selectedCups = null;
     this.selectedConsole = null;
-    // Reload history for currently selected player
     if (this.selectedRank && this.selectedRank.name) {
-      console.log('Reloading history for:', this.selectedRank.name);
       this.loadHistoryForPlayer(this.selectedRank.name);
-    } else {
-      console.log('No selected player to reload history for');
     }
   }
 
   deleteHistory(entry: HistoryDTO) {
-    this.apiService.delete(`history/${entry.id}`).subscribe(response => {
-      if (response !== null) {
-        this.notificationService.info('Historique', 'Ligne supprimée');
-      }
-      this.resetForm();
-    });
+    this.apiService.delete(`history/${entry.id}`)
+      .pipe(takeUntilDestroyed())
+      .subscribe(response => {
+        if (response !== null) {
+          this.notificationService.info('Historique', 'Ligne supprimée');
+        }
+        this.resetForm();
+      });
   }
 }

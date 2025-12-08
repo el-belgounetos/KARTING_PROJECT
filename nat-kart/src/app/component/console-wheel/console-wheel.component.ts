@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
@@ -34,22 +35,21 @@ export class ConsoleWheelComponent implements OnInit {
     forkJoin({
       consoles: this.apiService.get<ConsoleDTO[]>('consoles'),
       counters: this.apiService.get<CounterDTO[]>('counters')
-    }).subscribe(({ consoles, counters }) => {
-      if (consoles && counters) {
-        // Create multiple instances of each console based on its counter
-        const availableConsoles = consoles.flatMap(console => {
-          const counter = counters.find(c => c.name === console.name);
-          const count = counter?.counter ?? 0;
+    })
+      .pipe(takeUntilDestroyed())
+      .subscribe(({ consoles, counters }) => {
+        if (consoles && counters) {
+          const availableConsoles = consoles.flatMap(console => {
+            const counter = counters.find(c => c.name === console.name);
+            const count = counter?.counter ?? 0;
+            return Array.from({ length: count }, () => ({ ...console }));
+          });
 
-          // Create an array with 'count' copies of this console
-          return Array.from({ length: count }, () => ({ ...console }));
-        });
-
-        this.consoles.set(availableConsoles);
-        this.consolesDisplayed.set([...availableConsoles]);
-        this.initializeCupsImages();
-      }
-    });
+          this.consoles.set(availableConsoles);
+          this.consolesDisplayed.set([...availableConsoles]);
+          this.initializeCupsImages();
+        }
+      });
   }
 
   initializeCupsImages() {

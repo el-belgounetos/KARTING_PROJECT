@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -66,44 +67,48 @@ export class PlayerManagementComponent implements OnInit {
   }
 
   loadPlayers() {
-    this.apiService.get<PlayerDTO[]>('players').subscribe({
-      next: (data) => {
-        console.log('Players loaded:', data);
-        if (data) {
-          this.players.set(data);
+    this.apiService.get<PlayerDTO[]>('players')
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (data) => {
+          if (data) {
+            this.players.set(data);
+            if (!this.isEditMode) {
+              this.selectedTabIndex = this.players().length === 0 ? "1" : "0";
+            }
+          }
+        },
+        error: (err) => {
           if (!this.isEditMode) {
-            this.selectedTabIndex = this.players().length === 0 ? "1" : "0";
+            this.selectedTabIndex = "1";
           }
         }
-      },
-      error: (err) => {
-        console.error('Error loading players:', err);
-        if (!this.isEditMode) {
-          this.selectedTabIndex = "1";
-        }
-      }
-    });
+      });
   }
 
   loadImages() {
-    this.apiService.get<string[]>('characters').subscribe(images => {
-      if (images) {
-        this.availableImages.set(images);
-      }
-    });
+    this.apiService.get<string[]>('characters')
+      .pipe(takeUntilDestroyed())
+      .subscribe(images => {
+        if (images) {
+          this.availableImages.set(images);
+        }
+      });
   }
 
   loadTeams() {
-    this.apiService.get<TeamDTO[]>('teams').subscribe({
-      next: (data) => {
-        if (data) {
-          this.teams.set(data);
+    this.apiService.get<TeamDTO[]>('teams')
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (data) => {
+          if (data) {
+            this.teams.set(data);
+          }
+        },
+        error: () => {
+          // Error handled by ApiService
         }
-      },
-      error: (err) => {
-        console.error('Error loading teams:', err);
-      }
-    });
+      });
   }
 
   selectImage(image: string) {
@@ -124,7 +129,7 @@ export class PlayerManagementComponent implements OnInit {
       ? this.apiService.put('players', this.player)
       : this.apiService.post('players', this.player);
 
-    apiCall.subscribe({
+    apiCall.pipe(takeUntilDestroyed()).subscribe({
       next: (response) => {
         this.notificationService.success(
           'Succès',
@@ -192,17 +197,19 @@ export class PlayerManagementComponent implements OnInit {
       rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.apiService.delete(`players/${player.pseudo}`).subscribe({
-          next: () => {
-            this.notificationService.success('Succès', 'Joueur supprimé avec succès');
-            this.loadPlayers();
-            this.loadImages();
-          },
-          error: (err) => {
-            console.error('Error deleting player:', err);
-            this.notificationService.error('Erreur', 'Impossible de supprimer le joueur');
-          }
-        });
+        this.apiService.delete(`players/${player.pseudo}`)
+          .pipe(takeUntilDestroyed())
+          .subscribe({
+            next: () => {
+              this.notificationService.success('Succès', 'Joueur supprimé avec succès');
+              this.loadPlayers();
+              this.loadImages();
+            },
+            error: (err) => {
+              console.error('Error deleting player:', err);
+              this.notificationService.error('Erreur', 'Impossible de supprimer le joueur');
+            }
+          });
       }
     });
   }

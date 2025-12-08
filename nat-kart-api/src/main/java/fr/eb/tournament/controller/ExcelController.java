@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/excel")
 public class ExcelController {
 
     private final ExcelService excelService;
@@ -18,7 +18,7 @@ public class ExcelController {
         this.excelService = excelService;
     }
 
-    @GetMapping("/ranks/excel")
+    @GetMapping
     public void downloadExcel(HttpServletResponse response) throws IOException {
         excelService.generateExcelForRanks(response);
     }

@@ -57,7 +57,7 @@ export class RankingComponent implements OnInit, OnDestroy {
   }
 
   public onExport() {
-    this.apiService.getBlob('ranks/excel').subscribe((blob: Blob | null) => {
+    this.apiService.getBlob('excel').subscribe((blob: Blob | null) => {
       if (blob) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');

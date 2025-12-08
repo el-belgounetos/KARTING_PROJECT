@@ -25,12 +25,12 @@ public class TeamService {
     private final TeamMapper teamMapper;
     private final PlayerMapper playerMapper;
 
-    /**
-     * Normalize team name for import matching.
-     * Delegates to TextNormalizationUtil for consistency.
-     */
     public static String normalizeTeamName(String name) {
         return TextNormalizationUtil.normalize(name);
+    }
+
+    private TeamEntity findTeamById(Long id) {
+        return EntityNotFoundUtil.findOrThrow(teamRepository.findById(id), "Team", id);
     }
 
     public List<TeamDTO> getAllTeams() {
@@ -60,10 +60,7 @@ public class TeamService {
     }
 
     public TeamDTO updateTeam(Long id, TeamDTO teamDTO) {
-        TeamEntity teamEntity = EntityNotFoundUtil.findOrThrow(
-                teamRepository.findById(id),
-                "Team",
-                id);
+        TeamEntity teamEntity = findTeamById(id);
 
         // Check if another team has the same name
         teamRepository.findByName(teamDTO.getName()).ifPresent(existingTeam -> {
@@ -82,10 +79,7 @@ public class TeamService {
     }
 
     public void deleteTeam(Long id) {
-        TeamEntity teamEntity = EntityNotFoundUtil.findOrThrow(
-                teamRepository.findById(id),
-                "Team",
-                id);
+        TeamEntity teamEntity = findTeamById(id);
 
         // Check if team has associated players
         List<PlayerEntity> players = playerRepository.findByTeamId(id);
@@ -110,10 +104,7 @@ public class TeamService {
     }
 
     public TeamDTO getTeamById(Long id) {
-        TeamEntity teamEntity = EntityNotFoundUtil.findOrThrow(
-                teamRepository.findById(id),
-                "Team",
-                id);
+        TeamEntity teamEntity = findTeamById(id);
         TeamDTO dto = teamMapper.toDTO(teamEntity);
         dto.setPlayerCount(playerRepository.countByTeamId(teamEntity.getId()));
         return dto;

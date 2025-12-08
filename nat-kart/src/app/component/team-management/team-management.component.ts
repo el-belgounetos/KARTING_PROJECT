@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,7 @@ import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-team-management',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -39,8 +40,11 @@ export class TeamManagementComponent implements OnInit {
   availableLogos = signal<string[]>([]);
 
   isEditMode: boolean = false;
-  selectedTabIndex: string = "0"; // "0" = List, "1" = Create/Edit
+  selectedTabIndex: string = "0";
   validationErrors: { [key: string]: string } = {};
+
+  // Computed signal for form validation
+  isValid = computed(() => !!(this.team.name && this.team.name.length >= 2));
 
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
@@ -108,7 +112,7 @@ export class TeamManagementComponent implements OnInit {
         this.selectedTabIndex = "0";
         this.loadingService.hide();
       },
-      error: (err: any) => {
+      error: (err) => {
         if (err?.error?.errors) {
           this.validationErrors = err.error.errors;
           const errorCount = Object.keys(err.error.errors).length;
@@ -123,10 +127,6 @@ export class TeamManagementComponent implements OnInit {
         this.loadingService.hide();
       }
     });
-  }
-
-  isValid(): boolean {
-    return !!(this.team.name && this.team.name.length >= 2);
   }
 
   resetForm() {

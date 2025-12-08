@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,7 @@ import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-score-management',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, ButtonModule, SelectModule, InputNumberModule,
     ToggleSwitchModule, BadgeModule, TableModule, ScrollPanelModule, FormsModule
@@ -40,6 +41,14 @@ export class ScoreManagementComponent implements OnInit {
   valueToAdd = 0;
   victory = false;
   isHistoryVisible = true;
+
+  // Computed signals for button state
+  isUpdateButtonDisabled = computed(() =>
+    this.valueToAdd === 0 ||
+    !this.selectedRank?.name ||
+    !this.selectedConsole?.name ||
+    !this.selectedCups?.name
+  );
 
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
@@ -129,15 +138,8 @@ export class ScoreManagementComponent implements OnInit {
     };
   }
 
-  isUpdateButtonAvailable(): boolean {
-    return this.valueToAdd === 0 ||
-      !this.selectedRank?.name ||
-      !this.selectedConsole?.name ||
-      !this.selectedCups?.name;
-  }
-
   private canUpdate(): boolean {
-    return !this.isUpdateButtonAvailable();
+    return !this.isUpdateButtonDisabled();
   }
 
   private selectKarterByName(name: string) {

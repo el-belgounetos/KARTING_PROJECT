@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,9 +12,11 @@ import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
 import { ImageService } from '../../services/image.service';
+import { PlayerDTO } from '../../dto/playerDTO';
 
 @Component({
   selector: 'app-champion-wheel',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule, FormsModule, ImageModule, ButtonModule, InputNumberModule,
     ScrollPanelModule, BadgeModule, TooltipModule
@@ -184,7 +186,7 @@ export class ChampionWheelComponent implements OnInit {
     }
   }
 
-  updatePlayer(player: any) {
+  updatePlayer(player: PlayerDTO) {
     this.apiService.put('players', player)
       .pipe(takeUntilDestroyed())
       .subscribe({

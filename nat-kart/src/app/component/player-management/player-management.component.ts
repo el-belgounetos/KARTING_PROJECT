@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,7 @@ import { Select } from 'primeng/select';
 @Component({
   selector: 'app-player-management',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -51,8 +52,16 @@ export class PlayerManagementComponent implements OnInit {
   teams = signal<TeamDTO[]>([]);
 
   isEditMode: boolean = false;
-  selectedTabIndex: string = "0"; // "0" = List, "1" = Create/Edit
+  selectedTabIndex: string = "0";
   validationErrors: { [key: string]: string } = {};
+
+  // Computed signal for form validation
+  isValid = computed(() => !!(
+    this.player.name &&
+    this.player.firstname &&
+    this.player.email &&
+    this.player.pseudo
+  ));
 
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
@@ -141,7 +150,7 @@ export class PlayerManagementComponent implements OnInit {
         this.selectedTabIndex = "0";
         this.loadingService.hide();
       },
-      error: (err: any) => {
+      error: (err) => {
         if (err?.error?.errors) {
           this.validationErrors = err.error.errors;
           const errorCount = Object.keys(err.error.errors).length;
@@ -156,15 +165,6 @@ export class PlayerManagementComponent implements OnInit {
         this.loadingService.hide();
       }
     });
-  }
-
-  isValid(): boolean {
-    return !!(
-      this.player.name &&
-      this.player.firstname &&
-      this.player.email &&
-      this.player.pseudo
-    );
   }
 
   resetForm() {

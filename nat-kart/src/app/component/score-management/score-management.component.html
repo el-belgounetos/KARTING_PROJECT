@@ -122,7 +122,7 @@
       </div>
 
       <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loadingService.loading()"
-        [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
+        [disabled]="isUpdateButtonDisabled()" (onClick)="updatePlayer()" />
     </div>
     }
   </section>

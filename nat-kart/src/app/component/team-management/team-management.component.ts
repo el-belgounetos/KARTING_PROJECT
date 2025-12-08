@@ -13,6 +13,8 @@ import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ConfirmationService } from 'primeng/api';
 import { ImageService } from '../../services/image.service';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { FileUpload } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-team-management',
@@ -24,7 +26,8 @@ import { ImageService } from '../../services/image.service';
     ButtonModule,
     ImageModule,
     TableModule,
-    TabsModule
+    TabsModule,
+    FileUpload
   ],
   templateUrl: './team-management.component.html',
   styleUrl: './team-management.component.scss'
@@ -49,6 +52,7 @@ export class TeamManagementComponent implements OnInit {
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
   private notificationService = inject(NotificationService);
+  private imageUploadService = inject(ImageUploadService);
   private confirmationService = inject(ConfirmationService);
   public imageService = inject(ImageService);
   private destroyRef = inject(DestroyRef);
@@ -97,6 +101,17 @@ export class TeamManagementComponent implements OnInit {
 
   selectLogo(logo: string) {
     this.team.logo = logo;
+  }
+
+  onLogoUpload(event: any) {
+    this.imageUploadService.handleUpload(
+      event,
+      'teams/logos/upload',
+      this.availableLogos,
+      'Logo uploadé avec succès',
+      "Erreur lors de l'upload du logo",
+      this.destroyRef
+    );
   }
 
   onSubmit() {

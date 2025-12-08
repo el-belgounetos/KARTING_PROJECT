@@ -1,6 +1,10 @@
 spring:
   application:
     name: kart-api
+  servlet:
+    multipart:
+      max-file-size: ${image.upload.max-size-mb}MB
+      max-request-size: ${image.upload.max-size-mb}MB
   h2:
     console:
       enabled: true
@@ -13,3 +17,10 @@ spring:
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.H2Dialect
+
+# Custom image upload configuration (single source of truth)
+image:
+  upload:
+    max-size-mb: 10                  # Maximum file size accepted (hard limit)
+    compression-threshold-mb: 3      # Files larger than this are compressed
+    target-size-mb: 3                # Target size after compression

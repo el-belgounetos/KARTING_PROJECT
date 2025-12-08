@@ -15,7 +15,9 @@ import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { ConfirmationService } from 'primeng/api';
 import { ImageService } from '../../services/image.service';
+import { ImageUploadService } from '../../services/image-upload.service';
 import { Select } from 'primeng/select';
+import { FileUpload } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-player-management',
@@ -30,7 +32,8 @@ import { Select } from 'primeng/select';
     ImageModule,
     TableModule,
     TabsModule,
-    Select
+    Select,
+    FileUpload
   ],
   templateUrl: './player-management.component.html',
   styleUrl: './player-management.component.scss'
@@ -68,6 +71,7 @@ export class PlayerManagementComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private confirmationService = inject(ConfirmationService);
   public imageService = inject(ImageService);
+  private imageUploadService = inject(ImageUploadService);
   private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
@@ -123,6 +127,17 @@ export class PlayerManagementComponent implements OnInit {
 
   selectImage(image: string) {
     this.player.picture = image;
+  }
+
+  onImageUpload(event: any) {
+    this.imageUploadService.handleUpload(
+      event,
+      'characters/upload',
+      this.availableImages,
+      'Image uploadée avec succès',
+      "Erreur lors de l'upload de l'image",
+      this.destroyRef
+    );
   }
 
   onSubmit() {

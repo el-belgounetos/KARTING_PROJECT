@@ -114,6 +114,17 @@
                         <!-- Logo Selection -->
                         <div class="flex flex-col gap-4">
                             <label class="text-white font-semibold">Choisir un logo (Optionnel)</label>
+
+                            <!-- File Upload Component -->
+                            <div class="bg-gray-700/50 p-4 rounded-xl border border-white/10">
+                                <p-fileUpload mode="basic" chooseLabel="Télécharger un nouveau logo" [auto]="false"
+                                    accept="image/png,image/jpeg,image/jpg" [maxFileSize]="10485760"
+                                    (onSelect)="onLogoUpload($event)" chooseIcon="pi pi-upload" styleClass="w-full">
+                                </p-fileUpload>
+                                <small class="text-gray-400 block mt-2">PNG, JPEG ou JPG - Maximum 10MB (compression
+                                    auto entre 5-10MB)</small>
+                            </div>
+
                             <div
                                 class="bg-gray-700/50 p-4 rounded-xl border border-white/10 h-[400px] overflow-y-auto custom-scroll">
                                 <div class="grid grid-cols-4 gap-4">

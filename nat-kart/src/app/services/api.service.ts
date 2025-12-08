@@ -38,6 +38,10 @@ export class ApiService {
             .pipe(this.handleErrorOperator<T>());
     }
 
+    postFormData<T>(endpoint: string, formData: FormData): Observable<T> {
+        return this.http.post<T>(`${this.baseUrl}/${endpoint}`, formData);
+    }
+
     getBlob(endpoint: string): Observable<Blob | null> {
         return this.http.get(`${this.baseUrl}/${endpoint}`, { responseType: 'blob' })
             .pipe(this.handleErrorOperator<Blob>());

@@ -3,6 +3,7 @@ package fr.eb.tournament.service;
 import fr.eb.tournament.dto.PlayerDTO;
 import fr.eb.tournament.entity.PlayerEntity;
 import fr.eb.tournament.repository.PlayerRepository;
+import fr.eb.tournament.mapper.PlayerMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,15 @@ class PlayerServiceTest {
 
     @Mock
     private HistoryService historyService;
+
+    @Mock
+    private TournamentConfigService tournamentConfigService;
+
+    @Mock
+    private PlayerMapper playerMapper;
+
+    @Mock
+    private fr.eb.tournament.repository.TeamRepository teamRepository;
 
     @InjectMocks
     private PlayerService playerService;

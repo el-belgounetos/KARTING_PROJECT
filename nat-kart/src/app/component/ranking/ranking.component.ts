@@ -19,6 +19,7 @@ import { ImageService } from '../../services/image.service';
 export class RankingComponent implements OnInit, OnDestroy {
   // Signal for reactive state
   ranks = signal<RankingDTO[]>([]);
+  showMobileSearch = signal<boolean>(false);
 
   private pollingInterval: ReturnType<typeof setInterval> | undefined;
   private apiService = inject(ApiService);
@@ -69,5 +70,9 @@ export class RankingComponent implements OnInit, OnDestroy {
         window.URL.revokeObjectURL(url);
       }
     });
+  }
+
+  public toggleMobileSearch() {
+    this.showMobileSearch.set(!this.showMobileSearch());
   }
 }

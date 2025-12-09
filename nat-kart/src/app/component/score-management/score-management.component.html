@@ -9,14 +9,14 @@
   <!-- Left Sidebar: Avatar List -->
   <aside aria-label="Liste des joueurs"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/60 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden shrink-0">
-    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="ranks-scroll">
+    <div class="w-full h-full overflow-y-auto custom-scrollbar pr-2">
       <div class="flex flex-col gap-2">
         @for (rank of ranks(); track $index) {
         <div
           class="flex items-center gap-4 p-3 rounded-lg bg-gray-700/80 cursor-pointer transition-all hover:bg-gray-600/90 hover:translate-x-1"
-          [class.!bg-primary]="selectedRank?.name === rank.name" (click)="selectNewRank(rank)">
+          [class.!bg-primary]="selectedRank()?.name === rank.name" (click)="selectNewRank(rank)">
           @if (rank.picture) {
-          <img [src]="imageService.getPlayerImageUrl(rank.picture)"
+          <img [src]="imageService.getPlayerImageUrl(rank.picture!)"
             class="w-[clamp(40px,5vw,60px)] h-[clamp(40px,5vw,60px)] object-cover rounded-full shrink-0"
             [alt]="rank.name" />
           } @else {
@@ -32,7 +32,7 @@
         </div>
         }
       </div>
-    </p-scrollPanel>
+    </div>
   </aside>
 
   <!-- Main Content: Details & Controls -->
@@ -41,22 +41,23 @@
       Modification des rangs
     </div>
 
-    @if (selectedRank) {
+    @if (selectedRank()) {
     <div class="bg-gray-700/90 rounded-2xl p-8 shadow-2xl border border-white/10 backdrop-blur-sm w-full max-w-[800px]">
       <div class="flex items-center gap-8">
-        @if (selectedRank.picture) {
-        <img [src]="imageService.getPlayerImageUrl(selectedRank.picture)" [alt]="selectedRank.name"
+        @if (selectedRank()!.picture) {
+        <img [src]="imageService.getPlayerImageUrl(selectedRank()!.picture!)" [alt]="selectedRank()!.name"
           class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0" />
         } @else {
-        <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="selectedRank.name"
+        <img [src]="imageService.getPlayerImageUrl('unknown.png')" [alt]="selectedRank()!.name"
           class="w-[clamp(80px,10vw,120px)] h-[clamp(80px,10vw,120px)] rounded-full border-4 border-white/20 object-cover shrink-0 opacity-50" />
         }
         <div class="flex-1 min-w-0">
-          <div class="text-[clamp(1.25rem,3vw,2rem)] font-bold text-white mb-2">{{ selectedRank.name }}</div>
+          <div class="text-[clamp(1.25rem,3vw,2rem)] font-bold text-white mb-2">{{ selectedRank()!.name }}</div>
           <div class="flex flex-wrap gap-4 text-white/80 text-[clamp(0.75rem,1.5vw,1rem)]">
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank.points }}</span>
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank.rank }}</span>
-            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank.victory }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Points: {{ selectedRank()!.points }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Classement: #{{ selectedRank()!.rank }}</span>
+            <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Victoires: {{ selectedRank()!.victory
+              }}</span>
             <span class="bg-black/20 px-3 py-1 rounded whitespace-nowrap">Parties: {{ history().length }}</span>
           </div>
         </div>
@@ -68,24 +69,25 @@
         <div class="flex flex-col gap-2 text-white">
           <label for="pointToAdd" class="font-bold text-[clamp(0.75rem,1.5vw,0.9rem)] text-white/90">Points à
             ajouter</label>
-          <p-inputNumber inputId="pointToAdd" [(ngModel)]="valueToAdd" />
+          <p-inputNumber inputId="pointToAdd" [ngModel]="valueToAdd()" (ngModelChange)="valueToAdd.set($event)" />
         </div>
 
         <div class="flex flex-col gap-2 text-white">
           <label class="font-bold text-[clamp(0.75rem,1.5vw,0.9rem)] text-white/90">Victoire</label>
-          <p-toggleSwitch [(ngModel)]="victory" />
+          <p-toggleSwitch [ngModel]="victory()" (ngModelChange)="victory.set($event)" />
         </div>
       </div>
 
       <div class="grid grid-cols-2 max-lg:grid-cols-1 gap-8 items-start">
-        <p-select (click)="onConsoleSelected()" styleClass="w-full" [options]="consoles()" [(ngModel)]="selectedConsole"
-          optionLabel="name" [showClear]="true" placeholder="Choisir une console">
+        <p-select styleClass="w-full" [options]="consoles()" [ngModel]="selectedConsole()"
+          (ngModelChange)="onConsoleChange($event)" optionLabel="name" [showClear]="true"
+          placeholder="Choisir une console">
           <ng-template pTemplate="selectedConsole">
-            @if (selectedConsole) {
+            @if (selectedConsole()) {
             <div class="flex items-center gap-2">
-              <img [src]="imageService.getConsoleImageUrl(selectedConsole.picture)"
+              <img [src]="imageService.getConsoleImageUrl(selectedConsole()!.picture)"
                 class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
-              <div>{{ selectedConsole.name }}</div>
+              <div>{{ selectedConsole()!.name }}</div>
             </div>
             }
           </ng-template>
@@ -98,21 +100,22 @@
           </ng-template>
         </p-select>
 
-        @if (selectedConsole != null && selectedConsole.name != '') {
-        <p-select styleClass="w-full" [options]="cups()" [(ngModel)]="selectedCups" optionLabel="name"
-          [showClear]="true" placeholder="Choisir une coupe">
+        @if (selectedConsole() != null && selectedConsole()!.name != '') {
+        <p-select styleClass="w-full" [options]="cups()" [ngModel]="selectedCups()"
+          (ngModelChange)="selectedCups.set($event)" optionLabel="name" [showClear]="true"
+          placeholder="Choisir une coupe">
           <ng-template pTemplate="selectedCups">
-            @if (selectedCups) {
+            @if (selectedCups()) {
             <div class="flex items-center gap-2">
-              <img [src]="imageService.getCupImageUrl(selectedConsole.name + '/' + selectedCups.picture)"
+              <img [src]="imageService.getCupImageUrl(selectedConsole()!.name + '/' + selectedCups()!.picture)"
                 class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
-              <div>{{ selectedCups.name }}</div>
+              <div>{{ selectedCups()!.name }}</div>
             </div>
             }
           </ng-template>
           <ng-template let-selectedCups pTemplate="item">
             <div class="flex items-center gap-2">
-              <img [src]="imageService.getCupImageUrl(selectedConsole.name + '/' + selectedCups.picture)"
+              <img [src]="imageService.getCupImageUrl(selectedConsole()!.name + '/' + selectedCups.picture)"
                 class="w-[clamp(60px,8vw,100px)] h-[clamp(60px,8vw,100px)] object-contain" />
               <div>{{ selectedCups.name }}</div>
             </div>
@@ -122,7 +125,7 @@
       </div>
 
       <p-button class="w-full mt-4" label="Mettre à jour" icon="pi pi-check" [loading]="loadingService.loading()"
-        [disabled]="isUpdateButtonAvailable()" (onClick)="updatePlayer()" />
+        [disabled]="isUpdateButtonDisabled()" (onClick)="updatePlayer()" />
     </div>
     }
   </section>
@@ -130,8 +133,8 @@
   <!-- Right Sidebar: History (Collapsible) -->
   <aside aria-label="Historique des scores"
     class="w-full lg:h-full p-4 bg-gray-900/60 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col overflow-hidden shrink-0"
-    [ngClass]="{'h-16': !isHistoryVisible, 'h-64': isHistoryVisible}">
-    @if (selectedRank != null && selectedRank.name != '') {
+    [ngClass]="{'h-16': !isHistoryVisible(), 'h-64': isHistoryVisible()}">
+    @if (selectedRank() != null && selectedRank()!.name != '') {
     <div class="h-full flex flex-col gap-4">
       <!-- Header with toggle button -->
       <div
@@ -139,36 +142,35 @@
         <div class="text-[clamp(1rem,2.5vw,1.5rem)] font-bold text-white text-center flex-1">
           Historique
         </div>
-        <button (click)="isHistoryVisible = !isHistoryVisible"
-          class="ml-2 p-2 text-white hover:bg-white/10 rounded transition-colors">
-          <i [class]="isHistoryVisible ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+        <button (click)="toggleHistory()" class="ml-2 p-2 text-white hover:bg-white/10 rounded transition-colors">
+          <i [class]="isHistoryVisible() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
         </button>
       </div>
 
-      @if (isHistoryVisible) {
-      <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
-        <p-table [value]="history()" styleClass="history-table" [rowHover]="true">
+      @if (isHistoryVisible()) {
+      <div class="w-full h-full overflow-y-auto custom-scrollbar">
+        <p-table [value]="history()" [rowHover]="true" styleClass="text-[clamp(0.75rem,1.5vw,0.875rem)]">
           <ng-template pTemplate="header">
             <tr>
-              <th>Joueur</th>
-              <th>Pts</th>
-              <th>Console</th>
-              <th>Coupe</th>
-              <th></th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Joueur</th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Pts</th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Console</th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Coupe</th>
+              <th class="bg-gray-800/90 text-white border-none p-2 w-12 min-w-[3rem]"></th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-line>
-            <tr>
-              <td>{{ line.player.name }}</td>
-              <td>{{ line.points }}</td>
-              <td>{{ line.console.name }}</td>
-              <td>{{ line.cups.name }}</td>
-              <td><p-badge [value]="'X'" severity="danger" class="badge-del cursor-pointer hover:scale-110 inline-block"
-                  (click)="deleteHistory(line)" /></td>
+            <tr class="bg-gray-800/50 text-white overflow-visible hover:bg-white/10 transition-colors">
+              <td class="p-2 border-none">{{ line.player.name }}</td>
+              <td class="p-2 border-none">{{ line.points }}</td>
+              <td class="p-2 border-none">{{ line.console.name }}</td>
+              <td class="p-2 border-none">{{ line.cups.name }}</td>
+              <td class="p-2 border-none"><p-badge [value]="'X'" severity="danger"
+                  class="badge-del cursor-pointer hover:scale-110 inline-block" (click)="deleteHistory(line)" /></td>
             </tr>
           </ng-template>
         </p-table>
-      </p-scrollPanel>
+      </div>
       }
     </div>
     }

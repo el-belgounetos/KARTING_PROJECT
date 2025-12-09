@@ -11,7 +11,9 @@ export const routes: Routes = [
   { path: 'score-management', component: ScoreManagementComponent },
   { path: 'console-wheel', component: ConsoleWheelComponent },
   { path: 'console-management', component: ConsoleManagementComponent },
-  { path: 'player-management', loadComponent: () => import('./component/player-management/player-management.component').then(m => m.PlayerManagementComponent) },
+  { path: 'players-teams', loadComponent: () => import('./component/players-teams-management/players-teams-management.component').then(m => m.PlayersTeamsManagementComponent) },
+  { path: 'player-management', redirectTo: 'players-teams', pathMatch: 'full' }, // Old route redirect
+  { path: 'team-management', redirectTo: 'players-teams', pathMatch: 'full' },  // Old route redirect
   { path: 'admin', loadComponent: () => import('./component/admin/admin.component').then(m => m.AdminComponent) },
   { path: '', redirectTo: 'ranking', pathMatch: 'full' },
   { path: '**', redirectTo: 'ranking' }

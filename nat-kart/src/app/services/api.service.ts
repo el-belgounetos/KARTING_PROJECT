@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { NotificationService } from './notification.service';
@@ -10,19 +10,19 @@ import { environment } from '../../environments/environment';
 })
 export class ApiService {
     private baseUrl = environment.apiUrl;
+    private http = inject(HttpClient);
+    private notificationService = inject(NotificationService);
 
-    constructor(
-        private http: HttpClient,
-        private notificationService: NotificationService
-    ) { }
+    private handleErrorOperator<T>() {
+        return catchError<T, Observable<null>>((error) => {
+            this.handleError(error);
+            return of(null);
+        });
+    }
 
     get<T>(endpoint: string): Observable<T | null> {
-        return this.http.get<T>(`${this.baseUrl}/${endpoint}`).pipe(
-            catchError(error => {
-                this.handleError(error);
-                return of(null);
-            })
-        );
+        return this.http.get<T>(`${this.baseUrl}/${endpoint}`)
+            .pipe(this.handleErrorOperator<T>());
     }
 
     post<T>(endpoint: string, body: unknown): Observable<T> {
@@ -34,21 +34,17 @@ export class ApiService {
     }
 
     delete<T>(endpoint: string): Observable<T | null> {
-        return this.http.delete<T>(`${this.baseUrl}/${endpoint}`).pipe(
-            catchError(error => {
-                this.handleError(error);
-                return of(null);
-            })
-        );
+        return this.http.delete<T>(`${this.baseUrl}/${endpoint}`)
+            .pipe(this.handleErrorOperator<T>());
+    }
+
+    postFormData<T>(endpoint: string, formData: FormData): Observable<T> {
+        return this.http.post<T>(`${this.baseUrl}/${endpoint}`, formData);
     }
 
     getBlob(endpoint: string): Observable<Blob | null> {
-        return this.http.get(`${this.baseUrl}/${endpoint}`, { responseType: 'blob' }).pipe(
-            catchError(error => {
-                this.handleError(error);
-                return of(null);
-            })
-        );
+        return this.http.get(`${this.baseUrl}/${endpoint}`, { responseType: 'blob' })
+            .pipe(this.handleErrorOperator<Blob>());
     }
 
     private handleError(error: HttpErrorResponse) {

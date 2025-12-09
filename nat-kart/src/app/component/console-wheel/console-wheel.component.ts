@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { ImageModule } from 'primeng/image';
@@ -6,7 +7,7 @@ import { ConsoleDTO } from '../../dto/consoleDTO';
 import { CounterDTO } from '../../dto/counterDTO';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, interval, take } from 'rxjs';
 import { ImageService } from '../../services/image.service';
 
 @Component({
@@ -25,6 +26,7 @@ export class ConsoleWheelComponent implements OnInit {
   private apiService = inject(ApiService);
   public loadingService = inject(LoadingService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.loadConsoles();
@@ -34,22 +36,21 @@ export class ConsoleWheelComponent implements OnInit {
     forkJoin({
       consoles: this.apiService.get<ConsoleDTO[]>('consoles'),
       counters: this.apiService.get<CounterDTO[]>('counters')
-    }).subscribe(({ consoles, counters }) => {
-      if (consoles && counters) {
-        // Create multiple instances of each console based on its counter
-        const availableConsoles = consoles.flatMap(console => {
-          const counter = counters.find(c => c.name === console.name);
-          const count = counter?.counter ?? 0;
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ consoles, counters }) => {
+        if (consoles && counters) {
+          const availableConsoles = consoles.flatMap(console => {
+            const counter = counters.find(c => c.name === console.name);
+            const count = counter?.counter ?? 0;
+            return Array.from({ length: count }, () => ({ ...console }));
+          });
 
-          // Create an array with 'count' copies of this console
-          return Array.from({ length: count }, () => ({ ...console }));
-        });
-
-        this.consoles.set(availableConsoles);
-        this.consolesDisplayed.set([...availableConsoles]);
-        this.initializeCupsImages();
-      }
-    });
+          this.consoles.set(availableConsoles);
+          this.consolesDisplayed.set([...availableConsoles]);
+          this.initializeCupsImages();
+        }
+      });
   }
 
   initializeCupsImages() {
@@ -64,26 +65,30 @@ export class ConsoleWheelComponent implements OnInit {
     this.initializeCupsImages();
 
     // Simulate spinning effect on cup images
-    let spinCount = 0;
     const maxSpins = 20;
-    const interval = setInterval(() => {
-      // Shuffle cup images instead of consoles
-      const randomCupImages = this.consolesDisplayed().map(console => {
-        if (console.cups && console.cups.length > 0) {
-          const randomCupIndex = Math.floor(Math.random() * console.cups.length);
-          return this.imageService.getCupImageUrl(console.name + '/' + console.cups[randomCupIndex].picture);
-        }
-        return this.imageService.getImageUrl('ui/intero.png');
-      });
-      this.allCupsImages.set(randomCupImages);
 
-      spinCount++;
-      if (spinCount >= maxSpins) {
-        clearInterval(interval);
-        this.isSpinning.set(false);
-        this.revealCups();
-      }
-    }, 100);
+    interval(100)
+      .pipe(
+        take(maxSpins),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => {
+          // Shuffle cup images instead of consoles
+          const randomCupImages = this.consolesDisplayed().map(console => {
+            if (console.cups && console.cups.length > 0) {
+              const randomCupIndex = Math.floor(Math.random() * console.cups.length);
+              return this.imageService.getCupImageUrl(console.name + '/' + console.cups[randomCupIndex].picture);
+            }
+            return this.imageService.getImageUrl('ui/intero.png');
+          });
+          this.allCupsImages.set(randomCupImages);
+        },
+        complete: () => {
+          this.isSpinning.set(false);
+          this.revealCups();
+        }
+      });
   }
 
   revealCups() {

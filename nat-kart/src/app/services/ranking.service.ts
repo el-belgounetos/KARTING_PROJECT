@@ -8,7 +8,6 @@ import { ImageService } from './image.service';
 export class RankingService {
 
     private imageService = inject(ImageService);
-    constructor() { }
 
     sortByRanking(karters: RankingDTO[]): RankingDTO[] {
         return [...karters].sort((a, b) => {
@@ -20,15 +19,13 @@ export class RankingService {
     }
 
     getCupImage(rank: number): string {
-        switch (rank) {
-            case 1: return this.imageService.getRankImageUrl('golden-cup.png');
-            case 2: return this.imageService.getRankImageUrl('silver-cup.png');
-            case 3: return this.imageService.getRankImageUrl('bronze-cup.png');
-            default: return '';
-        }
+        const cups = ['golden-cup.png', 'silver-cup.png', 'bronze-cup.png'];
+        return (rank >= 1 && rank <= 3)
+            ? this.imageService.getRankImageUrl(cups[rank - 1])
+            : '';
     }
 
     hasCup(rank: number): boolean {
-        return rank != null && (rank === 1 || rank === 2 || rank === 3);
+        return rank >= 1 && rank <= 3;
     }
 }

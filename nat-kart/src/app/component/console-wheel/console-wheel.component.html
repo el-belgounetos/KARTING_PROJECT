@@ -4,8 +4,11 @@
 
   <!-- Button -->
   <header class="w-full flex justify-center items-center py-4">
-    <p-button styleClass="consoling-button" [disabled]="isSpinning()" label="Tourner la roue" (click)="onSpin()">
-    </p-button>
+    <button
+      class="w-64 py-3 px-6 text-white font-bold text-lg rounded-md bg-gradient-to-r from-transparent via-[#414141]/90 to-transparent hover:scale-[1.005] transition-transform duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+      [disabled]="isSpinning()" (click)="onSpin()">
+      Tourner la roue
+    </button>
   </header>
 
   <!-- Consoles List - Vertical on mobile, Grid on desktop -->

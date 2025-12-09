@@ -1,0 +1,372 @@
+<!-- Image de fond décorative, non interactive -->
+<div aria-hidden="true" class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
+    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'"></div>
+
+<main
+    class="w-full min-h-screen bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto custom-scrollbar pt-8"
+    style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;"
+    aria-label="Contenu principal">
+
+    <section aria-label="Gestion des joueurs et équipes"
+        class="bg-gray-800/90 p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-6xl backdrop-blur-sm">
+        <p-tabs [value]="selectedTabIndex()" (valueChange)="selectedTabIndex.set($event)">
+            <p-tablist>
+                <p-tab value="0">Liste des joueurs</p-tab>
+                <p-tab value="1">{{ isEditMode() ? 'Modification joueur' : 'Création joueur' }}</p-tab>
+                <p-tab value="2">Liste des équipes</p-tab>
+                <p-tab value="3">{{ isTeamEditMode() ? 'Modification équipe' : 'Création équipe' }}</p-tab>
+            </p-tablist>
+            <p-tabpanels>
+                <!-- TAB 0: Liste des joueurs -->
+                <p-tabpanel value="0">
+                    <p-table [value]="players()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
+                        [rowsPerPageOptions]="[10, 25, 50]" [tableStyle]="{ 'min-width': '50rem' }"
+                        [globalFilterFields]="['pseudo', 'name', 'firstname']" #dt1>
+                        <ng-template pTemplate="caption">
+                            <div class="flex">
+                                <span class="p-input-icon-left ml-auto">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text"
+                                        (input)="dt1.filterGlobal($any($event.target).value, 'contains')"
+                                        placeholder="Rechercher..." />
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
+                                <th>Avatar</th>
+                                <th pSortableColumn="pseudo">Pseudo<p-sortIcon field="pseudo" /></th>
+                                <th pSortableColumn="name">Nom <p-sortIcon field="name" /></th>
+                                <th pSortableColumn="firstname">Prénom <p-sortIcon field="firstname" /></th>
+                                <th>Catégorie</th>
+                                <th>Modifier</th>
+                                <th>Suppression</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-player>
+                            <tr>
+                                <td>{{ player.id }}</td>
+                                <td>
+                                    @if (player.picture) {
+                                    <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.pseudo"
+                                        width="50" class="shadow-4" />
+                                    } @else {
+                                    <span class="text-gray-400 italic">Aucun</span>
+                                    }
+                                </td>
+                                <td>{{ player.pseudo }}</td>
+                                <td>{{ player.name }}</td>
+                                <td>{{ player.firstname }}</td>
+                                <td>
+                                    @if (player.category) {
+                                    <span
+                                        class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                        {{ player.category }}
+                                    </span>
+                                    } @else {
+                                    <span class="text-gray-400 italic">Aucune</span>
+                                    }
+                                </td>
+                                <td>
+                                    <p-button icon="pi pi-pencil" severity="info" [rounded]="true"
+                                        (onClick)="editPlayer(player)" size="small" />
+                                </td>
+                                <td>
+                                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true"
+                                        (onClick)="deletePlayer(player)" size="small" />
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="8" class="text-center p-4">Aucun joueur trouvé.</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-tabpanel>
+
+                <!-- TAB 1: Gestion joueur (création/modification + images) -->
+                <p-tabpanel value="1">
+                    <header>
+                        <h2 class="text-3xl font-bold text-white text-center mb-8">
+                            {{ isEditMode() ? 'Modification d\'un joueur' : 'Création d\'un joueur' }}
+                        </h2>
+                    </header>
+                    <form class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Player Form Fields -->
+                        <div class="flex flex-col gap-4">
+                            @if (isEditMode() && player.id) {
+                            <div class="flex flex-col gap-2">
+                                <label for="player-id" class="text-white font-semibold">ID</label>
+                                <input pInputText id="player-id" name="id" [ngModel]="player.id" [disabled]="true"
+                                    class="opacity-60 cursor-not-allowed" />
+                            </div>
+                            }
+
+                            <div class="flex flex-col gap-2">
+                                <label for="pseudo" class="text-white font-semibold">Pseudo *</label>
+                                <input pInputText id="pseudo" name="pseudo" [(ngModel)]="player.pseudo"
+                                    placeholder="Pseudo du joueur (3-20 caractères)"
+                                    [class.border-red-500]="validationErrors['pseudo']" />
+                                @if (validationErrors['pseudo']) {
+                                <small class="text-red-400">{{ validationErrors['pseudo'] }}</small>
+                                }
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label for="name" class="text-white font-semibold">Nom *</label>
+                                <input pInputText id="name" name="name" [(ngModel)]="player.name"
+                                    placeholder="Nom du joueur" [class.border-red-500]="validationErrors['name']" />
+                                @if (validationErrors['name']) {
+                                <small class="text-red-400">{{ validationErrors['name'] }}</small>
+                                }
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label for="firstname" class="text-white font-semibold">Prénom *</label>
+                                <input pInputText id="firstname" name="firstname" [(ngModel)]="player.firstname"
+                                    placeholder="Prénom du joueur"
+                                    [class.border-red-500]="validationErrors['firstname']" />
+                                @if (validationErrors['firstname']) {
+                                <small class="text-red-400">{{ validationErrors['firstname'] }}</small>
+                                }
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label for="email" class="text-white font-semibold">Email *</label>
+                                <input pInputText id="email" name="email" [(ngModel)]="player.email"
+                                    placeholder="email@exemple.com"
+                                    [class.border-red-500]="validationErrors['email']" />
+                                @if (validationErrors['email']) {
+                                <small class="text-red-400">{{ validationErrors['email'] }}</small>
+                                }
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label for="age" class="text-white font-semibold">Âge (optionnel)</label>
+                                <p-inputNumber id="age" name="age" [(ngModel)]="player.age" [min]="0" [max]="120"
+                                    placeholder="Âge du joueur" />
+                                <small class="text-gray-400">Laissez vide ou à 0 si non applicable</small>
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label for="category" class="text-white font-semibold">Catégorie</label>
+                                <input pInputText id="category" name="category" [(ngModel)]="player.category"
+                                    placeholder="Catégorie (ex: Senior, Junior)" />
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label for="team" class="text-white font-semibold">Équipe</label>
+                                <p-select id="team" name="teamId" [(ngModel)]="player.teamId" [options]="teams()"
+                                    optionLabel="name" optionValue="id" placeholder="Sélectionner une équipe"
+                                    [showClear]="true" class="w-full" />
+                            </div>
+                        </div>
+
+                        <!-- Player Image Selection -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Avatar sélectionné</label>
+                                @if (player.picture) {
+                                <div class="flex items-center gap-4">
+                                    <img [src]="imageService.getPlayerImageUrl(player.picture)" [alt]="player.picture"
+                                        class="w-32 h-32 object-cover rounded-lg shadow-lg" />
+                                    <p class="text-gray-300">{{ player.picture }}</p>
+                                </div>
+                                } @else {
+                                <p class="text-gray-400 italic">Aucun avatar sélectionné</p>
+                                }
+                            </div>
+
+                            <!-- Upload Section -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Upload nouvel avatar</label>
+                                <p-fileUpload mode="basic" name="file" accept="image/png,image/jpeg,image/jpg"
+                                    [maxFileSize]="10485760" [auto]="true" chooseLabel="Choisir une image"
+                                    (onUpload)="onImageUpload($event)" [customUpload]="true" />
+                                <small class="text-gray-400">Maximum 10MB (compression auto entre 3-10MB). Formats: PNG,
+                                    JPEG, JPG</small>
+                            </div>
+
+                            <!-- Available Images Grid -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Avatars disponibles</label>
+                                <div
+                                    class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2 bg-gray-900/50 rounded-lg">
+                                    @for (image of availableImages(); track image) {
+                                    <div class="relative group cursor-pointer" (click)="selectImage(image)">
+                                        <img [src]="imageService.getPlayerImageUrl(image)" [alt]="image"
+                                            class="w-full h-20 object-contain rounded-lg shadow-md transition-transform group-hover:scale-105"
+                                            [class.ring-4]="player.picture === image"
+                                            [class.ring-blue-500]="player.picture === image" />
+                                        @if (player.picture === image) {
+                                        <div
+                                            class="absolute inset-0 flex items-center justify-center bg-blue-500/20 rounded-lg">
+                                            <i class="pi pi-check text-white text-2xl"></i>
+                                        </div>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 mt-8 justify-center">
+                        <p-button label="Annuler" icon="pi pi-times" severity="secondary" [outlined]="true"
+                            (onClick)="cancelEdit()" />
+                        <p-button [label]="isEditMode() ? 'Modifier' : 'Créer'" icon="pi pi-check" severity="success"
+                            (onClick)="onSubmit()" />
+                    </div>
+                </p-tabpanel>
+
+                <!-- TAB 2: Liste des équipes -->
+                <p-tabpanel value="2">
+                    <p-table [value]="teams()" styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
+                        [rowsPerPageOptions]="[10, 25, 50]" [tableStyle]="{ 'min-width': '50rem' }"
+                        [globalFilterFields]="['name']" #dt2>
+                        <ng-template pTemplate="caption">
+                            <div class="flex">
+                                <span class="p-input-icon-left ml-auto">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text"
+                                        (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
+                                        placeholder="Rechercher..." />
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="id">ID <p-sortIcon field="id" /></th>
+                                <th>Logo</th>
+                                <th pSortableColumn="name">Nom<p-sortIcon field="name" /></th>
+                                <th pSortableColumn="playerCount">Nombre de joueurs <p-sortIcon field="playerCount" />
+                                </th>
+                                <th>Modifier</th>
+                                <th>Suppression</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-team>
+                            <tr>
+                                <td>{{ team.id }}</td>
+                                <td>
+                                    @if (team.logo) {
+                                    <img [src]="getLogoUrl(team.logo)" [alt]="team.name" width="50" class="shadow-4" />
+                                    } @else {
+                                    <span class="text-gray-400 italic">Aucun</span>
+                                    }
+                                </td>
+                                <td>{{ team.name }}</td>
+                                <td>{{ team.playerCount }}</td>
+                                <td>
+                                    <p-button icon="pi pi-pencil" severity="info" [rounded]="true"
+                                        (onClick)="editTeam(team)" size="small" />
+                                </td>
+                                <td>
+                                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true"
+                                        (onClick)="deleteTeam(team)" size="small" />
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="6" class="text-center p-4">Aucune équipe trouvée.</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-tabpanel>
+
+                <!-- TAB 3: Gestion équipe (création/modification + logos) -->
+                <p-tabpanel value="3">
+                    <header>
+                        <h2 class="text-3xl font-bold text-white text-center mb-8">
+                            {{ isTeamEditMode() ? 'Modification d\'une équipe' : 'Création d\'une équipe' }}
+                        </h2>
+                    </header>
+                    <form class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Team Form Fields -->
+                        <div class="flex flex-col gap-4">
+                            @if (isTeamEditMode() && team.id) {
+                            <div class="flex flex-col gap-2">
+                                <label for="team-id" class="text-white font-semibold">ID</label>
+                                <input pInputText id="team-id" name="id" [ngModel]="team.id" [disabled]="true"
+                                    class="opacity-60 cursor-not-allowed" />
+                            </div>
+                            }
+
+                            <div class="flex flex-col gap-2">
+                                <label for="team-name" class="text-white font-semibold">Nom de l'équipe *</label>
+                                <input pInputText id="team-name" name="name" [(ngModel)]="team.name"
+                                    placeholder="Nom de l'équipe (2-40 caractères)"
+                                    [class.border-red-500]="teamValidationErrors['name']" />
+                                @if (teamValidationErrors['name']) {
+                                <small class="text-red-400">{{ teamValidationErrors['name'] }}</small>
+                                }
+                                <small class="text-gray-400">Min 2 caractères, Max 40 caractères.</small>
+                            </div>
+                        </div>
+
+                        <!-- Team Logo Selection -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Logo sélectionné</label>
+                                @if (team.logo) {
+                                <div class="flex items-center gap-4">
+                                    <img [src]="getLogoUrl(team.logo)" [alt]="team.logo"
+                                        class="w-32 h-32 object-cover rounded-lg shadow-lg" />
+                                    <p class="text-gray-300">{{ team.logo }}</p>
+                                </div>
+                                } @else {
+                                <p class="text-gray-400 italic">Aucun logo sélectionné</p>
+                                }
+                            </div>
+
+                            <!-- Upload Section -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Upload nouveau logo</label>
+                                <p-fileUpload mode="basic" name="file" accept="image/png,image/jpeg,image/jpg"
+                                    [maxFileSize]="10485760" [auto]="true" chooseLabel="Choisir une image"
+                                    (onUpload)="onLogoUpload($event)" [customUpload]="true" />
+                                <small class="text-gray-400">Maximum 10MB (compression auto entre 3-10MB). Formats: PNG,
+                                    JPEG, JPG</small>
+                            </div>
+
+                            <!-- Available Logos Grid -->
+                            <div class="flex flex-col gap-2">
+                                <label class="text-white font-semibold">Logos disponibles</label>
+                                <div
+                                    class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2 bg-gray-900/50 rounded-lg">
+                                    @for (logo of availableLogos(); track logo) {
+                                    <div class="relative group cursor-pointer" (click)="selectLogo(logo)">
+                                        <img [src]="getLogoUrl(logo)" [alt]="logo"
+                                            class="w-full h-20 object-contain rounded-lg shadow-md transition-transform group-hover:scale-105"
+                                            [class.ring-4]="team.logo === logo"
+                                            [class.ring-blue-500]="team.logo === logo" />
+
+                                        @if (team.logo === logo) {
+                                        <div
+                                            class="absolute inset-0 flex items-center justify-center bg-blue-500/20 rounded-lg">
+                                            <i class="pi pi-check text-white text-2xl"></i>
+                                        </div>
+                                        }
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 mt-8 justify-center">
+                        <p-button label="Annuler" icon="pi pi-times" severity="secondary" [outlined]="true"
+                            (onClick)="cancelTeamEdit()" />
+                        <p-button [label]="isTeamEditMode() ? 'Modifier' : 'Créer'" icon="pi pi-check"
+                            severity="success" (onClick)="onTeamSubmit()" />
+                    </div>
+                </p-tabpanel>
+            </p-tabpanels>
+        </p-tabs>
+    </section>
+</main>

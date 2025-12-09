@@ -2,10 +2,14 @@
 trigger: always_on
 ---
 
-### Technical stack
-- Angular 20 
-- PrimeNG 20 
-- Tailwind 4
+## Technical stack
+- Angular 21
+- PrimeNG 21
+- Tailwind 3
+# GuideLines
+## Logic
+- Push logic as mush as you can in the backend
+- Use Tailwind styling as much as possible
 
 ## TypeScript Best Practices
 - Use strict type checking
@@ -45,7 +49,7 @@ trigger: always_on
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 
-- Push logic as mush as you can in the backend
+
 
 ###Search on the web if you don't know
 - [Angular Overview](https://v20.angular.dev/overview) : main page for documentation

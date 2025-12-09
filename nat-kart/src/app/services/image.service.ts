@@ -7,35 +7,35 @@ import { environment } from '../../environments/environment';
 export class ImageService {
     private baseUrl = environment.imageBaseUrl;
 
-    constructor() { }
+    private buildUrl(folder: string, filename: string): string {
+        return filename ? `${this.baseUrl}/${folder}/${filename}` : '';
+    }
 
     getPlayerImageUrl(filename: string): string {
-        if (!filename) return '';
-        return `${this.baseUrl}/players/${filename}`;
+        return this.buildUrl('players', filename);
     }
 
     getConsoleImageUrl(filename: string): string {
-        if (!filename) return '';
-        return `${this.baseUrl}/consoles/${filename}`;
+        return this.buildUrl('consoles', filename);
     }
 
     getRankImageUrl(filename: string): string {
-        if (!filename) return '';
-        return `${this.baseUrl}/ranks/${filename}`;
+        return this.buildUrl('ranks', filename);
     }
 
     getWallpaperUrl(filename: string): string {
-        if (!filename) return '';
-        return `${this.baseUrl}/wallpapers/${filename}`;
+        return this.buildUrl('wallpapers', filename);
     }
 
     getCupImageUrl(filename: string): string {
-        if (!filename) return '';
-        return `${this.baseUrl}/cups/${filename}`;
+        return this.buildUrl('cups', filename);
+    }
+
+    getTeamLogoUrl(filename: string): string {
+        return this.buildUrl('team', filename);
     }
 
     getImageUrl(path: string): string {
-        if (!path) return '';
-        return `${this.baseUrl}/${path}`;
+        return path ? `${this.baseUrl}/${path}` : '';
     }
 }

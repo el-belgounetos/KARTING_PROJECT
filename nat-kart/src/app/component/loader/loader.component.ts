@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 /**
  * Global loading spinner component.
@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
  */
 @Component({
     selector: 'app-loader',
-    imports: [CommonModule],
+    imports: [],
     template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div class="flex flex-col items-center gap-4">

@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { CounterDTO } from '../../dto/counterDTO';
 import { ImageModule } from 'primeng/image';
@@ -12,7 +12,7 @@ import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-console-management',
-  imports: [CommonModule, FormsModule, ImageModule, InputNumberModule, ButtonModule],
+  imports: [FormsModule, ImageModule, InputNumberModule, ButtonModule],
   templateUrl: './console-management.component.html',
   styleUrl: './console-management.component.scss'
 })

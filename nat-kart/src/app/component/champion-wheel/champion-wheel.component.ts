@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ImageModule } from 'primeng/image';
 import { ButtonModule } from 'primeng/button';
@@ -18,9 +18,14 @@ import { PlayerDTO } from '../../dto/playerDTO';
   selector: 'app-champion-wheel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule, FormsModule, ImageModule, ButtonModule, InputNumberModule,
-    ScrollPanelModule, BadgeModule, TooltipModule
-  ],
+    FormsModule,
+    ImageModule,
+    ButtonModule,
+    InputNumberModule,
+    ScrollPanelModule,
+    BadgeModule,
+    TooltipModule
+],
   templateUrl: './champion-wheel.component.html',
   styleUrl: './champion-wheel.component.scss'
 })

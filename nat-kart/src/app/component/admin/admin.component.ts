@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -35,14 +35,13 @@ interface TournamentConfig {
     selector: 'app-admin',
     standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        InputNumberModule,
-        CheckboxModule,
-        ButtonModule,
-        TabsModule,
-        ToggleSwitchModule
-    ],
+    FormsModule,
+    InputNumberModule,
+    CheckboxModule,
+    ButtonModule,
+    TabsModule,
+    ToggleSwitchModule
+],
     templateUrl: './admin.component.html',
     styleUrl: './admin.component.scss'
 })

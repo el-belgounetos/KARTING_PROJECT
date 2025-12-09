@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -24,7 +24,6 @@ import { FileUpload } from 'primeng/fileupload';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     FormsModule,
     InputTextModule,
     InputNumberModule,
@@ -34,7 +33,7 @@ import { FileUpload } from 'primeng/fileupload';
     TabsModule,
     Select,
     FileUpload
-  ],
+],
   templateUrl: './players-teams-management.component.html',
   styleUrl: './players-teams-management.component.scss'
 })

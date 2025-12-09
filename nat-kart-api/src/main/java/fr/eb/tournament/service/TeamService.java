@@ -1,6 +1,6 @@
 package fr.eb.tournament.service;
 
-import com.github.javafaker.Faker;
+import net.datafaker.Faker;
 import fr.eb.tournament.dto.PlayerDTO;
 import fr.eb.tournament.dto.TeamDTO;
 import fr.eb.tournament.dto.TeamStatsDTO;

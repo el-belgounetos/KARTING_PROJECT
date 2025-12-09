@@ -50,11 +50,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-<!-- JavaFaker for generating test data -->
+<!-- Datafaker for generating test data -->
 <dependency>
-    <groupId>com.github.javafaker</groupId>
-    <artifactId>javafaker</artifactId>
-    <version>1.0.2</version>
+    <groupId>net.datafaker</groupId>
+    <artifactId>datafaker</artifactId>
+    <version>2.5.3</version>
 </dependency>
 		<!-- OpenAPI/Swagger Documentation -->
 		<dependency>

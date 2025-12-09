@@ -216,7 +216,7 @@ public class PlayerService {
      * @param assignImage Whether to assign avatars automatically
      */
     public void generatePlayers(int count, boolean assignImage) {
-        com.github.javafaker.Faker faker = new com.github.javafaker.Faker(java.util.Locale.FRENCH);
+        net.datafaker.Faker faker = new net.datafaker.Faker(java.util.Locale.FRENCH);
 
         for (int i = 0; i < count; i++) {
             PlayerDTO player = new PlayerDTO();

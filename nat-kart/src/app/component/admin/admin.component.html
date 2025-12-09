@@ -1,80 +1,213 @@
 <!-- Image de fond décorative, non interactive -->
 <div aria-hidden="true" class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
-    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'">
-</div>
+    [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper4.jpeg') + ')'"></div>
 
 <main class="w-full min-h-screen bg-[rgba(45,45,45,0.7)] flex flex-col items-center p-4 overflow-y-auto pt-8"
     style="background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px); background-size: 30px 30px;"
     aria-label="Contenu principal">
 
     <section aria-label="Administration"
-        class="bg-gray-800/90 p-4 sm:p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl sm:w-11/12 md:w-4/5 lg:w-2/3 xl:max-w-2xl backdrop-blur-sm mt-4">
+        class="bg-gray-800/90 p-8 rounded-2xl shadow-2xl border border-white/10 w-full max-w-6xl backdrop-blur-sm">
+        <p-tabs [(value)]="selectedTabIndex">
+            <p-tablist>
+                <p-tab value="0">Joueurs</p-tab>
+                <p-tab value="1">Équipes</p-tab>
+                <p-tab value="2">Configuration Tournoi</p-tab>
+            </p-tablist>
+            <p-tabpanels>
+                <!-- Player Tab -->
+                <p-tabpanel value="0">
+                    <div class="flex flex-col gap-6 pt-4">
+                        <section aria-label="Statistiques" class="bg-gray-700/50 p-4 rounded-xl border border-white/10"
+                            *ngIf="stats">
+                            <header>
+                                <h3 class="text-xl font-bold text-white mb-4">Statistiques des joueurs</h3>
+                            </header>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                                    <div class="text-3xl font-bold text-blue-400">{{ stats.totalPlayers }}</div>
+                                    <div class="text-gray-400 text-sm uppercase tracking-wider">Total</div>
+                                </div>
+                                <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                                    <div class="text-3xl font-bold text-green-400">{{ stats.playersWithAvatar }}</div>
+                                    <div class="text-gray-400 text-sm uppercase tracking-wider">Avec Avatar</div>
+                                </div>
+                                <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                                    <div class="text-3xl font-bold text-yellow-400">{{ stats.playersWithoutAvatar }}
+                                    </div>
+                                    <div class="text-gray-400 text-sm uppercase tracking-wider">Sans Avatar</div>
+                                </div>
+                            </div>
+                        </section>
 
-        <header>
-            <h2 class="text-3xl font-bold text-white text-center mb-8">Administration</h2>
-        </header>
+                        <section aria-label="Générateur de joueurs"
+                            class="bg-gray-700/50 p-6 rounded-xl border border-white/10">
+                            <header>
+                                <h3 class="text-xl font-bold text-white mb-4">Générateur de joueurs</h3>
+                            </header>
 
-        <div class="flex flex-col gap-6">
-            <section aria-label="Statistiques" class="bg-gray-700/50 p-4 rounded-xl border border-white/10"
-                *ngIf="stats">
-                <header>
-                    <h3 class="text-xl font-bold text-white mb-4">Statistiques des joueurs</h3>
-                </header>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
-                        <div class="text-3xl font-bold text-blue-400">{{ stats.totalPlayers }}</div>
-                        <div class="text-gray-400 text-sm uppercase tracking-wider">Total</div>
+                            <p class="text-gray-300 mb-6">
+                                Générez automatiquement des joueurs pour tester l'application.
+                                Les avatars seront attribués automatiquement s'ils sont disponibles.
+                            </p>
+
+                            <form class="flex flex-col gap-2" aria-label="Formulaire de génération de joueurs"
+                                onsubmit="return false;">
+                                <label for="count" class="text-white font-semibold">Nombre de joueurs à générer</label>
+                                <p-inputNumber inputId="count" [(ngModel)]="playerCount" name="playerCount" [min]="1"
+                                    [max]="50" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
+                                    decrementButtonClass="btn-soft-red" incrementButtonClass="btn-soft-green"
+                                    incrementButtonIcon="pi pi-plus font-bold"
+                                    decrementButtonIcon="pi pi-minus font-bold" styleClass="w-full" />
+
+                                <div class="flex items-center gap-2 mt-2">
+                                    <p-checkbox [(ngModel)]="assignImage" [binary]="true" inputId="assignImage"
+                                        name="assignImage"></p-checkbox>
+                                    <label for="assignImage" class="text-white font-semibold cursor-pointer">
+                                        Attribuer des avatars
+                                    </label>
+                                </div>
+
+                                <div class="flex justify-center mt-6 flex-col gap-4">
+                                    <p-button label="Générer les joueurs" icon="pi pi-cog" [loading]="loading"
+                                        (onClick)="generatePlayers()" styleClass="w-full md:w-auto px-8 py-3"
+                                        severity="warn" aria-label="Générer automatiquement des joueurs" />
+
+                                    <p-button label="Réinitialiser les participants" icon="pi pi-trash"
+                                        severity="danger" [loading]="loading" (onClick)="resetParticipants()"
+                                        styleClass="w-full md:w-auto px-8 py-3"
+                                        aria-label="Réinitialiser tous les participants" />
+                                </div>
+                            </form>
+                        </section>
                     </div>
-                    <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
-                        <div class="text-3xl font-bold text-green-400">{{ stats.playersWithAvatar }}</div>
-                        <div class="text-gray-400 text-sm uppercase tracking-wider">Avec Avatar</div>
+                </p-tabpanel>
+
+                <!-- Team Tab -->
+                <p-tabpanel value="1">
+                    <div class="flex flex-col gap-6 pt-4">
+                        <section aria-label="Statistiques des équipes"
+                            class="bg-gray-700/50 p-4 rounded-xl border border-white/10" *ngIf="teamStats">
+                            <header>
+                                <h3 class="text-xl font-bold text-white mb-4">Statistiques des équipes</h3>
+                            </header>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                                    <div class="text-3xl font-bold text-blue-400">{{ teamStats.totalTeams }}</div>
+                                    <div class="text-gray-400 text-sm uppercase tracking-wider">Total</div>
+                                </div>
+                                <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                                    <div class="text-3xl font-bold text-green-400">{{ teamStats.teamsWithLogo }}</div>
+                                    <div class="text-gray-400 text-sm uppercase tracking-wider">Avec Logo</div>
+                                </div>
+                                <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
+                                    <div class="text-3xl font-bold text-yellow-400">{{ teamStats.teamsWithoutLogo }}
+                                    </div>
+                                    <div class="text-gray-400 text-sm uppercase tracking-wider">Sans Logo</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section aria-label="Générateur d'équipes"
+                            class="bg-gray-700/50 p-6 rounded-xl border border-white/10">
+                            <header>
+                                <h3 class="text-xl font-bold text-white mb-4">Générateur d'équipes</h3>
+                            </header>
+
+                            <p class="text-gray-300 mb-6">
+                                Générez automatiquement des équipes pour tester l'application.
+                                Les logos seront attribués automatiquement s'ils sont disponibles.
+                            </p>
+
+                            <form class="flex flex-col gap-2" aria-label="Formulaire de génération d'équipes"
+                                onsubmit="return false;">
+                                <label for="teamCount" class="text-white font-semibold">Nombre d'équipes à
+                                    générer</label>
+                                <p-inputNumber inputId="teamCount" [(ngModel)]="teamCount" name="teamCount" [min]="1"
+                                    [max]="50" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
+                                    decrementButtonClass="btn-soft-red" incrementButtonClass="btn-soft-green"
+                                    incrementButtonIcon="pi pi-plus font-bold"
+                                    decrementButtonIcon="pi pi-minus font-bold" styleClass="w-full" />
+
+                                <div class="flex items-center gap-2 mt-2">
+                                    <p-checkbox [(ngModel)]="assignLogo" [binary]="true" inputId="assignLogo"
+                                        name="assignLogo"></p-checkbox>
+                                    <label for="assignLogo" class="text-white font-semibold cursor-pointer">
+                                        Attribuer des logos
+                                    </label>
+                                </div>
+
+                                <div class="flex justify-center mt-6 flex-col gap-4">
+                                    <p-button label="Générer les équipes" icon="pi pi-cog" [loading]="loading"
+                                        (onClick)="generateTeams()" styleClass="w-full md:w-auto px-8 py-3"
+                                        severity="warn" aria-label="Générer automatiquement des équipes" />
+
+                                    <p-button label="Réinitialiser les équipes" icon="pi pi-trash" severity="danger"
+                                        [loading]="loading" (onClick)="resetTeams()"
+                                        styleClass="w-full md:w-auto px-8 py-3"
+                                        aria-label="Réinitialiser toutes les équipes" />
+                                </div>
+                            </form>
+                        </section>
                     </div>
-                    <div class="bg-gray-800/80 p-4 rounded-lg shadow-inner border border-white/5">
-                        <div class="text-3xl font-bold text-yellow-400">{{ stats.playersWithoutAvatar }}</div>
-                        <div class="text-gray-400 text-sm uppercase tracking-wider">Sans Avatar</div>
+                </p-tabpanel>
+
+                <!-- Tournament Configuration Tab -->
+                <p-tabpanel value="2">
+                    <div class="pt-4">
+                        <section aria-label="Configuration du tournoi"
+                            class="bg-gray-700/50 p-6 rounded-xl border border-white/10">
+                            <header>
+                                <h3 class="text-xl font-bold text-white mb-4">Configuration du tournoi</h3>
+                            </header>
+
+                            <p class="text-gray-300 mb-6">
+                                Configurez les paramètres de réutilisation des images et logos pour le tournoi.
+                            </p>
+
+                            <form class="flex flex-col gap-6" aria-label="Formulaire de configuration du tournoi"
+                                onsubmit="return false;">
+                                <div class="bg-gray-800/50 p-4 rounded-lg border border-white/5">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <div class="flex-1">
+                                            <label for="playerImageReuse" class="text-white font-semibold block mb-1">
+                                                Autoriser la réutilisation des images de joueurs
+                                            </label>
+                                            <p class="text-gray-400 text-sm">
+                                                Si activé, les images de joueurs pourront être réutilisées plusieurs
+                                                fois.
+                                            </p>
+                                        </div>
+                                        <p-toggleSwitch [(ngModel)]="tournamentConfig.allowPlayerImageReuse"
+                                            inputId="playerImageReuse" name="playerImageReuse"></p-toggleSwitch>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-800/50 p-4 rounded-lg border border-white/5">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <div class="flex-1">
+                                            <label for="teamLogoReuse" class="text-white font-semibold block mb-1">
+                                                Autoriser la réutilisation des logos d'équipes
+                                            </label>
+                                            <p class="text-gray-400 text-sm">
+                                                Si activé, les logos d'équipes pourront être réutilisés plusieurs fois.
+                                            </p>
+                                        </div>
+                                        <p-toggleSwitch [(ngModel)]="tournamentConfig.allowTeamLogoReuse"
+                                            inputId="teamLogoReuse" name="teamLogoReuse"></p-toggleSwitch>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-center mt-6">
+                                    <p-button label="Sauvegarder la configuration" icon="pi pi-save" [loading]="loading"
+                                        (onClick)="saveTournamentConfig()" styleClass="w-full md:w-auto px-8 py-3"
+                                        severity="success" aria-label="Sauvegarder la configuration du tournoi" />
+                                </div>
+                            </form>
+                        </section>
                     </div>
-                </div>
-            </section>
-
-            <section aria-label="Générateur de joueurs" class="bg-gray-700/50 p-6 rounded-xl border border-white/10">
-
-                <header>
-                    <h3 class="text-xl font-bold text-white mb-4">Générateur de joueurs</h3>
-                </header>
-
-                <p class="text-gray-300 mb-6">
-                    Générez automatiquement des joueurs pour tester l'application.
-                    Les avatars seront attribués automatiquement s'ils sont disponibles.
-                </p>
-
-                <form class="flex flex-col gap-2" aria-label="Formulaire de génération de joueurs"
-                    onsubmit="return false;">
-                    <label for="count" class="text-white font-semibold">Nombre de joueurs à générer</label>
-                    <p-inputNumber inputId="count" [(ngModel)]="playerCount" name="playerCount" [min]="1" [max]="50"
-                        [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
-                        decrementButtonClass="btn-soft-red" incrementButtonClass="btn-soft-green"
-                        incrementButtonIcon="pi pi-plus font-bold" decrementButtonIcon="pi pi-minus font-bold"
-                        styleClass="w-full" />
-
-                    <div class="flex items-center gap-2 mt-2">
-                        <p-checkbox [(ngModel)]="assignImage" [binary]="true" inputId="assignImage"
-                            name="assignImage"></p-checkbox>
-                        <label for="assignImage" class="text-white font-semibold cursor-pointer">
-                            Attribuer des avatars
-                        </label>
-                    </div>
-
-                    <div class="flex justify-center mt-6 flex-col gap-4">
-                        <p-button label="Générer les joueurs" icon="pi pi-cog" [loading]="loading"
-                            (onClick)="generatePlayers()" styleClass="w-full md:w-auto px-8 py-3" severity="warn"
-                            aria-label="Générer automatiquement des joueurs" />
-
-                        <p-button label="Réinitialiser les participants" icon="pi pi-trash" severity="danger"
-                            [loading]="loading" (onClick)="resetParticipants()" styleClass="w-full md:w-auto px-8 py-3"
-                            aria-label="Réinitialiser tous les participants" />
-                    </div>
-                </form>
-            </section>
-        </div>
+                </p-tabpanel>
+            </p-tabpanels>
+        </p-tabs>
     </section>
 </main>

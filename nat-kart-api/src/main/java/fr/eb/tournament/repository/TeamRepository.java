@@ -42,4 +42,12 @@ public interface TeamRepository extends JpaRepository<TeamEntity, Long> {
     @Modifying
     @Query("UPDATE TeamEntity t SET t.logo = null WHERE t.logo = :logo OR t.logo = :logoWithPng")
     void removeLogoFromAll(@Param("logo") String logo, @Param("logoWithPng") String logoWithPng);
+
+    /**
+     * Count teams that have a logo (non-null and not empty string).
+     *
+     * @param emptyString empty string to exclude
+     * @return count of teams with logos
+     */
+    long countByLogoIsNotNullAndLogoNot(String emptyString);
 }

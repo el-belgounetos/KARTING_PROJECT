@@ -1,7 +1,9 @@
 package fr.eb.tournament.service;
 
+import com.github.javafaker.Faker;
 import fr.eb.tournament.dto.PlayerDTO;
 import fr.eb.tournament.dto.TeamDTO;
+import fr.eb.tournament.dto.TeamStatsDTO;
 import fr.eb.tournament.entity.PlayerEntity;
 import fr.eb.tournament.entity.TeamEntity;
 import fr.eb.tournament.repository.PlayerRepository;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -161,4 +164,94 @@ public class TeamService {
         teamRepository.removeLogoFromAll(logoWithoutExtension, logoWithExtension);
     }
 
+    /**
+     * Generate random teams with optional logo assignment.
+     * Similar to PlayerService.generatePlayers.
+     *
+     * @param count      number of teams to generate
+     * @param assignLogo whether to assign logos to teams
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public void generateTeams(int count, boolean assignLogo) {
+        if (count < 1 || count > 50) {
+            throw new IllegalArgumentException("Le nombre d'équipes doit être entre 1 et 50");
+        }
+
+        Faker faker = new Faker(Locale.FRENCH);
+        List<String> availableLogos = assignLogo ? teamLogoService.getAvailableLogos() : List.of();
+        int logoIndex = 0;
+
+        for (int i = 0; i < count; i++) {
+            TeamEntity team = new TeamEntity();
+
+            // Generate unique team name
+            String baseName;
+            int attempt = 0;
+            do {
+                // Use various Faker methods to create interesting team names
+                String prefix = switch (i % 5) {
+                    case 0 -> faker.team().name();
+                    case 1 -> faker.esports().team();
+                    case 2 -> faker.superhero().name() + " Team";
+                    case 3 -> "Les " + faker.color().name();
+                    default -> faker.ancient().hero() + " Squad";
+                };
+                baseName = attempt == 0 ? prefix : prefix + " " + attempt;
+                attempt++;
+            } while (teamRepository.existsByName(baseName) && attempt < 100);
+
+            team.setName(baseName);
+
+            // Assign logo if requested and available
+            if (assignLogo && !availableLogos.isEmpty() && logoIndex < availableLogos.size()) {
+                String logo = availableLogos.get(logoIndex);
+                team.setLogo(logo);
+                teamLogoService.removeLogo(logo.replace(".png", ""));
+                logoIndex++;
+            }
+
+            teamRepository.save(team);
+        }
+    }
+
+    /**
+     * Delete all teams from the database.
+     * Releases all logos back to the pool.
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteAllTeams() {
+        List<TeamEntity> teams = teamRepository.findAll();
+
+        // Check if any team has players
+        for (TeamEntity team : teams) {
+            List<PlayerEntity> players = playerRepository.findByTeamId(team.getId());
+            if (!players.isEmpty()) {
+                throw new IllegalStateException(
+                        "Impossible de supprimer toutes les équipes car certaines contiennent encore des joueurs. " +
+                                "Veuillez d'abord supprimer ou déplacer les joueurs.");
+            }
+        }
+
+        // Re-introduce all logos to pool
+        for (TeamEntity team : teams) {
+            if (team.getLogo() != null && !team.getLogo().isEmpty()) {
+                teamLogoService.introduceLogo(team.getLogo().replace(".png", ""));
+            }
+        }
+
+        teamRepository.deleteAll();
+    }
+
+    /**
+     * Get statistics about teams.
+     *
+     * @return TeamStatsDTO with team counts
+     */
+    public TeamStatsDTO getTeamStats() {
+        long totalTeams = teamRepository.count();
+        long teamsWithLogo = teamRepository.countByLogoIsNotNullAndLogoNot("");
+        long teamsWithoutLogo = totalTeams - teamsWithLogo;
+
+        return new TeamStatsDTO(totalTeams, teamsWithLogo, teamsWithoutLogo);
+    }
 }

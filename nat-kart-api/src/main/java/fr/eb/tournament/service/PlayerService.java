@@ -28,6 +28,7 @@ public class PlayerService {
     private final HistoryService historyService;
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
+    private final TournamentConfigService tournamentConfigService;
     @org.springframework.beans.factory.annotation.Autowired
     private fr.eb.tournament.repository.TeamRepository teamRepository;
 
@@ -73,9 +74,12 @@ public class PlayerService {
         PlayerEntity saved = playerRepository.save(entity);
         player.setId(saved.getId()); // Update DTO with generated ID
 
-        // Remove picture from pool if selected
+        // Remove picture from pool if selected (only if reuse is not allowed)
         if (player.getPicture() != null && !player.getPicture().isEmpty()) {
-            this.characterService.removeCaracter(player.getPicture().replace(".png", ""));
+            fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+            if (config == null || !Boolean.TRUE.equals(config.getAllowPlayerImageReuse())) {
+                this.characterService.removeCaracter(player.getPicture().replace(".png", ""));
+            }
         }
 
         // Create ranking entry - player data will be accessed via JPA relationship
@@ -106,16 +110,23 @@ public class PlayerService {
             String oldPicture = player.getPicture();
             String newPicture = playerDTO.getPicture();
 
+            fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+            boolean allowReuse = config != null && Boolean.TRUE.equals(config.getAllowPlayerImageReuse());
+
             if (oldPicture != null && !oldPicture.equals(newPicture)) {
-                // Release old picture back to pool
-                log.debug("Releasing old picture: {}", oldPicture);
-                this.characterService.introduceCaracter(oldPicture.replace(".png", ""));
+                // Release old picture back to pool (only if reuse is not allowed)
+                if (!allowReuse) {
+                    log.debug("Releasing old picture: {}", oldPicture);
+                    this.characterService.introduceCaracter(oldPicture.replace(".png", ""));
+                }
             }
 
             if (newPicture != null && !newPicture.isEmpty() && !newPicture.equals(oldPicture)) {
-                // Reserve new picture
-                log.debug("Reserving new picture: {}", newPicture);
-                this.characterService.removeCaracter(newPicture.replace(".png", ""));
+                // Reserve new picture (only if reuse is not allowed)
+                if (!allowReuse) {
+                    log.debug("Reserving new picture: {}", newPicture);
+                    this.characterService.removeCaracter(newPicture.replace(".png", ""));
+                }
             }
 
             // Update player fields
@@ -164,9 +175,12 @@ public class PlayerService {
                 log.warn("Could not delete ranking for player {}: {}", pseudo, e.getMessage());
             }
 
-            // Re-introduce picture to pool if it exists
+            // Re-introduce picture to pool if it exists (only if reuse is not allowed)
             if (player.getPicture() != null && !player.getPicture().isEmpty()) {
-                this.characterService.introduceCaracter(player.getPicture().replace(".png", ""));
+                fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+                if (config == null || !Boolean.TRUE.equals(config.getAllowPlayerImageReuse())) {
+                    this.characterService.introduceCaracter(player.getPicture().replace(".png", ""));
+                }
             }
             // Delete history first to avoid foreign key constraint violation
             this.historyService.deleteHistoryByPlayer(player);

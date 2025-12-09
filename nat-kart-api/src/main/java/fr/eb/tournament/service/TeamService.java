@@ -28,6 +28,7 @@ public class TeamService {
     private final TeamMapper teamMapper;
     private final PlayerMapper playerMapper;
     private final TeamLogoService teamLogoService;
+    private final TournamentConfigService tournamentConfigService;
 
     public static String normalizeTeamName(String name) {
         return TextNormalizationUtil.normalize(name);
@@ -55,9 +56,12 @@ public class TeamService {
 
         TeamEntity savedTeam = teamRepository.save(teamEntity);
 
-        // Remove logo from pool if selected (same as PlayerService pattern)
+        // Remove logo from pool if selected (only if reuse is not allowed)
         if (savedTeam.getLogo() != null && !savedTeam.getLogo().isEmpty()) {
-            teamLogoService.removeLogo(savedTeam.getLogo().replace(".png", ""));
+            fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+            if (config == null || !Boolean.TRUE.equals(config.getAllowTeamLogoReuse())) {
+                teamLogoService.removeLogo(savedTeam.getLogo().replace(".png", ""));
+            }
         }
 
         return mapToDtoWithCount(savedTeam);
@@ -72,16 +76,19 @@ public class TeamService {
                 }
             });
 
-            // Handle logo change (same as PlayerService pattern)
+            // Handle logo change (only manage pool if reuse is not allowed)
             String oldLogo = teamEntity.getLogo();
             String newLogo = teamDTO.getLogo();
 
-            if (oldLogo != null && !oldLogo.equals(newLogo)) {
+            fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+            boolean allowReuse = config != null && Boolean.TRUE.equals(config.getAllowTeamLogoReuse());
+
+            if (!allowReuse && oldLogo != null && !oldLogo.equals(newLogo)) {
                 // Release old logo back to pool
                 teamLogoService.introduceLogo(oldLogo.replace(".png", ""));
             }
 
-            if (newLogo != null && !newLogo.isEmpty() && !newLogo.equals(oldLogo)) {
+            if (!allowReuse && newLogo != null && !newLogo.isEmpty() && !newLogo.equals(oldLogo)) {
                 // Reserve new logo
                 teamLogoService.removeLogo(newLogo.replace(".png", ""));
             }
@@ -113,9 +120,12 @@ public class TeamService {
                     players.size() + " joueur(s): " + playerNames);
         }
 
-        // Re-introduce logo to pool if it exists (same as PlayerService pattern)
+        // Re-introduce logo to pool if it exists (only if reuse is not allowed)
         if (teamEntity.getLogo() != null && !teamEntity.getLogo().isEmpty()) {
-            teamLogoService.introduceLogo(teamEntity.getLogo().replace(".png", ""));
+            fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+            if (config == null || !Boolean.TRUE.equals(config.getAllowTeamLogoReuse())) {
+                teamLogoService.introduceLogo(teamEntity.getLogo().replace(".png", ""));
+            }
         }
 
         teamRepository.delete(teamEntity);
@@ -202,11 +212,16 @@ public class TeamService {
 
             team.setName(baseName);
 
-            // Assign logo if requested and available
+            // Assign logo if requested and available (only remove from pool if reuse is not
+            // allowed)
             if (assignLogo && !availableLogos.isEmpty() && logoIndex < availableLogos.size()) {
                 String logo = availableLogos.get(logoIndex);
                 team.setLogo(logo);
-                teamLogoService.removeLogo(logo.replace(".png", ""));
+
+                fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+                if (config == null || !Boolean.TRUE.equals(config.getAllowTeamLogoReuse())) {
+                    teamLogoService.removeLogo(logo.replace(".png", ""));
+                }
                 logoIndex++;
             }
 
@@ -232,10 +247,15 @@ public class TeamService {
             }
         }
 
-        // Re-introduce all logos to pool
-        for (TeamEntity team : teams) {
-            if (team.getLogo() != null && !team.getLogo().isEmpty()) {
-                teamLogoService.introduceLogo(team.getLogo().replace(".png", ""));
+        // Re-introduce all logos to pool (only if reuse is not allowed)
+        fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+        boolean allowReuse = config != null && Boolean.TRUE.equals(config.getAllowTeamLogoReuse());
+
+        if (!allowReuse) {
+            for (TeamEntity team : teams) {
+                if (team.getLogo() != null && !team.getLogo().isEmpty()) {
+                    teamLogoService.introduceLogo(team.getLogo().replace(".png", ""));
+                }
             }
         }
 

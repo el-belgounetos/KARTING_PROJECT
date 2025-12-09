@@ -138,4 +138,13 @@ public abstract class ExclusionService<T> {
 
         return getAllItems();
     }
+
+    /**
+     * Refreshes the exclusion list from the database.
+     * Useful when configuration changes require reloading exclusions.
+     */
+    public void refresh() {
+        resetExcludeList();
+        rebuildExcludedItemsFromDatabase();
+    }
 }

@@ -14,12 +14,15 @@ import java.util.List;
 public class CharacterService extends ExclusionService<fr.eb.tournament.repository.PlayerRepository> {
 
     private final fr.eb.tournament.repository.PlayerRepository playerRepository;
+    private final TournamentConfigService tournamentConfigService;
 
     public CharacterService(
             ImageService imageService,
-            fr.eb.tournament.repository.PlayerRepository playerRepository) {
+            fr.eb.tournament.repository.PlayerRepository playerRepository,
+            TournamentConfigService tournamentConfigService) {
         super(imageService, playerRepository);
         this.playerRepository = playerRepository;
+        this.tournamentConfigService = tournamentConfigService;
     }
 
     @jakarta.annotation.PostConstruct
@@ -39,6 +42,15 @@ public class CharacterService extends ExclusionService<fr.eb.tournament.reposito
 
     @Override
     protected List<String> fetchAssignedItemsFromDatabase() {
+        // Check tournament configuration for image reuse
+        fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+        if (config != null && Boolean.TRUE.equals(config.getAllowPlayerImageReuse())) {
+            // If reuse is allowed, return empty list (no exclusions)
+            log.debug("Player image reuse is enabled - allowing all images to be reused");
+            return List.of();
+        }
+        // Otherwise, exclude already assigned images
+        log.debug("Player image reuse is disabled - excluding assigned images");
         return playerRepository.findAllAssignedPictures();
     }
 
@@ -71,6 +83,31 @@ public class CharacterService extends ExclusionService<fr.eb.tournament.reposito
      */
     public List<String> introduceCaracter(String name) {
         return introduceItem(name);
+    }
+
+    // Override to check configuration before excluding/including items
+    @Override
+    public List<String> removeItem(String itemName) {
+        fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+        if (config != null && Boolean.TRUE.equals(config.getAllowPlayerImageReuse())) {
+            // If reuse is allowed, don't exclude the item
+            log.debug("Player image reuse is enabled - not excluding: {}", itemName);
+            return getExcludePool();
+        }
+        // Otherwise, exclude as normal
+        return super.removeItem(itemName);
+    }
+
+    @Override
+    public List<String> introduceItem(String name) {
+        fr.eb.tournament.dto.TournamentConfigDTO config = tournamentConfigService.getConfig();
+        if (config != null && Boolean.TRUE.equals(config.getAllowPlayerImageReuse())) {
+            // If reuse is allowed, items are never excluded, so nothing to re-introduce
+            log.debug("Player image reuse is enabled - no need to re-introduce: {}", name);
+            return excludedItems;
+        }
+        // Otherwise, re-introduce as normal
+        return super.introduceItem(name);
     }
 
     // getExcludePool() and resetExcludeList() are inherited from ExclusionService

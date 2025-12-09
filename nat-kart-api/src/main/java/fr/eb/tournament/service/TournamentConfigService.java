@@ -16,10 +16,18 @@ public class TournamentConfigService {
 
     private final TournamentConfigRepository repository;
     private final TournamentConfigMapper mapper;
+    private final CharacterService characterService;
+    private final TeamLogoService teamLogoService;
 
-    public TournamentConfigService(TournamentConfigRepository repository, TournamentConfigMapper mapper) {
+    public TournamentConfigService(
+            TournamentConfigRepository repository,
+            TournamentConfigMapper mapper,
+            @org.springframework.context.annotation.Lazy CharacterService characterService,
+            @org.springframework.context.annotation.Lazy TeamLogoService teamLogoService) {
         this.repository = repository;
         this.mapper = mapper;
+        this.characterService = characterService;
+        this.teamLogoService = teamLogoService;
     }
 
     /**
@@ -55,6 +63,11 @@ public class TournamentConfigService {
         config.setAllowTeamLogoReuse(configDTO.getAllowTeamLogoReuse());
 
         TournamentConfig saved = repository.save(config);
+
+        // Refresh exclusion services to apply new configuration
+        characterService.refresh();
+        teamLogoService.refresh();
+
         return mapper.toDTO(saved);
     }
 

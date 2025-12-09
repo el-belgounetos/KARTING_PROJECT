@@ -7,7 +7,7 @@ import { ConsoleDTO } from '../../dto/consoleDTO';
 import { CounterDTO } from '../../dto/counterDTO';
 import { ApiService } from '../../services/api.service';
 import { LoadingService } from '../../services/loading.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, interval, take } from 'rxjs';
 import { ImageService } from '../../services/image.service';
 
 @Component({
@@ -65,26 +65,30 @@ export class ConsoleWheelComponent implements OnInit {
     this.initializeCupsImages();
 
     // Simulate spinning effect on cup images
-    let spinCount = 0;
     const maxSpins = 20;
-    const interval = setInterval(() => {
-      // Shuffle cup images instead of consoles
-      const randomCupImages = this.consolesDisplayed().map(console => {
-        if (console.cups && console.cups.length > 0) {
-          const randomCupIndex = Math.floor(Math.random() * console.cups.length);
-          return this.imageService.getCupImageUrl(console.name + '/' + console.cups[randomCupIndex].picture);
-        }
-        return this.imageService.getImageUrl('ui/intero.png');
-      });
-      this.allCupsImages.set(randomCupImages);
 
-      spinCount++;
-      if (spinCount >= maxSpins) {
-        clearInterval(interval);
-        this.isSpinning.set(false);
-        this.revealCups();
-      }
-    }, 100);
+    interval(100)
+      .pipe(
+        take(maxSpins),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => {
+          // Shuffle cup images instead of consoles
+          const randomCupImages = this.consolesDisplayed().map(console => {
+            if (console.cups && console.cups.length > 0) {
+              const randomCupIndex = Math.floor(Math.random() * console.cups.length);
+              return this.imageService.getCupImageUrl(console.name + '/' + console.cups[randomCupIndex].picture);
+            }
+            return this.imageService.getImageUrl('ui/intero.png');
+          });
+          this.allCupsImages.set(randomCupImages);
+        },
+        complete: () => {
+          this.isSpinning.set(false);
+          this.revealCups();
+        }
+      });
   }
 
   revealCups() {

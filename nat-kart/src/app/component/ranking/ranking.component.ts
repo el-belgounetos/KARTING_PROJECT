@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ImageModule } from 'primeng/image';
 import { TableModule } from 'primeng/table';
 import { RankingDTO } from '../../dto/rankingDTO';
@@ -9,6 +10,8 @@ import { InputIconModule } from 'primeng/inputicon';
 import { ApiService } from '../../services/api.service';
 import { RankingService } from '../../services/ranking.service';
 import { ImageService } from '../../services/image.service';
+import { interval } from 'rxjs';
+import { startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-ranking',
@@ -16,29 +19,26 @@ import { ImageService } from '../../services/image.service';
   templateUrl: './ranking.component.html',
   styleUrl: './ranking.component.scss'
 })
-export class RankingComponent implements OnInit, OnDestroy {
+export class RankingComponent implements OnInit {
   // Signal for reactive state
   ranks = signal<RankingDTO[]>([]);
   showMobileSearch = signal<boolean>(false);
 
-  private pollingInterval: ReturnType<typeof setInterval> | undefined;
   private apiService = inject(ApiService);
   private rankingService = inject(RankingService);
   public imageService = inject(ImageService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
-    this.getAllRanks();
-    // Poll every 5 seconds for auto-refresh
-    this.pollingInterval = setInterval(() => {
-      this.getAllRanks();
-    }, 5000);
-  }
-
-  ngOnDestroy() {
-    // Clean up interval when component is destroyed
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-    }
+    // Poll every 5 seconds for auto-refresh, starting immediately
+    interval(5000)
+      .pipe(
+        startWith(0),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.getAllRanks();
+      });
   }
 
   public getAllRanks() {

@@ -33,7 +33,7 @@ import { FileUpload } from 'primeng/fileupload';
     TabsModule,
     Select,
     FileUpload
-],
+  ],
   templateUrl: './players-teams-management.component.html',
   styleUrl: './players-teams-management.component.scss'
 })
@@ -61,9 +61,10 @@ export class PlayersTeamsManagementComponent implements OnInit {
   players = signal<PlayerDTO[]>([]);
   teams = signal<TeamDTO[]>([]);
 
-  isEditMode: boolean = false;
-  isTeamEditMode: boolean = false;
-  selectedTabIndex: string = "0";
+  isEditMode = signal<boolean>(false);
+  isTeamEditMode = signal<boolean>(false);
+  selectedTabIndex = signal<string | number | undefined>("0");
+
   validationErrors: { [key: string]: string } = {};
   teamValidationErrors: { [key: string]: string } = {};
 
@@ -98,14 +99,14 @@ export class PlayersTeamsManagementComponent implements OnInit {
         next: (data) => {
           if (data) {
             this.players.set(data);
-            if (!this.isEditMode) {
-              this.selectedTabIndex = this.players().length === 0 ? "1" : "0";
+            if (!this.isEditMode()) {
+              this.selectedTabIndex.set(this.players().length === 0 ? "1" : "0");
             }
           }
         },
         error: (err) => {
-          if (!this.isEditMode) {
-            this.selectedTabIndex = "1";
+          if (!this.isEditMode()) {
+            this.selectedTabIndex.set("1");
           }
         }
       });
@@ -167,7 +168,7 @@ export class PlayersTeamsManagementComponent implements OnInit {
 
     this.loadingService.show();
 
-    const apiCall = this.isEditMode
+    const apiCall = this.isEditMode()
       ? this.apiService.put('players', this.player)
       : this.apiService.post('players', this.player);
 
@@ -175,12 +176,12 @@ export class PlayersTeamsManagementComponent implements OnInit {
       next: (response) => {
         this.notificationService.success(
           'Succès',
-          this.isEditMode ? 'Joueur modifié avec succès!' : 'Joueur créé avec succès!'
+          this.isEditMode() ? 'Joueur modifié avec succès!' : 'Joueur créé avec succès!'
         );
         this.resetForm();
         this.loadImages();
         this.loadPlayers();
-        this.selectedTabIndex = "0";
+        this.selectedTabIndex.set("0");
         this.loadingService.hide();
       },
       error: (err) => {
@@ -211,14 +212,14 @@ export class PlayersTeamsManagementComponent implements OnInit {
       category: ''
     };
     this.validationErrors = {};
-    this.isEditMode = false;
+    this.isEditMode.set(false);
   }
 
   editPlayer(player: PlayerDTO) {
     this.player = { ...player };
     this.validationErrors = {};
-    this.isEditMode = true;
-    this.selectedTabIndex = "1";
+    this.isEditMode.set(true);
+    this.selectedTabIndex.set("1");
   }
 
   deletePlayer(player: PlayerDTO) {
@@ -249,7 +250,7 @@ export class PlayersTeamsManagementComponent implements OnInit {
 
   cancelEdit() {
     this.resetForm();
-    this.selectedTabIndex = "0";
+    this.selectedTabIndex.set("0");
   }
 
   // ==================== TEAM MANAGEMENT METHODS ====================
@@ -301,7 +302,7 @@ export class PlayersTeamsManagementComponent implements OnInit {
 
     this.loadingService.show();
 
-    const apiCall = this.isTeamEditMode
+    const apiCall = this.isTeamEditMode()
       ? this.apiService.put(`teams/${this.team.id}`, this.team)
       : this.apiService.post('teams', this.team);
 
@@ -309,12 +310,12 @@ export class PlayersTeamsManagementComponent implements OnInit {
       next: (response) => {
         this.notificationService.success(
           'Succès',
-          this.isTeamEditMode ? 'Équipe modifiée avec succès!' : 'Équipe créée avec succès!'
+          this.isTeamEditMode() ? 'Équipe modifiée avec succès!' : 'Équipe créée avec succès!'
         );
         this.resetTeamForm();
         this.loadAvailableLogos();  // Reload logos after create/update
         this.loadTeams();
-        this.selectedTabIndex = "2";
+        this.selectedTabIndex.set("2");
         this.loadingService.hide();
       },
       error: (err) => {
@@ -340,14 +341,14 @@ export class PlayersTeamsManagementComponent implements OnInit {
       logo: ''
     };
     this.teamValidationErrors = {};
-    this.isTeamEditMode = false;
+    this.isTeamEditMode.set(false);
   }
 
   editTeam(team: TeamDTO) {
     this.team = { ...team };
     this.teamValidationErrors = {};
-    this.isTeamEditMode = true;
-    this.selectedTabIndex = "3";
+    this.isTeamEditMode.set(true);
+    this.selectedTabIndex.set("3");
   }
 
   deleteTeam(team: TeamDTO) {
@@ -378,7 +379,7 @@ export class PlayersTeamsManagementComponent implements OnInit {
 
   cancelTeamEdit() {
     this.resetTeamForm();
-    this.selectedTabIndex = "2";
+    this.selectedTabIndex.set("2");
   }
 
   getLogoUrl(filename: string): string {

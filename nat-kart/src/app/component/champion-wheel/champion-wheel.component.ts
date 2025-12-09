@@ -13,6 +13,7 @@ import { LoadingService } from '../../services/loading.service';
 import { NotificationService } from '../../services/notification.service';
 import { ImageService } from '../../services/image.service';
 import { PlayerDTO } from '../../dto/playerDTO';
+import { interval, take } from 'rxjs';
 
 @Component({
   selector: 'app-champion-wheel',
@@ -25,7 +26,7 @@ import { PlayerDTO } from '../../dto/playerDTO';
     ScrollPanelModule,
     BadgeModule,
     TooltipModule
-],
+  ],
   templateUrl: './champion-wheel.component.html',
   styleUrl: './champion-wheel.component.scss'
 })
@@ -41,9 +42,9 @@ export class ChampionWheelComponent implements OnInit {
   avatar = signal<string>('');
   isAnimating = signal<boolean>(false);
 
-  // Regular properties
-  playerCount: number = 1;
-  hasPlayers: boolean = false;
+  // Regular properties converted to Signals
+  playerCount = signal<number>(1);
+  hasPlayers = signal<boolean>(false);
 
   private apiService = inject(ApiService);
   private notificationService = inject(NotificationService);
@@ -61,11 +62,11 @@ export class ChampionWheelComponent implements OnInit {
       .subscribe(players => {
         const playerList = players || [];
         this.players.set(playerList);
-        this.hasPlayers = playerList.length > 0;
+        this.hasPlayers.set(playerList.length > 0);
 
         const maxAssignable = this.getMaxAssignable();
-        if (this.playerCount > maxAssignable) {
-          this.playerCount = Math.max(1, maxAssignable);
+        if (this.playerCount() > maxAssignable) {
+          this.playerCount.set(Math.max(1, maxAssignable));
         }
       });
   }
@@ -98,12 +99,12 @@ export class ChampionWheelComponent implements OnInit {
   canSpin(): boolean {
     const playerList = this.players();
     const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
-    return this.avatars().length > 0 && this.hasPlayers && playersWithoutImages > 0;
+    return this.avatars().length > 0 && this.hasPlayers() && playersWithoutImages > 0;
   }
 
   onSpin() {
     if (!this.canSpin()) {
-      if (!this.hasPlayers) {
+      if (!this.hasPlayers()) {
         this.notificationService.warn(
           'Attention',
           'Aucun joueur n\'a été créé. Veuillez créer des joueurs avant de lancer la roue.'
@@ -120,11 +121,11 @@ export class ChampionWheelComponent implements OnInit {
     // Force clamp playerCount to players without images
     const playerList = this.players();
     const playersWithoutImages = playerList.filter(p => !p.picture || p.picture === '').length;
-    if (this.playerCount > playersWithoutImages) {
-      this.playerCount = playersWithoutImages;
+    if (this.playerCount() > playersWithoutImages) {
+      this.playerCount.set(playersWithoutImages);
       this.notificationService.info(
         'Ajustement',
-        `Le nombre de tirages a été ajusté à ${this.playerCount} (nombre de joueurs sans image).`
+        `Le nombre de tirages a été ajusté à ${this.playerCount()} (nombre de joueurs sans image).`
       );
     }
 
@@ -132,20 +133,24 @@ export class ChampionWheelComponent implements OnInit {
     this.isAnimating.set(true);
     this.drawnPlayers.set([]);
 
-    // Animation loop
-    let counter = 0;
+    // Animation loop using RxJS
     const maxSpins = 20;
-    const interval = setInterval(() => {
-      const currentAvatars = this.avatars();
-      const randomIndex = Math.floor(Math.random() * currentAvatars.length);
-      this.avatar.set(currentAvatars[randomIndex]);
-      counter++;
 
-      if (counter >= maxSpins) {
-        clearInterval(interval);
-        this.performDraw();
-      }
-    }, 100);
+    interval(100)
+      .pipe(
+        take(maxSpins),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => {
+          const currentAvatars = this.avatars();
+          const randomIndex = Math.floor(Math.random() * currentAvatars.length);
+          this.avatar.set(currentAvatars[randomIndex]);
+        },
+        complete: () => {
+          this.performDraw();
+        }
+      });
   }
 
   private performDraw() {
@@ -154,7 +159,7 @@ export class ChampionWheelComponent implements OnInit {
     const drawn: string[] = [];
 
     // Safety check: ensure we don't draw more than available avatars or players
-    const countToDraw = Math.min(this.playerCount, available.length);
+    const countToDraw = Math.min(this.playerCount(), available.length);
 
     for (let i = 0; i < countToDraw; i++) {
       if (available.length === 0) break;
@@ -178,6 +183,8 @@ export class ChampionWheelComponent implements OnInit {
 
     // Backend automatically manages exclusion via CharacterService
     // Reload data to get updated available and excluded lists
+    // Using setTimeout here is acceptable as it's orchestrating a delayed refresh after animation/state update
+    // Ideally could use a delay operator on an observable if we wanted strictly RxJS but setTimeout is pragmatic here.
     setTimeout(() => {
       this.loadCharacters();
       this.loadExcludedCharacters();

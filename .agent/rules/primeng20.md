@@ -20,6 +20,6 @@ If needed, use this documentation
 - [Accessibility](https://primeng.org/guides/accessibility): PrimeNG has WCAG 2.1 AA level compliance.
 - [Animations](https://primeng.org/guides/animations): Built-in CSS animations for PrimeNG components.
 - [RTL](https://primeng.org/guides/rtl): Right-to-left support for PrimeNG components.
-- [Migration v21](https://primeng.org/migration/v21): Migration guide to PrimeNG v20.
+- [Migration v21](https://primeng.org/migration/v21): Migration guide to PrimeNG v21.
 
 ## Components

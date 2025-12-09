@@ -1,7 +1,8 @@
 <div class="fixed inset-0 w-full h-full bg-cover bg-center -z-10 blur-[3px]"
   [style.background-image]="'url(' + imageService.getWallpaperUrl('wallpaper3.jpg') + ')'"></div>
-<p-table #dt styleClass="rank-table mt-2 md:mt-4" [value]="ranks()"
-  [globalFilterFields]="['name', 'category', 'points', 'victory', 'totalGames', 'rank']"
+<p-table #dt
+  styleClass="mt-2 md:mt-4 bg-[#111827]/50 backdrop-blur-md rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] [&_.p-datatable-wrapper]:!bg-transparent [&_.p-datatable-header]:!bg-transparent [&_.p-datatable-thead_tr_th]:!bg-transparent [&_.p-datatable-tbody_tr_td]:!bg-transparent [&_.p-datatable-tbody_tr]:!bg-transparent [&_.p-sortable-column-icon]:!text-white"
+  [value]="ranks()" [globalFilterFields]="['name', 'category', 'points', 'victory', 'totalGames', 'rank']"
   [tableStyle]="{'min-width': '100%'}">
 
   <ng-template pTemplate="caption">

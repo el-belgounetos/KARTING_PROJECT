@@ -9,7 +9,7 @@
   <aside aria-label="Pool de joueurs disponibles"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/70 border-b lg:border-b-0 lg:border-r border-white/20 flex flex-col overflow-hidden shrink-0">
     @if (avatars().length > 0) {
-    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
+    <div class="w-full h-full overflow-y-auto custom-scrollbar pr-2">
       <p
         class="font-black text-white text-2xl lg:text-3xl text-center mb-2 sticky top-0 z-10 bg-gray-900/90 lg:bg-transparent p-2 rounded shadow-md">
         Pool</p>
@@ -19,7 +19,7 @@
           styleClass="w-full h-auto block" />
         }
       </div>
-    </p-scrollPanel>
+    </div>
     }
   </aside>
 
@@ -35,9 +35,11 @@
           joueurs :</label>
         <p-inputNumber inputId="playerCount" [(ngModel)]="playerCount" [min]="1" [max]="getMaxAssignable()"
           [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus font-bold"
-          decrementButtonIcon="pi pi-minus font-bold" styleClass="tailwind-input" decrementButtonClass="btn-soft-red"
-          incrementButtonClass="btn-soft-green"
-          inputStyleClass="text-center font-bold text-base p-1 rounded-md border-2 border-white/50 bg-white/90 text-gray-800" />
+          decrementButtonIcon="pi pi-minus font-bold" class="w-full max-w-[200px]"
+          decrementButtonClass="btn-soft-red bg-red-500/80 hover:bg-red-600 text-white"
+          incrementButtonClass="btn-soft-green bg-green-500/80 hover:bg-green-600 text-white"
+          inputStyleClass="text-center font-bold text-base p-1 rounded-md border-2 border-white/50 bg-white/90 text-gray-800 w-full"
+          styleClass="w-full shadow-lg rounded-md overflow-hidden" />
       </div>
 
       <!-- Drawn players display -->
@@ -63,9 +65,11 @@
       </div>
 
       <!-- Spin button -->
-      <p-button styleClass="tailwind-button w-11/12 max-w-xs" [disabled]="!canSpin() || isSpinning()"
-        label="Tourner la roue" (click)="onSpin()">
-      </p-button>
+      <button
+        class="w-11/12 max-w-xs bg-[#ff3232]/95 hover:bg-[#ff5050] disabled:bg-gray-500/60 disabled:text-white/50 border-2 border-white/30 text-white text-xl font-bold p-4 rounded-md shadow-lg transition-all duration-300 hover:scale-[1.02] transform disabled:scale-100 disabled:shadow-none"
+        [disabled]="!canSpin() || isSpinning()" (click)="onSpin()">
+        Tourner la roue
+      </button>
     </div>
   </section>
 
@@ -73,7 +77,7 @@
   <aside aria-label="Joueurs déjà passés"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/70 border-b lg:border-b-0 lg:border-l border-white/20 flex flex-col overflow-hidden shrink-0">
     @if (excludeAvatars().length > 0) {
-    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
+    <div class="w-full h-full overflow-y-auto custom-scrollbar pr-2">
       <p
         class="font-black text-white text-2xl lg:text-3xl text-center mb-2 sticky top-0 z-10 bg-gray-900/90 lg:bg-transparent p-2 rounded shadow-md">
         Sont déjà passés</p>
@@ -88,7 +92,7 @@
         </div>
         }
       </div>
-    </p-scrollPanel>
+    </div>
     }
   </aside>
 

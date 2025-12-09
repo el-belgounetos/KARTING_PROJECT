@@ -9,7 +9,7 @@
   <!-- Left Sidebar: Avatar List -->
   <aside aria-label="Liste des joueurs"
     class="w-full h-48 lg:h-full p-4 bg-gray-900/60 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden shrink-0">
-    <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="ranks-scroll">
+    <div class="w-full h-full overflow-y-auto custom-scrollbar pr-2">
       <div class="flex flex-col gap-2">
         @for (rank of ranks(); track $index) {
         <div
@@ -32,7 +32,7 @@
         </div>
         }
       </div>
-    </p-scrollPanel>
+    </div>
   </aside>
 
   <!-- Main Content: Details & Controls -->
@@ -148,29 +148,29 @@
       </div>
 
       @if (isHistoryVisible()) {
-      <p-scrollPanel [style]="{width: '100%', height: '100%'}" styleClass="custom-scroll">
-        <p-table [value]="history()" styleClass="history-table" [rowHover]="true">
+      <div class="w-full h-full overflow-y-auto custom-scrollbar">
+        <p-table [value]="history()" [rowHover]="true" styleClass="text-[clamp(0.75rem,1.5vw,0.875rem)]">
           <ng-template pTemplate="header">
             <tr>
-              <th>Joueur</th>
-              <th>Pts</th>
-              <th>Console</th>
-              <th>Coupe</th>
-              <th></th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Joueur</th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Pts</th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Console</th>
+              <th class="bg-gray-800/90 text-white border-none p-2">Coupe</th>
+              <th class="bg-gray-800/90 text-white border-none p-2 w-12 min-w-[3rem]"></th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-line>
-            <tr>
-              <td>{{ line.player.name }}</td>
-              <td>{{ line.points }}</td>
-              <td>{{ line.console.name }}</td>
-              <td>{{ line.cups.name }}</td>
-              <td><p-badge [value]="'X'" severity="danger" class="badge-del cursor-pointer hover:scale-110 inline-block"
-                  (click)="deleteHistory(line)" /></td>
+            <tr class="bg-gray-800/50 text-white overflow-visible hover:bg-white/10 transition-colors">
+              <td class="p-2 border-none">{{ line.player.name }}</td>
+              <td class="p-2 border-none">{{ line.points }}</td>
+              <td class="p-2 border-none">{{ line.console.name }}</td>
+              <td class="p-2 border-none">{{ line.cups.name }}</td>
+              <td class="p-2 border-none"><p-badge [value]="'X'" severity="danger"
+                  class="badge-del cursor-pointer hover:scale-110 inline-block" (click)="deleteHistory(line)" /></td>
             </tr>
           </ng-template>
         </p-table>
-      </p-scrollPanel>
+      </div>
       }
     </div>
     }

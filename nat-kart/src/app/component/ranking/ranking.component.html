@@ -8,19 +8,22 @@
     <div class="flex justify-between items-center bg-transparent p-1 md:p-2">
       <span class="text-lg md:text-2xl font-bold text-white drop-shadow-md">Classement</span>
       <div class="flex gap-1 md:gap-3">
-        <!-- Recherche : icône seule sur mobile, champ complet sur desktop -->
-        <p-iconfield iconPosition="left" class="hidden md:block">
-          <p-inputicon styleClass="pi pi-search" />
-          <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')"
-            placeholder="Rechercher..."
-            class="p-inputtext-sm rounded-lg border-white/20 bg-white/10 text-white focus:bg-white/20" />
-        </p-iconfield>
-        <!-- Icône loupe uniquement sur mobile -->
+        <!-- Elements Desktop (Cachés sur mobile) -->
+        <div class="hidden md:flex gap-3 items-center">
+          <p-iconfield iconPosition="left">
+            <p-inputicon styleClass="pi pi-search" />
+            <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')"
+              placeholder="Rechercher..."
+              class="p-inputtext-sm rounded-lg border-white/20 bg-white/10 text-white focus:bg-white/20" />
+          </p-iconfield>
+          <p-button label="Exporter" icon="pi pi-file-excel" (onClick)="onExport()" severity="success"
+            [rounded]="true" />
+        </div>
+
+        <!-- Elements Mobile (Loupe uniquement) -->
         <button pButton type="button" icon="pi pi-search"
           class="md:hidden p-button-sm p-button-rounded bg-white/10 border-white/20 text-white hover:bg-white/20"
           (click)="toggleMobileSearch()"></button>
-        <p-button label="Exporter" icon="pi pi-file-excel" (onClick)="onExport()" severity="success" [rounded]="true"
-          class="hidden md:inline-flex" />
       </div>
     </div>
     <!-- Barre de recherche mobile (affichée conditionnellement) -->

@@ -57,8 +57,7 @@
                                 <label for="count" class="text-white font-semibold">Nombre de joueurs à générer</label>
                                 <p-inputNumber inputId="count" [(ngModel)]="playerCount" name="playerCount" [min]="1"
                                     [max]="50" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
-                                    decrementButtonClass="bg-red-500/40 border-white/10 text-white hover:bg-red-500/60"
-                                    incrementButtonClass="bg-green-500/40 border-white/10 text-white hover:bg-green-500/60"
+                                    decrementButtonClass="btn-input-dec" incrementButtonClass="btn-input-inc"
                                     incrementButtonIcon="pi pi-plus font-bold"
                                     decrementButtonIcon="pi pi-minus font-bold" styleClass="w-full" />
 
@@ -128,8 +127,7 @@
                                     générer</label>
                                 <p-inputNumber inputId="teamCount" [(ngModel)]="teamCount" name="teamCount" [min]="1"
                                     [max]="50" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal"
-                                    decrementButtonClass="bg-red-500/40 border-white/10 text-white hover:bg-red-500/60"
-                                    incrementButtonClass="bg-green-500/40 border-white/10 text-white hover:bg-green-500/60"
+                                    decrementButtonClass="btn-input-dec" incrementButtonClass="btn-input-inc"
                                     incrementButtonIcon="pi pi-plus font-bold"
                                     decrementButtonIcon="pi pi-minus font-bold" styleClass="w-full" />
 

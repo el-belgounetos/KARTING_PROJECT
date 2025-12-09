@@ -66,6 +66,17 @@ class PlayerServiceTest {
         // Given
         when(playerRepository.existsByPseudoIgnoreCase(validPlayerDTO.getPseudo())).thenReturn(false);
 
+        // Mock PlayerMapper to return a valid entity
+        PlayerEntity mappedEntity = new PlayerEntity();
+        mappedEntity.setPseudo(validPlayerDTO.getPseudo());
+        mappedEntity.setName(validPlayerDTO.getName());
+        mappedEntity.setFirstname(validPlayerDTO.getFirstname());
+        mappedEntity.setEmail(validPlayerDTO.getEmail());
+        mappedEntity.setAge(validPlayerDTO.getAge());
+        mappedEntity.setCategory(validPlayerDTO.getCategory());
+        mappedEntity.setPicture(validPlayerDTO.getPicture());
+        when(playerMapper.toEntity(any(PlayerDTO.class))).thenReturn(mappedEntity);
+
         PlayerEntity savedEntity = new PlayerEntity();
         savedEntity.setId(1L);
         savedEntity.setPseudo(validPlayerDTO.getPseudo());

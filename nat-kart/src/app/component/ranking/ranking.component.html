@@ -16,14 +16,44 @@
               placeholder="Rechercher..."
               class="p-inputtext-sm rounded-lg border-white/20 bg-white/10 text-white focus:bg-white/20" />
           </p-iconfield>
-          <p-button label="Exporter" icon="pi pi-file-excel" (onClick)="onExport()" severity="success"
-            [rounded]="true" />
+          <button
+            class="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full font-bold transition-colors shadow-lg shadow-green-500/20"
+            (click)="onExport()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Exporter</span>
+          </button>
         </div>
 
-        <!-- Elements Mobile (Loupe uniquement) -->
-        <button pButton type="button" icon="pi pi-search"
-          class="md:hidden p-button-sm p-button-rounded bg-white/10 border-white/20 text-white hover:bg-white/20"
-          (click)="toggleMobileSearch()"></button>
+        <!-- Elements Mobile (Loupe et Export) -->
+        <div class="md:hidden flex gap-3">
+          <!-- Mobile Export (Disquette verte) -->
+          <div
+            class="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 cursor-pointer rounded-full bg-green-500 hover:bg-green-600 transition-colors relative z-50 shadow-lg shadow-green-500/20"
+            (click)="onExport()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+          </div>
+
+          <!-- Mobile Search (Loupe blanche) -->
+          <div
+            class="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 cursor-pointer rounded-full bg-green-500 hover:bg-green-600 transition-colors relative z-50 shadow-lg shadow-green-500/20"
+            (click)="toggleMobileSearch()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
     <!-- Barre de recherche mobile (affichée conditionnellement) -->

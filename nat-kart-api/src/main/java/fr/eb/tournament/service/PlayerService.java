@@ -216,16 +216,28 @@ public class PlayerService {
      * @param assignImage Whether to assign avatars automatically
      */
     public void generatePlayers(int count, boolean assignImage) {
-        int startIdx = (int) playerRepository.count() + 1;
+        com.github.javafaker.Faker faker = new com.github.javafaker.Faker(java.util.Locale.FRENCH);
 
         for (int i = 0; i < count; i++) {
-            int currentIdx = startIdx + i;
             PlayerDTO player = new PlayerDTO();
-            player.setName("Player_" + currentIdx);
-            player.setFirstname("Test");
-            player.setAge(20 + currentIdx);
-            player.setEmail("player" + currentIdx + "@test.com");
-            player.setPseudo("Player_" + currentIdx);
+
+            // Generate realistic names
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String pseudo = faker.funnyName().name();
+
+            // Ensure unique pseudo
+            int attempt = 0;
+            while (playerRepository.existsByPseudoIgnoreCase(pseudo) && attempt < 100) {
+                pseudo = faker.funnyName().name() + attempt;
+                attempt++;
+            }
+
+            player.setName(lastName);
+            player.setFirstname(firstName);
+            player.setAge(faker.number().numberBetween(18, 65));
+            player.setEmail(firstName.toLowerCase() + "." + lastName.toLowerCase() + "@test.com");
+            player.setPseudo(pseudo);
             player.setCategory("");
 
             if (assignImage) {

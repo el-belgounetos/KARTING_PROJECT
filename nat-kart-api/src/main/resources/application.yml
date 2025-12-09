@@ -24,3 +24,7 @@ image:
     max-size-mb: 10                  # Maximum file size accepted (hard limit)
     compression-threshold-mb: 3      # Files larger than this are compressed
     target-size-mb: 3                # Target size after compression
+
+# Frontend configuration
+frontend:
+  url: http://localhost:4200

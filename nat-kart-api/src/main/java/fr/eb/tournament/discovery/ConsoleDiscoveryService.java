@@ -2,11 +2,13 @@ package fr.eb.tournament.discovery;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.eb.tournament.repository.PlayerRepository;
+import fr.eb.tournament.service.RankingService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.net.DatagramPacket;
@@ -19,15 +21,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Service responsible for event-driven network discovery of consoles.
- * Listens on a UDP port for broadcast beacons from GMK3 or other game agents,
- * maintains discovery states, and provides administrator approval workflows.
+ * Service responsible for event-driven network discovery of consoles,
+ * manual station registration for offline hardware, player-to-controller mapping,
+ * and post-session score validation/adjustment before awarding points.
  */
 @Slf4j
 @Service
 public class ConsoleDiscoveryService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RankingService rankingService;
+    private final PlayerRepository playerRepository;
 
     @Value("${discovery.udp.port:45454}")
     private int udpPort;
@@ -36,9 +40,17 @@ public class ConsoleDiscoveryService {
     private boolean udpEnabled;
 
     private final Map<String, DiscoveredConsoleDTO> consoleRegistry = new ConcurrentHashMap<>();
+    private final Map<String, MatchResultValidationDTO> stagedResults = new ConcurrentHashMap<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
     private Thread udpListenerThread;
     private DatagramSocket udpSocket;
+
+    public ConsoleDiscoveryService(
+            @Lazy RankingService rankingService,
+            @Lazy PlayerRepository playerRepository) {
+        this.rankingService = rankingService;
+        this.playerRepository = playerRepository;
+    }
 
     @PostConstruct
     public void startListener() {
@@ -116,6 +128,8 @@ public class ConsoleDiscoveryService {
                             .status("DISCOVERED")
                             .confirmedConsoleType(consoleName)
                             .confirmedDiscipline(discipline)
+                            .playerSlots(new HashMap<>())
+                            .playerSlotIds(new HashMap<>())
                             .firstSeen(now)
                             .lastSeen(now)
                             .latestTelemetry(Collections.emptyMap())
@@ -140,6 +154,68 @@ public class ConsoleDiscoveryService {
         return Optional.ofNullable(consoleRegistry.get(stationId));
     }
 
+    public DiscoveredConsoleDTO createManualStation(ManualStationCreationDTO dto) {
+        String stationId = "manual-" + UUID.randomUUID().toString().substring(0, 8);
+        Instant now = Instant.now();
+        int slots = dto.getNumSlots() > 0 ? dto.getNumSlots() : 4;
+        String discipline = dto.getDiscipline() != null ? dto.getDiscipline() : "RACING";
+        String consoleType = dto.getConsoleType() != null ? dto.getConsoleType() : "Console Manuelle";
+        String stationName = dto.getStationName() != null ? dto.getStationName() : "Poste " + consoleType;
+
+        Map<String, String> playerSlots = dto.getPlayerSlots() != null ? new HashMap<>(dto.getPlayerSlots()) : new HashMap<>();
+        Map<String, Long> playerSlotIds = dto.getPlayerSlotIds() != null ? new HashMap<>(dto.getPlayerSlotIds()) : new HashMap<>();
+
+        DiscoveredConsoleDTO manualConsole = DiscoveredConsoleDTO.builder()
+                .stationId(stationId)
+                .stationName(stationName)
+                .ipAddress("offline")
+                .port(0)
+                .detectedConsoleType(consoleType)
+                .detectedGameTitle("Saisie Manuelle")
+                .detectedDiscipline(discipline)
+                .status("MANUAL")
+                .confirmedConsoleType(consoleType)
+                .confirmedDiscipline(discipline)
+                .playerSlots(playerSlots)
+                .playerSlotIds(playerSlotIds)
+                .firstSeen(now)
+                .lastSeen(now)
+                .latestTelemetry(Collections.emptyMap())
+                .build();
+
+        consoleRegistry.put(stationId, manualConsole);
+
+        // Pre-create staged results ready for score entry
+        List<SlotResultDTO> initialSlots = new ArrayList<>();
+        int[] defaultPoints = {15, 12, 10, 8, 7, 6, 5, 4};
+        for (int i = 0; i < slots; i++) {
+            String slotKey = "J" + (i + 1);
+            String name = playerSlots.getOrDefault(slotKey, "Joueur " + (i + 1));
+            Long pId = playerSlotIds.get(slotKey);
+            int rank = i + 1;
+            int points = (i < defaultPoints.length) ? defaultPoints[i] : 0;
+            initialSlots.add(SlotResultDTO.builder()
+                    .slotId(slotKey)
+                    .characterName("Manuel")
+                    .playerName(name)
+                    .playerId(pId)
+                    .rank(rank)
+                    .pointsAwarded(points)
+                    .victory(rank == 1)
+                    .build());
+        }
+
+        stagedResults.put(stationId, MatchResultValidationDTO.builder()
+                .stationId(stationId)
+                .gameTitle("Session Manuelle")
+                .stageOrTrack("Session de Tournoi")
+                .results(initialSlots)
+                .build());
+
+        log.info("[MANUAL] Created manual game station: {} [{}] with {} slots", stationName, consoleType, slots);
+        return manualConsole;
+    }
+
     public DiscoveredConsoleDTO approveConsole(String stationId, ConsoleApprovalRequestDTO request) {
         DiscoveredConsoleDTO console = consoleRegistry.get(stationId);
         if (console == null) {
@@ -155,10 +231,16 @@ public class ConsoleDiscoveryService {
         if (request.getConfirmedDiscipline() != null && !request.getConfirmedDiscipline().isBlank()) {
             console.setConfirmedDiscipline(request.getConfirmedDiscipline());
         }
+        if (request.getPlayerSlots() != null) {
+            console.setPlayerSlots(request.getPlayerSlots());
+        }
+        if (request.getPlayerSlotIds() != null) {
+            console.setPlayerSlotIds(request.getPlayerSlotIds());
+        }
 
         console.setStatus("APPROVED");
-        log.info("[DISCOVERY] Administrator approved console: {} as [{}] (Discipline: {})",
-                stationId, console.getConfirmedConsoleType(), console.getConfirmedDiscipline());
+        log.info("[DISCOVERY] Administrator approved console: {} as [{}] with player mapping: {}",
+                stationId, console.getConfirmedConsoleType(), console.getPlayerSlots());
         return console;
     }
 
@@ -179,6 +261,72 @@ public class ConsoleDiscoveryService {
         }
         console.setStatus("DISCONNECTED");
         log.info("[DISCOVERY] Administrator disconnected console: {}", stationId);
+        return console;
+    }
+
+    public MatchResultValidationDTO getStagedResults(String stationId) {
+        DiscoveredConsoleDTO console = consoleRegistry.get(stationId);
+        if (console == null) {
+            throw new NoSuchElementException("Console station not found: " + stationId);
+        }
+
+        return stagedResults.computeIfAbsent(stationId, id -> {
+            List<SlotResultDTO> slots = new ArrayList<>();
+            Map<String, String> playerSlots = console.getPlayerSlots() != null ? console.getPlayerSlots() : Map.of();
+            Map<String, Long> playerSlotIds = console.getPlayerSlotIds() != null ? console.getPlayerSlotIds() : Map.of();
+
+            int defaultSlots = 4;
+            int[] defaultPoints = {15, 12, 10, 8};
+
+            for (int i = 0; i < defaultSlots; i++) {
+                String slotKey = "J" + (i + 1);
+                String assignedName = playerSlots.getOrDefault(slotKey, "Joueur " + (i + 1));
+                Long assignedId = playerSlotIds.get(slotKey);
+                int rank = i + 1;
+                int points = (i < defaultPoints.length) ? defaultPoints[i] : 0;
+                boolean isVictory = (rank == 1);
+
+                slots.add(SlotResultDTO.builder()
+                        .slotId(slotKey)
+                        .characterName("Inconnu")
+                        .playerName(assignedName)
+                        .playerId(assignedId)
+                        .rank(rank)
+                        .pointsAwarded(points)
+                        .victory(isVictory)
+                        .build());
+            }
+
+            return MatchResultValidationDTO.builder()
+                    .stationId(stationId)
+                    .gameTitle(console.getDetectedGameTitle())
+                    .stageOrTrack("Session de Tournoi")
+                    .results(slots)
+                    .build();
+        });
+    }
+
+    public void updateStagedResults(String stationId, MatchResultValidationDTO results) {
+        stagedResults.put(stationId, results);
+    }
+
+    public DiscoveredConsoleDTO commitMatchResults(MatchResultValidationDTO validationDTO) {
+        if (validationDTO == null || validationDTO.getResults() == null) {
+            throw new IllegalArgumentException("Validation results cannot be null");
+        }
+        DiscoveredConsoleDTO console = consoleRegistry.get(validationDTO.getStationId());
+
+        for (SlotResultDTO slot : validationDTO.getResults()) {
+            if (slot.getPlayerId() != null) {
+                rankingService.addPointsToPlayer(slot.getPlayerId(), slot.getPointsAwarded(), slot.isVictory());
+            } else if (slot.getPlayerName() != null && !slot.getPlayerName().isBlank()) {
+                playerRepository.findByPseudo(slot.getPlayerName()).ifPresent(player -> {
+                    rankingService.addPointsToPlayer(player.getId(), slot.getPointsAwarded(), slot.isVictory());
+                });
+            }
+        }
+        stagedResults.remove(validationDTO.getStationId());
+        log.info("[EVENT] Validated and awarded tournament points for station: {}", validationDTO.getStationId());
         return console;
     }
 

@@ -78,6 +78,36 @@ public class RankingService {
     }
 
     /**
+     * Incrementally add points and optionally a victory to a player's tournament rank.
+     *
+     * @param playerId    The player's ID
+     * @param pointsToAdd Points to add to current total
+     * @param isVictory   Whether this session was won
+     */
+    @Transactional
+    public void addPointsToPlayer(@NonNull Long playerId, int pointsToAdd, boolean isVictory) {
+        PlayerEntity player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+
+        RankingEntity ranking = rankingRepository.findByPlayer(player)
+                .orElseGet(() -> {
+                    RankingEntity newRanking = new RankingEntity();
+                    newRanking.setPlayer(player);
+                    newRanking.setPoints(0);
+                    newRanking.setVictory(0);
+                    newRanking.setRank(0);
+                    return newRanking;
+                });
+
+        ranking.setPoints(ranking.getPoints() + pointsToAdd);
+        if (isVictory) {
+            ranking.setVictory(ranking.getVictory() + 1);
+        }
+        rankingRepository.save(ranking);
+        this.rerankEveryone();
+    }
+
+    /**
      * Create a new ranking entry for a player.
      *
      * @param playerId The player's ID

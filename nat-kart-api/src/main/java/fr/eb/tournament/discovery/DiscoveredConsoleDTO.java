@@ -26,6 +26,8 @@ public class DiscoveredConsoleDTO {
     private String status; // DISCOVERED, APPROVED, REJECTED, CONNECTED, DISCONNECTED
     private String confirmedConsoleType;
     private String confirmedDiscipline;
+    private Map<String, String> playerSlots;    // e.g. {"J1": "Benjamin", "J2": "Nicolas"}
+    private Map<String, Long> playerSlotIds;    // e.g. {"J1": 1L, "J2": 2L}
     private Instant firstSeen;
     private Instant lastSeen;
     private Map<String, Object> latestTelemetry;

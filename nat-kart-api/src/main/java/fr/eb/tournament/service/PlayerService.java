@@ -196,7 +196,7 @@ public class PlayerService {
             try {
                 this.rankingService.deleteRankingEntry(pseudo);
             } catch (Exception e) {
-                // Ignore if not found
+                log.debug("No ranking entry found to delete for pseudo '{}': {}", pseudo, e.getMessage());
             }
         }
     }

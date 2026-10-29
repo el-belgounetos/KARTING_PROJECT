@@ -50,8 +50,9 @@ public class ScoreResult {
         }
 
         for (Map.Entry<String, Integer> entry : display.entrySet()) {
-            if (entry.getValue() == 0)
+            if (entry.getValue() == 0) {
                 continue;
+            }
 
             double percent = (entry.getValue() * PERCENTAGE_MULTIPLIER) / total;
             String label = entry.getKey().equals(OVERFLOW_KEY) ? "5+ rencontres"

@@ -316,10 +316,10 @@ public class TournamentPlanningService {
         }
 
         // Find positions of playerA in both sessions
-        Position posA_s1 = findPlayerPosition(nouveau, playerA, s1);
-        Position posA_s2 = findPlayerPosition(nouveau, playerA, s2);
+        Position posAS1 = findPlayerPosition(nouveau, playerA, s1);
+        Position posAS2 = findPlayerPosition(nouveau, playerA, s2);
 
-        if (posA_s1 == null || posA_s2 == null) {
+        if (posAS1 == null || posAS2 == null) {
             return nouveau;
         }
 
@@ -327,17 +327,18 @@ public class TournamentPlanningService {
         List<PlayerSwapCandidate> candidates = new ArrayList<>();
 
         for (int player = 1; player <= config.getNbJoueurs(); player++) {
-            if (player == playerA)
-                continue;
+            if (player == playerA) {
+				continue;
+			}
 
-            Position posB_s1 = findPlayerPosition(nouveau, player, s1);
-            Position posB_s2 = findPlayerPosition(nouveau, player, s2);
+            Position posBS1 = findPlayerPosition(nouveau, player, s1);
+            Position posBS2 = findPlayerPosition(nouveau, player, s2);
 
-            if (posB_s1 != null && posB_s2 != null &&
-                    posB_s1.consoleName.equals(posA_s2.consoleName) &&
-                    posB_s2.consoleName.equals(posA_s1.consoleName)) {
+            if (posBS1 != null && posBS2 != null &&
+                    posBS1.consoleName.equals(posAS2.consoleName) &&
+                    posBS2.consoleName.equals(posAS1.consoleName)) {
 
-                candidates.add(new PlayerSwapCandidate(player, posB_s1, posB_s2));
+                candidates.add(new PlayerSwapCandidate(player, posBS1, posBS2));
             }
         }
 
@@ -348,15 +349,15 @@ public class TournamentPlanningService {
         PlayerSwapCandidate choiceB = candidates.get(random.nextInt(candidates.size()));
 
         // Perform the swap
-        List<Integer> groupA_s1 = nouveau.getGroupe(posA_s1.consoleName, s1, posA_s1.groupIdx);
-        List<Integer> groupA_s2 = nouveau.getGroupe(posA_s2.consoleName, s2, posA_s2.groupIdx);
-        List<Integer> groupB_s1 = nouveau.getGroupe(choiceB.posS1.consoleName, s1, choiceB.posS1.groupIdx);
-        List<Integer> groupB_s2 = nouveau.getGroupe(choiceB.posS2.consoleName, s2, choiceB.posS2.groupIdx);
+        List<Integer> groupAS1 = nouveau.getGroupe(posAS1.consoleName, s1, posAS1.groupIdx);
+        List<Integer> groupAS2 = nouveau.getGroupe(posAS2.consoleName, s2, posAS2.groupIdx);
+        List<Integer> groupBS1 = nouveau.getGroupe(choiceB.posS1.consoleName, s1, choiceB.posS1.groupIdx);
+        List<Integer> groupBS2 = nouveau.getGroupe(choiceB.posS2.consoleName, s2, choiceB.posS2.groupIdx);
 
-        groupA_s1.set(posA_s1.playerIdx, choiceB.player);
-        groupA_s2.set(posA_s2.playerIdx, choiceB.player);
-        groupB_s1.set(choiceB.posS1.playerIdx, playerA);
-        groupB_s2.set(choiceB.posS2.playerIdx, playerA);
+        groupAS1.set(posAS1.playerIdx, choiceB.player);
+        groupAS2.set(posAS2.playerIdx, choiceB.player);
+        groupBS1.set(choiceB.posS1.playerIdx, playerA);
+        groupBS2.set(choiceB.posS2.playerIdx, playerA);
 
         return nouveau;
     }

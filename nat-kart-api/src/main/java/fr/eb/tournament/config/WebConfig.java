@@ -13,6 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${cors.allowed-origins:http://localhost:4200}")
     private String allowedOrigins;
 
+    @Value("${cors.max-age-seconds:3600}")
+    private long corsMaxAgeSeconds;
+
     @Override
     @SuppressWarnings("null")
     public void addCorsMappings(CorsRegistry registry) {
@@ -22,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
-                .maxAge(3600);
+                .maxAge(corsMaxAgeSeconds);
     }
 
     @Override

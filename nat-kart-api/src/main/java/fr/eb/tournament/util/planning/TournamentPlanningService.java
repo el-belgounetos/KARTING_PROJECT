@@ -13,6 +13,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class TournamentPlanningService {
 
+    public static final double CUBIC_PENALTY_EXPONENT = 3.0;
+    public static final double PENALTY_WEIGHT_FACTOR = 100.0;
+    public static final int MAX_SWAP_SELECTION_ATTEMPTS = 10;
+    public static final int MAX_COLLISION_PAIRS_CANDIDATES = 20;
+
     private final TournamentConfig config;
     private final Random random = new Random();
 
@@ -208,7 +213,7 @@ public class TournamentPlanningService {
                 }
 
                 // Cubic penalty for repeated encounters
-                score += Math.pow(count, 3) * 100;
+                score += Math.pow(count, CUBIC_PENALTY_EXPONENT) * PENALTY_WEIGHT_FACTOR;
             }
         }
 
@@ -242,7 +247,7 @@ public class TournamentPlanningService {
 
         // Try to get different groups
         int attempts = 0;
-        while (g1 == g2 && attempts < 10) {
+        while (g1 == g2 && attempts < MAX_SWAP_SELECTION_ATTEMPTS) {
             g2 = random.nextInt(console.getNbGroupes());
             attempts++;
         }
@@ -278,7 +283,7 @@ public class TournamentPlanningService {
 
         // Try to get different sessions
         int attempts = 0;
-        while (s1 == s2 && attempts < 10) {
+        while (s1 == s2 && attempts < MAX_SWAP_SELECTION_ATTEMPTS) {
             s2 = random.nextInt(config.getNbSessions());
             attempts++;
         }
@@ -295,7 +300,7 @@ public class TournamentPlanningService {
             List<Map.Entry<String, Integer>> sortedPairs = encounters.entrySet().stream()
                     .filter(e -> e.getValue() > 1)
                     .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
-                    .limit(20)
+                    .limit(MAX_COLLISION_PAIRS_CANDIDATES)
                     .toList();
 
             if (!sortedPairs.isEmpty()) {

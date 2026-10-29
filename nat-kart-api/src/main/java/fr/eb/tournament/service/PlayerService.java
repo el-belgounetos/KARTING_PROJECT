@@ -23,6 +23,10 @@ import java.util.Optional;
 @Slf4j
 public class PlayerService {
 
+    public static final int MAX_PSEUDO_GENERATION_ATTEMPTS = 100;
+    public static final int MIN_PLAYER_AGE = 18;
+    public static final int MAX_PLAYER_AGE = 65;
+
     private final CharacterService characterService;
     private final RankingService rankingService;
     private final HistoryService historyService;
@@ -228,14 +232,14 @@ public class PlayerService {
 
             // Ensure unique pseudo
             int attempt = 0;
-            while (playerRepository.existsByPseudoIgnoreCase(pseudo) && attempt < 100) {
+            while (playerRepository.existsByPseudoIgnoreCase(pseudo) && attempt < MAX_PSEUDO_GENERATION_ATTEMPTS) {
                 pseudo = faker.funnyName().name() + attempt;
                 attempt++;
             }
 
             player.setName(lastName);
             player.setFirstname(firstName);
-            player.setAge(faker.number().numberBetween(18, 65));
+            player.setAge(faker.number().numberBetween(MIN_PLAYER_AGE, MAX_PLAYER_AGE));
             player.setEmail(firstName.toLowerCase() + "." + lastName.toLowerCase() + "@test.com");
             player.setPseudo(pseudo);
             player.setCategory("");

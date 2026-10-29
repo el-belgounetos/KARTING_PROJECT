@@ -23,6 +23,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TeamService {
 
+    public static final int MIN_TEAM_COUNT = 1;
+    public static final int MAX_TEAM_COUNT = 50;
+    public static final int MAX_TEAM_NAME_ATTEMPTS = 100;
+    public static final int TEAM_NAME_VARIETY_MODULO = 5;
+
     private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
     private final TeamMapper teamMapper;
@@ -183,8 +188,8 @@ public class TeamService {
      */
     @org.springframework.transaction.annotation.Transactional
     public void generateTeams(int count, boolean assignLogo) {
-        if (count < 1 || count > 50) {
-            throw new IllegalArgumentException("Le nombre d'équipes doit être entre 1 et 50");
+        if (count < MIN_TEAM_COUNT || count > MAX_TEAM_COUNT) {
+            throw new IllegalArgumentException("Le nombre d'équipes doit être entre " + MIN_TEAM_COUNT + " et " + MAX_TEAM_COUNT);
         }
 
         Faker faker = new Faker(Locale.FRENCH);
@@ -199,7 +204,7 @@ public class TeamService {
             int attempt = 0;
             do {
                 // Use various Faker methods to create interesting team names
-                String prefix = switch (i % 5) {
+                String prefix = switch (i % TEAM_NAME_VARIETY_MODULO) {
                     case 0 -> faker.team().name();
                     case 1 -> faker.esports().team();
                     case 2 -> faker.superhero().name() + " Team";
@@ -208,7 +213,7 @@ public class TeamService {
                 };
                 baseName = attempt == 0 ? prefix : prefix + " " + attempt;
                 attempt++;
-            } while (teamRepository.existsByName(baseName) && attempt < 100);
+            } while (teamRepository.existsByName(baseName) && attempt < MAX_TEAM_NAME_ATTEMPTS);
 
             team.setName(baseName);
 

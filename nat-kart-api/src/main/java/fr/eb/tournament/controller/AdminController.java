@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin")
 public class AdminController {
 
+    public static final String LOCALHOST_HOSTNAME = "localhost";
+    public static final String LOCALHOST_IPV4 = "127.0.0.1";
+    public static final String RANKING_PATH = "/ranking";
+
     private final PlayerService playerService;
     private final TeamService teamService;
     private final TournamentConfigService tournamentConfigService;
@@ -93,14 +97,14 @@ public class AdminController {
 	public org.springframework.http.ResponseEntity<byte[]> generateQRCode() {
 		try {
 			// Utilise l'URL du frontend configurée dans application.yml
-			String rankingUrl = frontendUrl + "/ranking";
+			String rankingUrl = frontendUrl + RANKING_PATH;
 			
 			// Si l'URL contient localhost ou 127.0.0.1, la remplacer par le hostname de la machine
 			// pour permettre l'accès depuis d'autres appareils (mobiles)
-			if (rankingUrl.contains("localhost") || rankingUrl.contains("127.0.0.1")) {
+			if (rankingUrl.contains(LOCALHOST_HOSTNAME) || rankingUrl.contains(LOCALHOST_IPV4)) {
 				String hostname = java.net.InetAddress.getLocalHost().getHostName();
-				rankingUrl = rankingUrl.replace("localhost", hostname);
-				rankingUrl = rankingUrl.replace("127.0.0.1", hostname);
+				rankingUrl = rankingUrl.replace(LOCALHOST_HOSTNAME, hostname);
+				rankingUrl = rankingUrl.replace(LOCALHOST_IPV4, hostname);
 			}
 			
 			byte[] qrCode = qrCodeService.generateQRCode(rankingUrl, qrCodeWidth, qrCodeHeight);

@@ -22,6 +22,14 @@ import java.util.stream.Stream;
 @Slf4j
 public class ImageService {
 
+    public static final double BYTES_PER_MEGABYTE = 1024.0 * 1024.0;
+    public static final double INITIAL_JPEG_QUALITY = 0.9;
+    public static final double INITIAL_SCALE = 1.0;
+    public static final int MAX_COMPRESSION_ATTEMPTS = 10;
+    public static final double MIN_PNG_SCALE = 0.3;
+    public static final double MIN_JPEG_QUALITY = 0.1;
+    public static final double COMPRESSION_STEP = 0.1;
+
     private final ImageUploadProperties uploadProperties;
 
     /**
@@ -130,7 +138,7 @@ public class ImageService {
             if (fileSize > targetSize) {
                 // File is between 5MB and 10MB - compress it
                 log.info("Compressing image {} from {}MB to under 5MB", sanitizedFilename,
-                        fileSize / (1024.0 * 1024.0));
+                        fileSize / BYTES_PER_MEGABYTE);
                 compressAndSaveImage(file, targetPath, targetSize);
             } else {
                 // File is under 5MB - save directly
@@ -161,9 +169,9 @@ public class ImageService {
             String filename = targetPath.getFileName().toString().toLowerCase();
             boolean isPNG = filename.endsWith(".png");
 
-            double quality = 0.9;
-            double scale = 1.0;
-            int maxAttempts = 10;
+            double quality = INITIAL_JPEG_QUALITY;
+            double scale = INITIAL_SCALE;
+            int maxAttempts = MAX_COMPRESSION_ATTEMPTS;
 
             for (int attempt = 0; attempt < maxAttempts; attempt++) {
                 java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -187,8 +195,8 @@ public class ImageService {
 
                 // Check if we've reached target size or minimum thresholds
                 if (compressed.length <= targetSize ||
-                        (isPNG && scale <= 0.3) ||
-                        (!isPNG && quality <= 0.1)) {
+                        (isPNG && scale <= MIN_PNG_SCALE) ||
+                        (!isPNG && quality <= MIN_JPEG_QUALITY)) {
                     Files.write(targetPath, compressed);
                     log.info("Image compressed to {} bytes (quality: {}, scale: {})",
                             compressed.length, quality, scale);
@@ -196,8 +204,8 @@ public class ImageService {
                 }
 
                 // Reduce quality/scale for next iteration
-                quality -= 0.1;
-                scale -= 0.1;
+                quality -= COMPRESSION_STEP;
+                scale -= COMPRESSION_STEP;
             }
 
             log.warn("Could not compress image below target size after {} attempts", maxAttempts);

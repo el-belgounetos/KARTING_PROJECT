@@ -8,11 +8,18 @@ import java.util.Map;
 
 /**
  * Result of planning scoring.
+ * Zero magic numbers: formatting thresholds and multipliers externalized as constants.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ScoreResult {
+
+    public static final int MAX_DISCRETE_ENCOUNTERS = 4;
+    public static final int OVERFLOW_ENCOUNTER_THRESHOLD = 5;
+    public static final String OVERFLOW_KEY = "5+";
+    public static final double PERCENTAGE_MULTIPLIER = 100.0;
+
     private double score; // Total score (lower is better)
     private Map<Integer, Integer> distribution; // Distribution of encounters: key=nb encounters, value=nb pairs
     private int collisions; // Number of repeated encounters
@@ -28,26 +35,26 @@ public class ScoreResult {
 
         // Group 5+ encounters together
         Map<String, Integer> display = new java.util.LinkedHashMap<>();
-        for (int i = 0; i <= 4; i++) {
+        for (int i = 0; i <= MAX_DISCRETE_ENCOUNTERS; i++) {
             display.put(String.valueOf(i), distribution.getOrDefault(i, 0));
         }
 
         int fivePlus = 0;
         for (Map.Entry<Integer, Integer> entry : distribution.entrySet()) {
-            if (entry.getKey() >= 5) {
+            if (entry.getKey() >= OVERFLOW_ENCOUNTER_THRESHOLD) {
                 fivePlus += entry.getValue();
             }
         }
         if (fivePlus > 0) {
-            display.put("5+", fivePlus);
+            display.put(OVERFLOW_KEY, fivePlus);
         }
 
         for (Map.Entry<String, Integer> entry : display.entrySet()) {
             if (entry.getValue() == 0)
                 continue;
 
-            double percent = (entry.getValue() * 100.0) / total;
-            String label = entry.getKey().equals("5+") ? "5+ rencontres"
+            double percent = (entry.getValue() * PERCENTAGE_MULTIPLIER) / total;
+            String label = entry.getKey().equals(OVERFLOW_KEY) ? "5+ rencontres"
                     : (entry.getKey().equals("1") ? "1 rencontre" : entry.getKey() + " rencontres");
             sb.append(String.format("  ├─ %s : %d paires (%.1f%%)%n", label, entry.getValue(), percent));
         }

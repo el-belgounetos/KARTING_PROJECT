@@ -18,6 +18,10 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class TournamentService {
 
+    public static final int PERCENT_MAX = 100;
+    public static final int COLLISION_TARGET_PROBABILITY_THRESHOLD = 70;
+    private final Random random = new Random();
+
     /**
      * Generates a tournament planning from a request.
      * 
@@ -128,9 +132,9 @@ public class TournamentService {
             // Optimization loop
             for (int i = 0; i < config.getNbIterationsParRelance(); i++) {
                 // Random swap
-                Planning newPlanning = new Random().nextBoolean()
+                Planning newPlanning = random.nextBoolean()
                         ? service.swap1IntraSession(currentBest)
-                        : service.swap2InterSessions(currentBest, encounters, new Random().nextInt(100) < 70);
+                        : service.swap2InterSessions(currentBest, encounters, random.nextInt(PERCENT_MAX) < COLLISION_TARGET_PROBABILITY_THRESHOLD);
 
                 if (service.validatePlanning(newPlanning)) {
                     String hash = service.getPlanningHash(newPlanning);

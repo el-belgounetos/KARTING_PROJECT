@@ -1,0 +1,21 @@
+# ==============================================================================
+# Optional PostgreSQL Production/Container Configuration Profile
+# Activated via SPRING_PROFILES_ACTIVE=postgres or --spring.profiles.active=postgres
+# ==============================================================================
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/natkart}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:kart_admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:kart_secret}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true

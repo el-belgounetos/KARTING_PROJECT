@@ -1,0 +1,77 @@
+services:
+  # ============================================================================
+  # Optional PostgreSQL Database Service
+  # Enable with: docker compose --profile postgres up
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: gmk-postgres
+    restart: unless-stopped
+    profiles: ["postgres", "all"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-natkart}
+      POSTGRES_USER: ${POSTGRES_USER:-kart_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kart_secret}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kart_admin} -d ${POSTGRES_DB:-natkart}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gmk-network
+
+  # ============================================================================
+  # Tournament & Event Backend API (Spring Boot 4 / Java 25)
+  # ============================================================================
+  api:
+    build:
+      context: ./nat-kart-api
+      dockerfile: Dockerfile
+    container_name: gmk-tournament-api
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:h2:file:/app/data/natkart}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-sa}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-}
+      DISCOVERY_UDP_PORT: ${DISCOVERY_UDP_PORT:-45454}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:80}
+    ports:
+      - "8080:8080"
+      - "45454:45454/udp"
+    volumes:
+      - api_data:/app/data
+      - ./images:/app/images
+    networks:
+      - gmk-network
+
+  # ============================================================================
+  # Tournament Frontend UI (Angular 21 / NGINX Reverse Proxy)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./nat-kart
+      dockerfile: Dockerfile
+    container_name: gmk-tournament-web
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    depends_on:
+      - api
+    networks:
+      - gmk-network
+
+networks:
+  gmk-network:
+    name: gmk-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: gmk_postgres_data
+  api_data:
+    name: gmk_api_data

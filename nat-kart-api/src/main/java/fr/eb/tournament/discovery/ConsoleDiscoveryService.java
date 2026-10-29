@@ -2,13 +2,10 @@ package fr.eb.tournament.discovery;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.eb.tournament.repository.PlayerRepository;
-import fr.eb.tournament.service.RankingService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.net.DatagramPacket;
@@ -21,17 +18,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Service responsible for event-driven network discovery of consoles,
- * manual station registration for offline hardware, player-to-controller mapping,
- * and post-session score validation/adjustment before awarding points.
+ * Service responsible for event-driven network discovery of consoles
+ * and station lifecycle management (approval, rejection, disconnection).
+ * SOLID (SRP): Focused strictly on station discovery and registry.
+ * Zero magic numbers: all timeouts, buffer sizes, and ports externalized or constant.
  */
 @Slf4j
 @Service
 public class ConsoleDiscoveryService {
 
+    public static final int DEFAULT_UDP_BUFFER_SIZE = 4096;
+    public static final int DEFAULT_STATION_PORT = 8080;
+    public static final int UUID_SUBSTRING_LENGTH = 8;
+    public static final String DEFAULT_MANUAL_CONSOLE_TYPE = "Console Manuelle";
+    public static final String DEFAULT_MANUAL_STATION_PREFIX = "Poste ";
+    public static final String DEFAULT_DISCIPLINE = "RACING";
+    public static final String DEFAULT_OFFLINE_HOST = "offline";
+    public static final int OFFLINE_PORT = 0;
+
+    public static final String STATUS_DISCOVERED = "DISCOVERED";
+    public static final String STATUS_MANUAL = "MANUAL";
+    public static final String STATUS_APPROVED = "APPROVED";
+    public static final String STATUS_REJECTED = "REJECTED";
+    public static final String STATUS_DISCONNECTED = "DISCONNECTED";
+
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final RankingService rankingService;
-    private final PlayerRepository playerRepository;
+    private final MatchValidationService matchValidationService;
 
     @Value("${discovery.udp.port:45454}")
     private int udpPort;
@@ -40,16 +52,12 @@ public class ConsoleDiscoveryService {
     private boolean udpEnabled;
 
     private final Map<String, DiscoveredConsoleDTO> consoleRegistry = new ConcurrentHashMap<>();
-    private final Map<String, MatchResultValidationDTO> stagedResults = new ConcurrentHashMap<>();
     private final AtomicBoolean running = new AtomicBoolean(false);
     private Thread udpListenerThread;
     private DatagramSocket udpSocket;
 
-    public ConsoleDiscoveryService(
-            @Lazy RankingService rankingService,
-            @Lazy PlayerRepository playerRepository) {
-        this.rankingService = rankingService;
-        this.playerRepository = playerRepository;
+    public ConsoleDiscoveryService(MatchValidationService matchValidationService) {
+        this.matchValidationService = matchValidationService;
     }
 
     @PostConstruct
@@ -79,7 +87,7 @@ public class ConsoleDiscoveryService {
     }
 
     private void listenUdpBeacons() {
-        byte[] buffer = new byte[4096];
+        byte[] buffer = new byte[DEFAULT_UDP_BUFFER_SIZE];
         try {
             udpSocket = new DatagramSocket(null);
             udpSocket.setReuseAddress(true);
@@ -105,12 +113,12 @@ public class ConsoleDiscoveryService {
         try {
             Map<String, Object> data = objectMapper.readValue(payload, new TypeReference<>() {});
             String stationId = (String) data.getOrDefault("station_id", "station-" + fallbackIp);
-            int port = data.containsKey("port") ? ((Number) data.get("port")).intValue() : 8080;
+            int port = data.containsKey("port") ? ((Number) data.get("port")).intValue() : DEFAULT_STATION_PORT;
             String host = (String) data.getOrDefault("host", fallbackIp);
             String consoleId = (String) data.getOrDefault("console_id", "UNKNOWN");
             String consoleName = (String) data.getOrDefault("console_name", consoleId);
             String gameTitle = (String) data.getOrDefault("game_title", "Unknown Game");
-            String discipline = (String) data.getOrDefault("discipline", "RACING");
+            String discipline = (String) data.getOrDefault("discipline", DEFAULT_DISCIPLINE);
 
             Instant now = Instant.now();
 
@@ -125,7 +133,7 @@ public class ConsoleDiscoveryService {
                             .detectedConsoleType(consoleName)
                             .detectedGameTitle(gameTitle)
                             .detectedDiscipline(discipline)
-                            .status("DISCOVERED")
+                            .status(STATUS_DISCOVERED)
                             .confirmedConsoleType(consoleName)
                             .confirmedDiscipline(discipline)
                             .playerSlots(new HashMap<>())
@@ -155,12 +163,12 @@ public class ConsoleDiscoveryService {
     }
 
     public DiscoveredConsoleDTO createManualStation(ManualStationCreationDTO dto) {
-        String stationId = "manual-" + UUID.randomUUID().toString().substring(0, 8);
+        String stationId = "manual-" + UUID.randomUUID().toString().substring(0, UUID_SUBSTRING_LENGTH);
         Instant now = Instant.now();
-        int slots = dto.getNumSlots() > 0 ? dto.getNumSlots() : 4;
-        String discipline = dto.getDiscipline() != null ? dto.getDiscipline() : "RACING";
-        String consoleType = dto.getConsoleType() != null ? dto.getConsoleType() : "Console Manuelle";
-        String stationName = dto.getStationName() != null ? dto.getStationName() : "Poste " + consoleType;
+        int slots = dto.getNumSlots() > 0 ? dto.getNumSlots() : MatchValidationService.DEFAULT_SLOTS_COUNT;
+        String discipline = dto.getDiscipline() != null ? dto.getDiscipline() : DEFAULT_DISCIPLINE;
+        String consoleType = dto.getConsoleType() != null ? dto.getConsoleType() : DEFAULT_MANUAL_CONSOLE_TYPE;
+        String stationName = dto.getStationName() != null ? dto.getStationName() : DEFAULT_MANUAL_STATION_PREFIX + consoleType;
 
         Map<String, String> playerSlots = dto.getPlayerSlots() != null ? new HashMap<>(dto.getPlayerSlots()) : new HashMap<>();
         Map<String, Long> playerSlotIds = dto.getPlayerSlotIds() != null ? new HashMap<>(dto.getPlayerSlotIds()) : new HashMap<>();
@@ -168,12 +176,12 @@ public class ConsoleDiscoveryService {
         DiscoveredConsoleDTO manualConsole = DiscoveredConsoleDTO.builder()
                 .stationId(stationId)
                 .stationName(stationName)
-                .ipAddress("offline")
-                .port(0)
+                .ipAddress(DEFAULT_OFFLINE_HOST)
+                .port(OFFLINE_PORT)
                 .detectedConsoleType(consoleType)
                 .detectedGameTitle("Saisie Manuelle")
                 .detectedDiscipline(discipline)
-                .status("MANUAL")
+                .status(STATUS_MANUAL)
                 .confirmedConsoleType(consoleType)
                 .confirmedDiscipline(discipline)
                 .playerSlots(playerSlots)
@@ -185,30 +193,12 @@ public class ConsoleDiscoveryService {
 
         consoleRegistry.put(stationId, manualConsole);
 
-        // Pre-create staged results ready for score entry
-        List<SlotResultDTO> initialSlots = new ArrayList<>();
-        int[] defaultPoints = {15, 12, 10, 8, 7, 6, 5, 4};
-        for (int i = 0; i < slots; i++) {
-            String slotKey = "J" + (i + 1);
-            String name = playerSlots.getOrDefault(slotKey, "Joueur " + (i + 1));
-            Long pId = playerSlotIds.get(slotKey);
-            int rank = i + 1;
-            int points = (i < defaultPoints.length) ? defaultPoints[i] : 0;
-            initialSlots.add(SlotResultDTO.builder()
-                    .slotId(slotKey)
-                    .characterName("Manuel")
-                    .playerName(name)
-                    .playerId(pId)
-                    .rank(rank)
-                    .pointsAwarded(points)
-                    .victory(rank == 1)
-                    .build());
-        }
-
-        stagedResults.put(stationId, MatchResultValidationDTO.builder()
+        // Pre-create staged results ready for score entry using MatchValidationService (DRY)
+        List<SlotResultDTO> initialSlots = matchValidationService.buildDefaultSlotResults(slots, playerSlots, playerSlotIds);
+        matchValidationService.stageResults(stationId, MatchResultValidationDTO.builder()
                 .stationId(stationId)
                 .gameTitle("Session Manuelle")
-                .stageOrTrack("Session de Tournoi")
+                .stageOrTrack(MatchValidationService.DEFAULT_STAGE_TITLE)
                 .results(initialSlots)
                 .build());
 
@@ -238,7 +228,7 @@ public class ConsoleDiscoveryService {
             console.setPlayerSlotIds(request.getPlayerSlotIds());
         }
 
-        console.setStatus("APPROVED");
+        console.setStatus(STATUS_APPROVED);
         log.info("[DISCOVERY] Administrator approved console: {} as [{}] with player mapping: {}",
                 stationId, console.getConfirmedConsoleType(), console.getPlayerSlots());
         return console;
@@ -249,7 +239,7 @@ public class ConsoleDiscoveryService {
         if (console == null) {
             throw new NoSuchElementException("Console station not found: " + stationId);
         }
-        console.setStatus("REJECTED");
+        console.setStatus(STATUS_REJECTED);
         log.info("[DISCOVERY] Administrator rejected console: {}", stationId);
         return console;
     }
@@ -259,7 +249,7 @@ public class ConsoleDiscoveryService {
         if (console == null) {
             throw new NoSuchElementException("Console station not found: " + stationId);
         }
-        console.setStatus("DISCONNECTED");
+        console.setStatus(STATUS_DISCONNECTED);
         log.info("[DISCOVERY] Administrator disconnected console: {}", stationId);
         return console;
     }
@@ -269,64 +259,26 @@ public class ConsoleDiscoveryService {
         if (console == null) {
             throw new NoSuchElementException("Console station not found: " + stationId);
         }
-
-        return stagedResults.computeIfAbsent(stationId, id -> {
-            List<SlotResultDTO> slots = new ArrayList<>();
-            Map<String, String> playerSlots = console.getPlayerSlots() != null ? console.getPlayerSlots() : Map.of();
-            Map<String, Long> playerSlotIds = console.getPlayerSlotIds() != null ? console.getPlayerSlotIds() : Map.of();
-
-            int defaultSlots = 4;
-            int[] defaultPoints = {15, 12, 10, 8};
-
-            for (int i = 0; i < defaultSlots; i++) {
-                String slotKey = "J" + (i + 1);
-                String assignedName = playerSlots.getOrDefault(slotKey, "Joueur " + (i + 1));
-                Long assignedId = playerSlotIds.get(slotKey);
-                int rank = i + 1;
-                int points = (i < defaultPoints.length) ? defaultPoints[i] : 0;
-                boolean isVictory = (rank == 1);
-
-                slots.add(SlotResultDTO.builder()
-                        .slotId(slotKey)
-                        .characterName("Inconnu")
-                        .playerName(assignedName)
-                        .playerId(assignedId)
-                        .rank(rank)
-                        .pointsAwarded(points)
-                        .victory(isVictory)
-                        .build());
-            }
-
-            return MatchResultValidationDTO.builder()
-                    .stationId(stationId)
-                    .gameTitle(console.getDetectedGameTitle())
-                    .stageOrTrack("Session de Tournoi")
-                    .results(slots)
-                    .build();
-        });
+        int slots = MatchValidationService.DEFAULT_SLOTS_COUNT;
+        return matchValidationService.getOrCreateStagedResults(
+                stationId,
+                console.getDetectedGameTitle(),
+                slots,
+                console.getPlayerSlots(),
+                console.getPlayerSlotIds()
+        );
     }
 
     public void updateStagedResults(String stationId, MatchResultValidationDTO results) {
-        stagedResults.put(stationId, results);
+        matchValidationService.stageResults(stationId, results);
     }
 
     public DiscoveredConsoleDTO commitMatchResults(MatchResultValidationDTO validationDTO) {
-        if (validationDTO == null || validationDTO.getResults() == null) {
+        if (validationDTO == null) {
             throw new IllegalArgumentException("Validation results cannot be null");
         }
         DiscoveredConsoleDTO console = consoleRegistry.get(validationDTO.getStationId());
-
-        for (SlotResultDTO slot : validationDTO.getResults()) {
-            if (slot.getPlayerId() != null) {
-                rankingService.addPointsToPlayer(slot.getPlayerId(), slot.getPointsAwarded(), slot.isVictory());
-            } else if (slot.getPlayerName() != null && !slot.getPlayerName().isBlank()) {
-                playerRepository.findByPseudo(slot.getPlayerName()).ifPresent(player -> {
-                    rankingService.addPointsToPlayer(player.getId(), slot.getPointsAwarded(), slot.isVictory());
-                });
-            }
-        }
-        stagedResults.remove(validationDTO.getStationId());
-        log.info("[EVENT] Validated and awarded tournament points for station: {}", validationDTO.getStationId());
+        matchValidationService.commitMatchResults(validationDTO);
         return console;
     }
 
@@ -338,7 +290,7 @@ public class ConsoleDiscoveryService {
         consoleDTO.setFirstSeen(now);
         consoleDTO.setLastSeen(now);
         if (consoleDTO.getStatus() == null) {
-            consoleDTO.setStatus("DISCOVERED");
+            consoleDTO.setStatus(STATUS_DISCOVERED);
         }
         consoleRegistry.put(consoleDTO.getStationId(), consoleDTO);
     }

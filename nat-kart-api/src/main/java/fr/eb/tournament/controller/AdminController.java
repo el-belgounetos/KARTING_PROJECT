@@ -23,6 +23,12 @@ public class AdminController {
 	@Value("${frontend.url}")
 	private String frontendUrl;
 
+    @Value("${qrcode.width:300}")
+    private int qrCodeWidth;
+
+    @Value("${qrcode.height:300}")
+    private int qrCodeHeight;
+
     public AdminController(
             PlayerService playerService,
             TeamService teamService,
@@ -97,7 +103,7 @@ public class AdminController {
 				rankingUrl = rankingUrl.replace("127.0.0.1", hostname);
 			}
 			
-			byte[] qrCode = qrCodeService.generateQRCode(rankingUrl, 300, 300);
+			byte[] qrCode = qrCodeService.generateQRCode(rankingUrl, qrCodeWidth, qrCodeHeight);
 			org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 			headers.setContentType(org.springframework.http.MediaType.IMAGE_PNG);
 			return new org.springframework.http.ResponseEntity<>(qrCode, headers, org.springframework.http.HttpStatus.OK);
